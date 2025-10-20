@@ -1,0 +1,131 @@
+/* container principal */
+.app-container {
+  height: 100vh;
+  background: #f7f7f9; /* fundo que aparece no arredondado */
+}
+
+/* toolbar */
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #028ABA;
+  color: #fff !important;
+}
+
+.app-toolbar .mat-icon{
+    color: #fff !important;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* sidenav estilizado como “card lateral” */
+.app-sidenav {
+  width: 260px;
+  background: #fff;
+
+  /* sombra e radius */
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+
+  /* garante que filhos não vazem do radius */
+  overflow: hidden;
+
+  /* container interno do MDC precisa herdar o radius */
+  .mat-drawer-inner-container {
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+    background: inherit;
+    overflow: hidden;
+  }
+
+  /* estado colapsado */
+  &.collapsed {
+    width: 72px;
+
+    mat-nav-list a .mat-mdc-list-item-title {
+      display: none;
+    }
+  }
+
+  /* logo + título */
+  .brand {
+    display: flex;
+    font-size: 30px;
+    font-weight: bold;
+    color: #2d6d87;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem 1rem .5rem 1rem;
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      margin-left: 2px;
+    }
+
+    &.center {
+      justify-content: center;
+
+      .brand-logo {
+        margin: 0 auto;
+      }
+
+      span {
+        display: none;
+      }
+    }
+  }
+}
+
+/* conteúdo */
+.app-content {
+  min-height: 100vh;
+  background: #f7f7f9;
+}
+
+.page {
+  padding: 16px;
+}
+
+/* item ativo da lista sem radius */
+.mat-mdc-nav-list .mat-mdc-list-item,
+.mat-mdc-nav-list .mat-mdc-list-item.active {
+  border-radius: 0 !important;
+  --mat-focus-indicator-border-radius: 0 !important;
+  background-color: #2d6d87;
+  color: #fff !important;
+}
+
+.mat-mdc-list-item.active {
+  background-color: #051436;
+}
+
+.mat-mdc-list-item:hover{
+    background-color: #04102e;
+    cursor: pointer;
+}
+
+.mat-mdc-list-item a{
+    color: #fff !important;
+}
+
+/* gutter no desktop para destacar o radius */
+@media (min-width: 600px) {
+  .app-sidenav {
+    margin-right: 16px;
+  }
+}
+
+.mdc-list-item.mdc-list-item--with-one-line .mdc-list-item__start {
+    color: #FFF !important;
+    margin-left: 22px;
+}
+
+.mdc-list-item__primary-text{
+    color: #FFF !important;
+}

@@ -1,0 +1,32 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page__header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+mat-card { padding: 1rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: .75rem;
+}
+.col-3 { grid-column: span 3; }
+.col-4 { grid-column: span 4; }
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+
+.sub { margin: 1rem 0 .25rem; font-weight: 600; }
+
+.actions {
+  margin-top: 1rem;
+  display: flex; justify-content: flex-end; gap: .75rem;
+}
+
+.error { color: #f44336; }
+@media (max-width: 900px) {
+  .col-3, .col-4, .col-5, .col-6 { grid-column: span 12; }
+}

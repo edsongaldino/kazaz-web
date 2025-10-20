@@ -1,0 +1,86 @@
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h1 {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: .75rem;
+  align-items: end;
+
+  &__field {
+    grid-column: span 4;
+
+    &--sm {
+      grid-column: span 2;
+    }
+  }
+
+  &__buttons {
+    grid-column: span 12;
+    display: flex;
+    gap: .5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .filters {
+    grid-template-columns: repeat(6, 1fr);
+
+    &__field { grid-column: span 6; }
+    &__field--sm { grid-column: span 3; }
+    &__buttons { grid-column: span 6; }
+  }
+}
+
+.table-wrapper {
+  background: var(--mdc-filled-button-container-color, transparent);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+table {
+  width: 100%;
+}
+
+.cell-main { font-weight: 600; }
+.cell-sub { font-size: .85rem; opacity: .75; }
+
+.empty td {
+  text-align: center;
+  padding: 2rem;
+  opacity: .8;
+}
+
+.chip {
+  display: inline-block;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  background: rgba(76, 175, 80, .15); // verde claro
+  color: #4caf50;
+
+  &.chip--inactive {
+    background: rgba(244, 67, 54, .15);
+    color: #f44336;
+  }
+}
+
+.error {
+  border: 1px dashed rgba(255,255,255,.2);
+  padding: 1rem;
+  border-radius: 12px;
+}

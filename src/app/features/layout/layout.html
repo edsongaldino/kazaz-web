@@ -1,0 +1,54 @@
+<mat-sidenav-container class="app-container" [autosize]="true">
+  <mat-sidenav
+    class="app-sidenav"
+    [mode]="mode()"
+    [opened]="sidenavOpened()"             
+    (openedChange)="sidenavOpened.set($event)"
+    [fixedInViewport]="isHandset()"
+    [fixedTopGap]="64"
+    [ngClass]="{ 'collapsed': collapsed() && !isHandset() }">
+
+    <div class="brand" [ngClass]="{ 'center': collapsed() && !isHandset() }">
+      <img src="assets/img/logo/logo.fw.png" alt="Logo Secretaria" class="brand-logo" />
+      <span *ngIf="!collapsed() || isHandset()">Kazaz</span>
+    </div>
+
+    <mat-nav-list>
+      <!-- caminhos RELATIVOS às rotas filhas -->
+      <a mat-list-item routerLink="dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon matListItemIcon>home</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Dashboard</span>
+      </a>
+
+      <a mat-list-item routerLink="pessoas" routerLinkActive="active">
+        <mat-icon matListItemIcon>event</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Clientes</span>
+      </a>
+
+      <a mat-list-item routerLink="inscricoes" routerLinkActive="active">
+        <mat-icon matListItemIcon>assignment</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Inscrições</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="app-content">
+    <mat-toolbar color="primary" class="app-toolbar">
+      <button mat-icon-button (click)="toggleSidenav()" aria-label="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="title">Painel Administrativo</span>
+      <span class="spacer"></span>
+
+      <!-- colapso só em desktop -->
+      <button mat-icon-button class="hide-in-handset" (click)="toggleCollapse()" aria-label="colapsar">
+        <mat-icon>{{ collapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <div class="page">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

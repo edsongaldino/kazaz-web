@@ -1,0 +1,18 @@
+<div class="login-container">
+  <div class="overlay"></div>
+  <div class="login-box">
+    <img src="assets/img/logo/logo_kazaz.png" alt="Kazaz Logo" class="logo" />
+    <h1>Kazaz conectando seu imóvel...</h1>
+
+    <form (ngSubmit)="login()" #loginForm="ngForm">
+      <input type="email" name="email" [(ngModel)]="email" placeholder="E-mail" required />
+      <input type="password" name="senha" [(ngModel)]="senha" placeholder="Senha" required />
+      
+      <button type="submit" [disabled]="loginForm.invalid">Entrar</button>
+    </form>
+
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

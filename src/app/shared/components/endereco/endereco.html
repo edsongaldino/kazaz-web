@@ -1,0 +1,78 @@
+<div class="endereco-form" [formGroup]="formGroup">
+
+  <!-- CEP | Número | Complemento -->
+  <div class="form-grid grid-3">
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>CEP</mat-label>
+        <input
+          matInput
+          formControlName="cep"
+          mask="00000-000"
+          (blur)="buscarCep()"
+          placeholder="00000-000" />
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>Número</mat-label>
+        <input matInput formControlName="numero" />
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>Complemento</mat-label>
+        <input matInput formControlName="complemento" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Logradouro (2 colunas) | Bairro (1 coluna) -->
+  <div class="form-grid grid-3">
+    <div class="span-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Logradouro</mat-label>
+        <input matInput formControlName="logradouro" />
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>Bairro</mat-label>
+        <input matInput formControlName="bairro" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Estado (por ID) | Cidade (por ID) -->
+  <div class="form-grid grid-3">
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>Estado (UF)</mat-label>
+        <!-- agora usamos estadoId -->
+        <mat-select formControlName="estadoId" (selectionChange)="onEstadoChange()">
+          <mat-option [value]="null">Selecione</mat-option>
+          <mat-option *ngFor="let e of estados; trackBy: trackEstado" [value]="e.id">
+            {{ e.nome }} ({{ e.uf }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field appearance="outline">
+        <mat-label>Cidade</mat-label>
+        <!-- salvando cidadeId; sincronizamos o nome em onCidadeChange -->
+        <mat-select formControlName="cidadeId" (selectionChange)="onCidadeChange()">
+          <mat-option [value]="null">Selecione</mat-option>
+          <mat-option *ngFor="let c of cidades; trackBy: trackCidade" [value]="c.id">
+            {{ c.nome }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+</div>
