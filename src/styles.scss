@@ -37,3 +37,71 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+.page {
+  display: grid;
+  gap: 1rem;
+}
+
+.page__header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+mat-card { padding: 1rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: .75rem;
+}
+.col-1 { grid-column: span 1; }
+.col-2 { grid-column: span 2; }
+.col-3 { grid-column: span 3; }
+.col-4 { grid-column: span 4; }
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; }
+.col-8 { grid-column: span 8; }
+.col-9 { grid-column: span 9; }
+.col-10 { grid-column: span 10; }
+.col-12 { grid-column: span 12; }
+
+.sub { margin: 1rem 0 .25rem; font-weight: 600; }
+
+.actions {
+  margin-top: 1rem;
+  display: flex; justify-content: flex-end; gap: .75rem;
+}
+
+.error { color: #f44336; }
+@media (max-width: 900px) {
+  .col-3, .col-4, .col-5, .col-6 { grid-column: span 12; }
+}
+
+thead{
+  background-color: #00458f !important;
+  color: #FFF !important;
+}
+
+thead .mat-mdc-header-row{
+  color: #FFF !important;
+}
+
+mat-card{
+  margin-bottom: 20px !important;
+}
+
+.mat-mdc-card-header {
+    padding: 0px !important;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #545455;
+    text-align: center;
+    font-size: 14px !important;
+    color: #005cbb;
+}
+
+.mat-mdc-card-header mat-icon{
+    margin-top: 5px !important;
+    line-height: 30px;
+}

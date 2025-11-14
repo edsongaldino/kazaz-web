@@ -47,7 +47,7 @@ export class PessoasListComponent {
   private router = inject(Router);
   private service = inject(PessoasService);
 
-  displayedColumns = ['nome', 'documento', 'nascimento', 'actions'];
+  displayedColumns = ['nome', 'documento', 'tipo', 'actions'];
 
   // filtros (ambos convergem para `termo`)
   form = this.fb.group({
@@ -149,6 +149,7 @@ export class PessoasListComponent {
     }).pipe(
       tap({
         next: (res: PessoasPageResponse) => {
+          console.log(res.items);
           this.items.set(res.items ?? []);
           this.total.set(res.total ?? 0);
           this.loading.set(false);

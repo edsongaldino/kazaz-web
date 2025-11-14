@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PessoaCreateRequest, PessoaListItem, PessoasPageResponse, PessoaUpdateRequest } from '../../models/pessoa.model';
+import { PessoaCreateRequest, PessoaDto, PessoaListItem, PessoasPageResponse, PessoaUpdateRequest } from '../../models/pessoa.model';
 import { environment } from '../../../environments/environment';
 
 export interface PessoasQuery {
@@ -25,8 +25,8 @@ export class PessoasService {
     return this.http.get<PessoasPageResponse>(this.apiUrl, { params });
   }
 
-  obter(id: string): Observable<PessoaListItem> {
-    return this.http.get<PessoaListItem>(`${this.apiUrl}/${id}`);
+  obter(id: string): Observable<PessoaDto> {
+    return this.http.get<PessoaDto>(`${this.apiUrl}/${id}`);
   }
 
   criar(body: PessoaCreateRequest): Observable<PessoaListItem> {

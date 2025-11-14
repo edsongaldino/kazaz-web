@@ -1,0 +1,39 @@
+<h2></h2>
+
+
+<section class="page">
+  <header class="page__header">
+    <h1>{{ modoEdicao() ? 'Editar Imóvel' : 'Novo Imóvel' }}</h1>
+    <div class="header__actions">
+      <button mat-stroked-button (click)="cancelar()">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar
+      </button>
+    </div>
+  </header>
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+  <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="form">
+    <mat-card>
+      <div class="grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" />
+          <mat-error *ngIf="form.controls.codigo.hasError('required')">
+            Informe o código.
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <h3 class="sub">Endereço</h3>
+      <app-endereco *ngIf="enderecoForm" [formGroup]="enderecoForm"></app-endereco>
+
+      <div class="actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
+          {{ modoEdicao() ? 'Salvar' : 'Cadastrar' }}
+        </button>
+        <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+      </div>
+    </mat-card>
+  </form>
+</section>

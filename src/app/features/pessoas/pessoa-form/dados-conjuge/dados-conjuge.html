@@ -1,0 +1,29 @@
+<div class="grid">
+
+    <mat-form-field class="col-5" appearance="outline">
+        <mat-label>Nome do cônjuge</mat-label>
+        <input matInput [formControl]="form.controls.nome" />
+    </mat-form-field>
+
+    <mat-form-field class="col-4" appearance="outline">
+        <mat-label>CPF</mat-label>
+        <input matInput [formControl]="form.controls.cpf" />
+    </mat-form-field>
+
+    <mat-form-field class="col-3" appearance="outline">
+        <mat-label>Data de nascimento</mat-label>
+        <input matInput [matDatepicker]="dp" [formControl]="form.controls.dataNascimento" />
+        <mat-datepicker #dp></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field class="col-3" appearance="outline">
+        <mat-label>Telefone</mat-label>
+        <input matInput [formControl]="form.controls.telefone" />
+    </mat-form-field>
+
+    <mat-form-field class="col-6" appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input matInput [formControl]="form.controls.email" />
+    </mat-form-field>
+
+</div>

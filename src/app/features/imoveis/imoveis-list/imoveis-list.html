@@ -1,0 +1,48 @@
+<div class="toolbar">
+  <h2>Imóveis</h2>
+  <a mat-flat-button color="primary" routerLink="/imoveis/novo">
+    <mat-icon>add</mat-icon> Novo
+  </a>
+</div>
+
+<div class="table-wrapper">
+  <table mat-table [dataSource]="dataSource" [attr.hidden]="carregando ? '' : null">
+    <ng-container matColumnDef="codigo">
+      <th mat-header-cell *matHeaderCellDef>Código</th>
+      <td mat-cell *matCellDef="let r">{{ r.codigo }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="enderecoId">
+      <th mat-header-cell *matHeaderCellDef>Endereço (ID)</th>
+      <td mat-cell *matCellDef="let r">{{ r.enderecoId }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
+      <td mat-cell *matCellDef="let r">
+        <button mat-icon-button color="primary" [routerLink]="['/imoveis/editar', r.id]">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="excluir(r.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- opcional: linha “sem dados” -->
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length">Sem registros</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Paginator FORA da table e SEM *ngIf -->
+<mat-paginator
+  [pageSize]="10"
+  [pageSizeOptions]="[5,10,25]"
+  showFirstLastButtons
+  [attr.hidden]="carregando ? '' : null">
+</mat-paginator>

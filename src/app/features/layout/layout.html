@@ -16,19 +16,25 @@
     <mat-nav-list>
       <!-- caminhos RELATIVOS às rotas filhas -->
       <a mat-list-item routerLink="dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <mat-icon matListItemIcon>home</mat-icon>
+        <mat-icon matListItemIcon>analytics</mat-icon>
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Dashboard</span>
       </a>
 
       <a mat-list-item routerLink="pessoas" routerLinkActive="active">
-        <mat-icon matListItemIcon>event</mat-icon>
+        <mat-icon matListItemIcon>person</mat-icon>
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Clientes</span>
       </a>
 
-      <a mat-list-item routerLink="inscricoes" routerLinkActive="active">
-        <mat-icon matListItemIcon>assignment</mat-icon>
-        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Inscrições</span>
+      <a mat-list-item routerLink="imoveis" routerLinkActive="active">
+        <mat-icon matListItemIcon>home</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Imóveis</span>
       </a>
+
+      <a mat-list-item routerLink="contratos" routerLinkActive="active">
+        <mat-icon matListItemIcon>assignment</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Contratos</span>
+      </a>
+
     </mat-nav-list>
   </mat-sidenav>
 

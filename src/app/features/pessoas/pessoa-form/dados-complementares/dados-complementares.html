@@ -1,0 +1,28 @@
+<div class="grid">
+
+    <mat-form-field class="col-4" appearance="outline">
+        <mat-label>Profissão</mat-label>
+        <input matInput [formControl]="form.controls.profissao" />
+    </mat-form-field>
+
+
+    <mat-form-field class="col-4" appearance="outline">
+        <mat-label>Escolaridade</mat-label>
+        <mat-select [formControl]="form.controls.escolaridade">
+            <mat-option *ngFor="let e of escolaridades" [value]="e">{{ e }}</mat-option>
+        </mat-select>
+    </mat-form-field>
+
+
+    <mat-form-field class="col-4" appearance="outline">
+        <mat-label>Renda mensal</mat-label>
+        <input matInput type="number" [formControl]="form.controls.rendaMensal" />
+    </mat-form-field>
+
+
+    <mat-form-field class="col-12" appearance="outline">
+        <mat-label>Observações</mat-label>
+        <textarea matInput rows="4" [formControl]="form.controls.observacoes"></textarea>
+    </mat-form-field>
+
+</div>

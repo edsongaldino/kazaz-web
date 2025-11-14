@@ -1,14 +1,14 @@
-name: CI/CD - Secretaria Concafras WEB
+name: CI/CD - Kazaz WEB
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   OWNER: edsongaldino        # >>> minúsculo!
-  IMAGE_NAME: secretaria-concafras-web
+  IMAGE_NAME: kazaz-web
   TAG: latest
 
 jobs:
@@ -65,7 +65,7 @@ jobs:
           script: |
             set -e
             docker login ${{ env.REGISTRY }} -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-            cd ~/apps/secretaria-concafras
+            cd ~/apps/kazaz
             docker compose pull web
             docker compose up -d web
             docker image prune -f

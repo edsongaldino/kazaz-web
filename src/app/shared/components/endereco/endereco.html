@@ -46,12 +46,10 @@
     </div>
   </div>
 
-  <!-- Estado (por ID) | Cidade (por ID) -->
   <div class="form-grid grid-3">
     <div>
       <mat-form-field appearance="outline">
         <mat-label>Estado (UF)</mat-label>
-        <!-- agora usamos estadoId -->
         <mat-select formControlName="estadoId" (selectionChange)="onEstadoChange()">
           <mat-option [value]="null">Selecione</mat-option>
           <mat-option *ngFor="let e of estados; trackBy: trackEstado" [value]="e.id">
@@ -64,7 +62,6 @@
     <div>
       <mat-form-field appearance="outline">
         <mat-label>Cidade</mat-label>
-        <!-- salvando cidadeId; sincronizamos o nome em onCidadeChange -->
         <mat-select formControlName="cidadeId" (selectionChange)="onCidadeChange()">
           <mat-option [value]="null">Selecione</mat-option>
           <mat-option *ngFor="let c of cidades; trackBy: trackCidade" [value]="c.id">

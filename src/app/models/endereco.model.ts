@@ -1,13 +1,25 @@
 import { Cidade } from './cidade.model';
 
-export interface Endereco {
+export interface EnderecoDto {
   id: string;
+  cep: string;
   logradouro: string;
   numero: string;
-  complemento?: string;
+  complemento?: string | null;
   bairro: string;
-  cep: string;
+  estadoId: number | null;
+  cidadeId: number | null;
+}
+
+export interface EnderecoCreateRequest extends Omit<EnderecoDto, 'id'> {}
+export interface EnderecoUpdateRequest extends Omit<EnderecoDto, 'id'> {}
+
+export interface EnderecoResponseDto {
+  id: string;
   cidadeId: string;
-  cidade?: Cidade; // opcional: incluído quando já vier populado da API
-  estado?: string;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento?: string | null;
+  bairro: string;
 }

@@ -11,6 +11,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSortModule } from '@angular/material/sort'; 
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   exports: [
@@ -25,7 +27,9 @@ import { MatRadioModule } from '@angular/material/radio';
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTableModule,
-    MatRadioModule
+    MatRadioModule,
+    MatSortModule,
+    MatPaginatorModule
   ]
 })
 export class MaterialModule {}

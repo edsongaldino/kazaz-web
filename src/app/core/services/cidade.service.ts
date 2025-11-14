@@ -10,6 +10,7 @@ export interface CidadeDto { id: string; nome: string; ibge: string; estadoId: s
 
 export class CidadeService {
   private http = inject(HttpClient);
-  listarPorEstado(estadoId: string) { return this.http.get<{id:string;nome:string}[]>(`/api/estados/${estadoId}/cidades`); }
-  obterPorIbge(ibge: string) { return this.http.get<CidadeDto>(`/api/cidades/ibge/${ibge}`); }
+  listarPorEstado(estadoId: string) { return this.http.get<{id:string;nome:string}[]>(`/estados/${estadoId}/cidades`); }
+  obterPorIbge(ibge: string) { return this.http.get<CidadeDto>(`/cidades/ibge/${ibge}`); }
+  obterPorId(id: string) { return this.http.get<CidadeDto>(`/cidades/${id}`); }
 }
