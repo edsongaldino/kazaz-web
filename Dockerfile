@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npx ng build --configuration production
 
 # normaliza saída (funciona com dist/APP/browser ou dist/APP)
 RUN mkdir -p /out && \
