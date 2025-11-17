@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface EnderecoOption {
   id: string;
@@ -9,10 +10,11 @@ export interface EnderecoOption {
 
 @Injectable({ providedIn: 'root' })
 export class EnderecosService {
-  private http = inject(HttpClient);
-  private baseUrl = '/api/enderecos'; // ajuste se for diferente
+
+  private apiUrl = `${environment.apiUrl}/enderecos`;
+  constructor(private http: HttpClient) {}
 
   listar(): Promise<EnderecoOption[]> {
-    return firstValueFrom(this.http.get<EnderecoOption[]>(this.baseUrl));
+    return firstValueFrom(this.http.get<EnderecoOption[]>(this.apiUrl));
   }
 }

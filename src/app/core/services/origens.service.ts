@@ -3,18 +3,19 @@ import { Injectable, inject } from '@angular/core';
 import { PagedResult } from '../../models/paged-result.model';
 import { Origem } from '../../models/origem.model';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class OrigensService {
-  private http = inject(HttpClient);
-  private baseUrl = '/origens';
+  private apiUrl = `${environment.apiUrl}/origens`;
+  constructor(private http: HttpClient) {}
 
   search(q = '', page = 1, pageSize = 100) {
     const params = new URLSearchParams();
     if (q) params.set('q', q);
     params.set('page', String(page));
     params.set('pageSize', String(pageSize));
-    return this.http.get<PagedResult<Origem>>(`${this.baseUrl}?${params.toString()}`);
+    return this.http.get<PagedResult<Origem>>(`${this.apiUrl}?${params.toString()}`);
   }
 
   async getAllLight(): Promise<Origem[]> {
@@ -24,10 +25,10 @@ export class OrigensService {
   }
 
   getById(id: string) {
-    return this.http.get<Origem>(`${this.baseUrl}/${id}`);
+    return this.http.get<Origem>(`${this.apiUrl}/${id}`);
   }
 
   create(payload: { nome: string; descricao?: string | null }) {
-    return this.http.post<{ id: string }>(this.baseUrl, payload);
+    return this.http.post<{ id: string }>(this.apiUrl, payload);
   }
 }

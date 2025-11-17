@@ -9,8 +9,9 @@ export interface CidadeDto { id: string; nome: string; ibge: string; estadoId: s
 @Injectable({ providedIn: 'root' })
 
 export class CidadeService {
-  private http = inject(HttpClient);
-  listarPorEstado(estadoId: string) { return this.http.get<{id:string;nome:string}[]>(`/estados/${estadoId}/cidades`); }
-  obterPorIbge(ibge: string) { return this.http.get<CidadeDto>(`/cidades/ibge/${ibge}`); }
-  obterPorId(id: string) { return this.http.get<CidadeDto>(`/cidades/${id}`); }
+  private apiUrl = `${environment.apiUrl}/cidades`;
+  constructor(private http: HttpClient) {}
+  listarPorEstado(estadoId: string) { return this.http.get<{id:string;nome:string}[]>(`${this.apiUrl}/estados/${estadoId}/cidades`); }
+  obterPorIbge(ibge: string) { return this.http.get<CidadeDto>(`${this.apiUrl}/ibge/${ibge}`); }
+  obterPorId(id: string) { return this.http.get<CidadeDto>(`${this.apiUrl}/${id}`); }
 }
