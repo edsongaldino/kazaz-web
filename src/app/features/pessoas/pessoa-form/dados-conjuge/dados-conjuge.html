@@ -1,29 +1,41 @@
-<div class="grid">
+<div class="conjuge-wrapper" [formGroup]="formGroup">
+  <h3>Dados do Cônjuge</h3>
+  <hr />
 
-    <mat-form-field class="col-5" appearance="outline">
-        <mat-label>Nome do cônjuge</mat-label>
-        <input matInput [formControl]="form.controls.nome" />
+  <div class="grid">
+    <mat-form-field appearance="outline" class="col-6">
+      <mat-label>Nome do cônjuge</mat-label>
+      <input matInput formControlName="nome" />
     </mat-form-field>
 
-    <mat-form-field class="col-4" appearance="outline">
-        <mat-label>CPF</mat-label>
-        <input matInput [formControl]="form.controls.cpf" />
+    <mat-form-field appearance="outline" class="col-3">
+      <mat-label>CPF</mat-label>
+      <input matInput formControlName="cpf" />
     </mat-form-field>
 
-    <mat-form-field class="col-3" appearance="outline">
-        <mat-label>Data de nascimento</mat-label>
-        <input matInput [matDatepicker]="dp" [formControl]="form.controls.dataNascimento" />
-        <mat-datepicker #dp></mat-datepicker>
+    <mat-form-field appearance="outline" class="col-3">
+      <mat-label>Data de nascimento</mat-label>
+      <input matInput type="date" formControlName="dataNascimento" />
     </mat-form-field>
 
-    <mat-form-field class="col-3" appearance="outline">
-        <mat-label>Telefone</mat-label>
-        <input matInput [formControl]="form.controls.telefone" />
+    <mat-form-field appearance="outline" class="col-3">
+      <mat-label>RG</mat-label>
+      <input matInput formControlName="rg" />
     </mat-form-field>
 
-    <mat-form-field class="col-6" appearance="outline">
-        <mat-label>E-mail</mat-label>
-        <input matInput [formControl]="form.controls.email" />
+    <mat-form-field appearance="outline" class="col-2">
+      <mat-label>Órgão Exp.</mat-label>
+      <input matInput formControlName="orgaoExpedidor" />
     </mat-form-field>
 
+    <mat-form-field appearance="outline" class="col-3">
+      <mat-label>Telefone</mat-label>
+      <input matInput formControlName="telefone" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="col-4">
+      <mat-label>E-mail</mat-label>
+      <input matInput formControlName="email" />
+    </mat-form-field>
+  </div>
 </div>

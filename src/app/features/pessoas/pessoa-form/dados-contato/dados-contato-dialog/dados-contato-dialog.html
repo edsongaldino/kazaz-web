@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>
+  {{ data?.contato ? 'Editar contato' : 'Novo contato' }}
+</h2>
+
+<form [formGroup]="form" class="dialog-form" (ngSubmit)="salvar()">
+  <mat-dialog-content>
+    <div class="row">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Tipo</mat-label>
+        <mat-select formControlName="tipo" required>
+          <mat-option value="EMAIL">E-mail</mat-option>
+          <mat-option value="TELEFONE">Telefone</mat-option>
+          <mat-option value="SITE">Site</mat-option>
+          <mat-option value="OUTRO">Outro</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="row">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Valor</mat-label>
+        <input matInput formControlName="valor" />
+        <mat-error *ngIf="form.controls.valor.hasError('required')">
+          Informe o valor do contato
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="row principal-row">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Principal / Adicional</mat-label>
+        <mat-select formControlName="principal">
+          <mat-option [value]="true">Principal</mat-option>
+          <mat-option [value]="false">Adicional</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <small class="hint">Somente 1 por Tipo pode ser principal</small>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+      Salvar
+    </button>
+  </mat-dialog-actions>
+</form>

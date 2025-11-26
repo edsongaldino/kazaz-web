@@ -1,0 +1,23 @@
+.dialog-form {
+  min-width: 320px;
+  max-width: 480px;
+}
+
+.row {
+  margin-bottom: 8px;
+}
+
+.full {
+  width: 100%;
+}
+
+.principal-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.hint {
+  font-size: 11px;
+  margin-top: 2px;
+  color: rgba(0, 0, 0, 0.6);
+}

@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.kazaz.imb.br/api',
+  apiUrl: 'https://localhost:7035/api',
 };

@@ -30,6 +30,7 @@ export class PessoasService {
   }
 
   criar(body: PessoaCreateRequest): Observable<PessoaListItem> {
+    console.log(body);
     return this.http.post<PessoaListItem>(this.apiUrl, body);
   }
 

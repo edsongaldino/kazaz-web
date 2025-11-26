@@ -55,9 +55,9 @@
 
         <mat-form-field appearance="outline" class="col-3" *ngIf="form.controls.tipo.value === 'PF'">
           <mat-label>Estado Civil</mat-label>
-          <mat-select [formControl]="form.controls.tipo">
-            <mat-option value="PF">Pessoa Física</mat-option>
-            <mat-option value="PJ">Pessoa Jurídica</mat-option>
+          <mat-select [formControl]="form.controls.estadoCivil">
+            <mat-option value="SOLTEIRO">Solteiro</mat-option>
+            <mat-option value="CASADO">Casado</mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -90,6 +90,12 @@
 
         <!-- PJ -->
         <ng-container *ngIf="form.controls.tipo.value === 'PJ'">
+
+          <mat-form-field appearance="outline" class="col-2">
+            <mat-label>Data de Abertura</mat-label>
+            <input matInput type="date" [formControl]="form.controls.dataAbertura"/>
+          </mat-form-field>
+
           <mat-form-field appearance="outline" class="col-5">
             <mat-label>Razão Social</mat-label>
             <input matInput [formControl]="form.controls.razaoSocial" />
@@ -110,11 +116,20 @@
       <app-endereco *ngIf="enderecoForm" [formGroup]="enderecoForm"></app-endereco>
   </mat-card>
 
-  <mat-card *ngIf="form.controls.tipo.value === 'PF' && form.controls.estadoCivil.value === 'CASADO'">
+  <mat-card>
       <mat-card-header>
-        <mat-card-title><mat-icon>account_circle</mat-icon> Dados do cônjuge</mat-card-title>
+        <mat-card-title><mat-icon>account_circle</mat-icon> Dados de Contato</mat-card-title>
       </mat-card-header>
-      <app-conjuge [formGroup]="form.controls.conjuge"></app-conjuge>
+      <app-dados-contato formControlName="contatos"></app-dados-contato>
+  </mat-card>
+
+  <mat-card *ngIf="form.controls.tipo.value === 'PF' && form.controls.estadoCivil.value === 'CASADO'">
+    <mat-card-header>
+      <mat-card-title><mat-icon>account_circle</mat-icon> Dados do cônjuge</mat-card-title>
+    </mat-card-header>
+
+    <!-- ✅ agora passa um FormGroup de verdade -->
+    <app-dados-conjuge [formGroup]="conjugeForm"></app-dados-conjuge>
   </mat-card>
 
   <mat-card>
