@@ -1,24 +1,11 @@
 import { EnderecoResponseDto } from './endereco.model';
 import { ContatoDto } from './contato.model';
+import { DadosComplementares, DadosComplementaresDto } from './dados-complementares.model';
+import { ConjugeDto } from './conjuge.model';
 
 export type TipoPessoa = 'PF' | 'PJ';
 
 export type EstadoCivil = 'SOLTEIRO' | 'CASADO' | 'DIVORCIADO' | 'VIUVO' | 'SEPARADO';
-
-export interface ConjugeDto {
-  nome: string | null;
-  cpf: string | null;
-  dataNascimento?: string | null;
-  telefone?: string | null;
-  email?: string | null;
-}
-
-export interface DadosComplementaresDto {
-  profissao?: string | null;
-  escolaridade?: string | null;
-  rendaMensal?: number | null;
-  observacoes?: string | null;
-}
 
 export interface DadosPessoaFisicaDto {
   cpf: string;
@@ -27,8 +14,6 @@ export interface DadosPessoaFisicaDto {
   orgaoExpedidor?: string | null;
   nacionalidade?: string | null;
   estadoCivil: EstadoCivil;
-  conjuge?: ConjugeDto | null;
-  dadosComplementares?: DadosComplementaresDto | null;
 }
 
 export interface DadosPessoaJuridicaDto {
@@ -63,7 +48,9 @@ export interface PessoaCreateRequest {
   endereco?: any | null;
   dadosPessoaFisica?: DadosPessoaFisicaDto | null;
   dadosPessoaJuridica?: DadosPessoaJuridicaDto | null;
-  contatos?: ContatoDto[] | null;          // 👈 idem aqui
+  contatos?: ContatoDto[] | null;
+  dadosComplementares?: DadosComplementaresDto | null;
+  conjuge?: ConjugeDto | null;
 }
 
 export interface PessoaUpdateRequest extends PessoaCreateRequest {

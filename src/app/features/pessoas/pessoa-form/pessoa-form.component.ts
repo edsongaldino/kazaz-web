@@ -346,14 +346,7 @@ export class PessoaFormComponent implements OnInit {
             rg: this.form.controls.rg.value || null,
             orgaoExpedidor: this.form.controls.orgaoExpedidor.value || null,
             nacionalidade: this.form.controls.nacionalidade.value || null,
-            estadoCivil: this.form.controls.estadoCivil.value as EstadoCivil,
-            conjuge:
-              casado && (this.form.controls.conjuge as FormGroup).valid
-                ? (this.form.controls.conjuge.getRawValue() as any)
-                : null,
-            dadosComplementares:
-              (this.form.controls.dadosComplementares.getRawValue() as any) ??
-              null
+            estadoCivil: this.form.controls.estadoCivil.value as EstadoCivil            
           }
         : null;
 
@@ -381,7 +374,13 @@ export class PessoaFormComponent implements OnInit {
       endereco: this.form.controls.endereco.getRawValue(),
       dadosPessoaFisica: dadosPF,
       dadosPessoaJuridica: dadosPJ,
-      contatos: contatos as ContatoDto[]
+      contatos: contatos as ContatoDto[],
+      dadosComplementares: this.form.get('dadosComplementares')?.value ?? null,
+      conjuge:
+      casado && (this.form.controls.conjuge as FormGroup).valid
+        ? (this.form.controls.conjuge.getRawValue() as any)
+        : null,
+
     };
 
     this.saving.set(true);

@@ -136,7 +136,9 @@
       <mat-card-header>
         <mat-card-title><mat-icon>account_circle</mat-icon> Dados Complementares</mat-card-title>
       </mat-card-header>
-      <app-dados-complementares [formGroup]="form.controls.dadosComplementares"></app-dados-complementares>
+       <div formGroupName="dadosComplementares">
+        <app-dados-complementares></app-dados-complementares>
+      </div>
   </mat-card>
 
   <mat-card>
