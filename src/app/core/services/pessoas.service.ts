@@ -35,6 +35,7 @@ export class PessoasService {
   }
 
   atualizar(id: string, body: PessoaUpdateRequest): Observable<PessoaListItem> {
+    console.log(body);
     return this.http.put<PessoaListItem>(`${this.apiUrl}/${id}`, body);
   }
 

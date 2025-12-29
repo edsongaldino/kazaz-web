@@ -46,14 +46,7 @@ import { DadosComplementaresComponent } from './dados-complementares/dados-compl
 import { DadosConjuge } from './dados-conjuge/dados-conjuge';
 import { ContatoDto } from '../../../models/contato.model';
 import { DadosContato } from './dados-contato/dados-contato';
-
-// estado civil local (se não estiver no model)
-type EstadoCivil =
-  | 'SOLTEIRO'
-  | 'CASADO'
-  | 'DIVORCIADO'
-  | 'VIUVO'
-  | 'SEPARADO';
+import { EstadoCivil } from '../../../models/enums.model';
 
 function docValidatorFor(tipoCtrl: () => TipoPessoa | '') {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -214,7 +207,7 @@ export class PessoaFormComponent implements OnInit {
 
   private aplicarObrigatoriedadeConjuge() {
     const tipo = this.form.controls.tipo.value as TipoPessoa;
-    const casado = this.form.controls.estadoCivil.value === 'CASADO';
+    const casado = this.form.controls.estadoCivil.value === EstadoCivil.Casado;
 
     const g = this.form.controls.conjuge as FormGroup;
     const nomeCtrl = g.get('nome')!;
@@ -335,12 +328,13 @@ export class PessoaFormComponent implements OnInit {
 
     const tipo = this.form.controls.tipo.value as TipoPessoa;
     const docDigits = onlyDigits(this.form.controls.documento.value || '');
-    const casado = this.form.controls.estadoCivil.value === 'CASADO';
+    const casado = this.form.controls.estadoCivil.value === EstadoCivil.Casado;
 
     // BLOCO PF
     const dadosPF =
       tipo === 'PF'
         ? {
+            nome: this.form.controls.nome.value || '',
             cpf: docDigits,
             dataNascimento: this.form.controls.dataNascimento.value || null,
             rg: this.form.controls.rg.value || null,
@@ -366,10 +360,6 @@ export class PessoaFormComponent implements OnInit {
     const dtoCreate: PessoaCreateRequest = {
       tipo,
       documento: docDigits,
-      nome:
-        tipo === 'PF'
-          ? this.form.controls.nome.value || ''
-          : this.form.controls.nomeFantasia.value || '',
       origemId: this.form.controls.origemId.value ?? null,
       endereco: this.form.controls.endereco.getRawValue(),
       dadosPessoaFisica: dadosPF,

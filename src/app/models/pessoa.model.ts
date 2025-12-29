@@ -2,12 +2,12 @@ import { EnderecoResponseDto } from './endereco.model';
 import { ContatoDto } from './contato.model';
 import { DadosComplementares, DadosComplementaresDto } from './dados-complementares.model';
 import { ConjugeDto } from './conjuge.model';
+import { EstadoCivil } from './enums.model';
 
 export type TipoPessoa = 'PF' | 'PJ';
 
-export type EstadoCivil = 'SOLTEIRO' | 'CASADO' | 'DIVORCIADO' | 'VIUVO' | 'SEPARADO';
-
 export interface DadosPessoaFisicaDto {
+  nome: string;
   cpf: string;
   dataNascimento?: string | null;
   rg?: string | null;
@@ -42,7 +42,6 @@ export interface PessoaDto extends PessoaBaseDto {
 // 👇 Requests
 export interface PessoaCreateRequest {
   tipo: TipoPessoa;
-  nome: string;
   documento: string;
   origemId?: string | null;
   endereco?: any | null;
