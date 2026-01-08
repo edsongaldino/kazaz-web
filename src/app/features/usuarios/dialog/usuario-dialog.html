@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>
+  {{ data.mode === 'create' ? 'Novo usuário' : 'Editar usuário' }}
+</h2>
+
+<div mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="nome" />
+      <mat-error *ngIf="form.controls.nome.invalid">Informe um nome válido</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail</mat-label>
+      <input matInput formControlName="email" />
+      <mat-error *ngIf="form.controls.email.invalid">Informe um e-mail válido</mat-error>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="data.mode === 'create'" appearance="outline">
+      <mat-label>Senha</mat-label>
+      <input matInput type="password" formControlName="senha" />
+      <mat-error *ngIf="form.controls.senha.invalid">Mínimo 6 caracteres</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Perfil</mat-label>
+      <mat-select formControlName="perfilId">
+        <mat-option *ngFor="let p of perfis" [value]="p.id">
+          {{ p.nome }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.perfilId.invalid">Selecione um perfil</mat-error>
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="ativo">Ativo</mat-slide-toggle>
+  </form>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="close(false)">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="salvar()" [disabled]="form.invalid || saving">
+    Salvar
+  </button>
+</div>

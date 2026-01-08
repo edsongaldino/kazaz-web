@@ -7,8 +7,8 @@ import { firstValueFrom, Observable } from 'rxjs';
 import { MaterialModule } from '../../../shared/material.module';
 import { SharedModule } from '../../../shared/shared.module';
 import { EnderecoComponent } from '../../../shared/components/endereco/endereco';
-
-import { ImovelDto, ImovelCreateRequest, ImovelUpdateRequest } from '../../../models/imovel.model';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ImovelDto } from '../../../models/imovel.model';
 import { ImoveisService } from '../../../core/services/imoveis.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -19,7 +19,7 @@ type CaracteristicaItem = { id: string; nome: string; tipoValor: 'bool'|'int'|'d
 @Component({
   selector: 'app-imovel-form',
   standalone: true,
-  imports: [MaterialModule, CommonModule, ReactiveFormsModule, RouterModule, EnderecoComponent, SharedModule],
+  imports: [MaterialModule, CommonModule, MatCheckboxModule, ReactiveFormsModule, RouterModule, EnderecoComponent, SharedModule],
   templateUrl: './imovel-form.html',
   styleUrls: ['./imovel-form.scss'],
 })
@@ -143,6 +143,8 @@ export class ImovelFormComponent {
         firstValueFrom(this.service.listarCaracteristicas()),     // você implementa no service
       ]);
 
+      console.log(caracs);
+
       this.tiposImovel.set(tipos);
       this.caracteristicasCatalogo.set(caracs);
 
@@ -182,6 +184,8 @@ export class ImovelFormComponent {
 
   private async carregarEdicao(id: string) {
     const imovel: ImovelDto = await firstValueFrom(this.service.obterPorId(id));
+    
+    console.log(imovel);
 
     this.form.patchValue(
       {
@@ -197,20 +201,26 @@ export class ImovelFormComponent {
 
     if ((imovel as any).endereco) {
       const e = (imovel as any).endereco;
-      this.enderecoForm.patchValue(
-        {
-          cep: e.cep ?? '',
-          logradouro: e.logradouro ?? '',
-          numero: e.numero ?? '',
-          complemento: e.complemento ?? '',
-          bairro: e.bairro ?? '',
-          estadoId: e.estadoId ?? null,
-          cidadeId: e.cidadeId ?? null,
-        },
-        { emitEvent: true }
-      );
 
-      this.enderecoCmp?.onEstadoChange?.();
+      const cidadeId = e.cidadeId ?? e.cidade?.id ?? null;
+      const estadoId = e.estadoId ?? e.cidade?.estadoId ?? e.cidade?.estado?.id ?? null;
+
+      // 1) patch SEM cidade
+      this.enderecoForm.patchValue({
+        cep: e.cep ?? '',
+        logradouro: e.logradouro ?? '',
+        numero: e.numero ?? '',
+        complemento: e.complemento ?? '',
+        bairro: e.bairro ?? '',
+        estadoId: estadoId,
+        cidadeId: null,
+      }, { emitEvent: true });
+
+      // 2) carrega cidades do estado (precisa usar o estadoId do form)
+      await this.enderecoCmp?.onEstadoChange?.();
+
+      // 3) agora seta a cidade
+      this.enderecoForm.patchValue({ cidadeId }, { emitEvent: false });
     }
 
     // preencher características (assumindo retorno: caracteristicas: [{ caracteristicaId, valorBool, valorInt, valorDecimal, valorTexto, valorData }])

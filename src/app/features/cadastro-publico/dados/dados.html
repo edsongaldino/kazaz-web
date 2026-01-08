@@ -1,0 +1,17 @@
+<div class="card">
+  <h2>Seus dados</h2>
+
+  <form [formGroup]="form" (ngSubmit)="salvar()">
+    <label>Nome *</label>
+    <input type="text" formControlName="nome" />
+
+    <label>Endereço (opcional)</label>
+    <input type="text" formControlName="enderecoId" />
+
+    <button type="submit" [disabled]="loading || form.invalid">
+      {{ loading ? 'Salvando...' : 'Continuar' }}
+    </button>
+
+    <p class="erro" *ngIf="erro">{{ erro }}</p>
+  </form>
+</div>

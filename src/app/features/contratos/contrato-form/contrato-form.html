@@ -1,0 +1,149 @@
+<div class="page">
+  <div class="header">
+    <div>
+      <h2>{{ id ? 'Editar contrato' : 'Novo contrato' }}</h2>
+      <div class="sub" *ngIf="contrato">
+        Nº {{ contrato.numero }} • {{ statusLabel(contrato.status) }}
+      </div>
+    </div>
+
+    <div class="actions">
+      <button mat-stroked-button (click)="voltar()">Voltar</button>
+
+      <button
+        mat-flat-button
+        color="primary"
+        *ngIf="!id"
+        (click)="salvarRascunho()">
+        Salvar rascunho
+      </button>
+
+      <button
+        mat-flat-button
+        color="primary"
+        *ngIf="id && contrato?.status === StatusContrato.Rascunho"
+        (click)="ativar()">
+        Ativar
+      </button>
+
+      <button
+        mat-stroked-button
+        color="warn"
+        *ngIf="id && contrato?.status !== StatusContrato.Cancelado"
+        (click)="cancelar()">
+        Cancelar
+      </button>
+
+      <button
+        mat-stroked-button
+        *ngIf="id && contrato?.status === StatusContrato.Ativo"
+        (click)="encerrar()">
+        Encerrar
+      </button>
+    </div>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <mat-progress-bar *ngIf="carregando" mode="indeterminate"></mat-progress-bar>
+
+      <form [formGroup]="form" class="grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tipo">
+            <mat-option [value]="TipoContrato.Locacao">Locação</mat-option>
+            <mat-option [value]="TipoContrato.Venda">Venda</mat-option>
+            <mat-option [value]="TipoContrato.Compra">Compra</mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.controls.tipo.invalid">Informe o tipo.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="span-2">
+          <mat-label>Imóvel</mat-label>
+          <input
+            matInput
+            [matAutocomplete]="autoImovel"
+            [formControl]="form.controls.imovel"
+            placeholder="Digite o código do imóvel..."
+          />
+          <mat-autocomplete #autoImovel="matAutocomplete" [displayWith]="displayLookup"
+            (optionSelected)="onImovelSelected($event.option.value)">
+            <mat-option *ngFor="let item of imoveisFiltrados" [value]="item">
+              {{ item.label }}
+            </mat-option>
+          </mat-autocomplete>
+
+          <mat-error *ngIf="form.controls.imovel.invalid">Selecione um imóvel.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Início da vigência</mat-label>
+          <input matInput [matDatepicker]="dpInicio" formControlName="inicioVigencia" />
+          <mat-datepicker-toggle matSuffix [for]="dpInicio"></mat-datepicker-toggle>
+          <mat-datepicker #dpInicio></mat-datepicker>
+          <mat-error *ngIf="form.controls.inicioVigencia.invalid">Informe o início.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Fim da vigência</mat-label>
+          <input matInput [matDatepicker]="dpFim" formControlName="fimVigencia" />
+          <mat-datepicker-toggle matSuffix [for]="dpFim"></mat-datepicker-toggle>
+          <mat-datepicker #dpFim></mat-datepicker>
+          <mat-hint *ngIf="form.controls.tipo.value !== TipoContrato.Locacao">Opcional para compra/venda</mat-hint>
+          <mat-error *ngIf="form.controls.fimVigencia.invalid">Obrigatório para locação.</mat-error>
+        </mat-form-field>
+
+        <div class="span-2 partes">
+          <div class="partes-header">
+            <h3>Partes</h3>
+
+            <button mat-stroked-button type="button"
+              *ngIf="form.controls.tipo.value === TipoContrato.Locacao"
+              (click)="addFiador()">
+              Adicionar fiador
+            </button>
+          </div>
+
+          <div formArrayName="partes" class="partes-grid">
+            <div class="parte-card" *ngFor="let p of partes.controls; let i = index" [formGroupName]="i">
+              <div class="parte-top">
+                <div class="papel">{{ papelLabel(p.controls.papel.value) }}</div>
+
+                <button mat-icon-button type="button"
+                  aria-label="Remover"
+                  (click)="removerParte(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+
+              <mat-form-field appearance="outline" class="w-100">
+                <mat-label>Pessoa</mat-label>
+                <input matInput
+                       [matAutocomplete]="autoPessoa"
+                       formControlName="pessoa"
+                       (focus)="onPessoaInput(i)"
+                       placeholder="Digite o nome..." />
+                <mat-autocomplete #autoPessoa="matAutocomplete" [displayWith]="displayLookup">
+                  <mat-option *ngFor="let item of (pessoasFiltradasPorIndex[i] ?? [])" [value]="item">
+                    {{ item.label }}
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="p.controls.pessoa.invalid">Selecione uma pessoa.</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="w-100" *ngIf="p.controls.papel.value === PapelContrato.Comprador || p.controls.papel.value === PapelContrato.Vendedor">
+                <mat-label>Percentual (opcional)</mat-label>
+                <input matInput type="number" formControlName="percentual" min="0" max="100" />
+                <mat-hint>Use para múltiplos compradores/vendedores</mat-hint>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="span-2 hint" *ngIf="!id">
+          Ao salvar, o contrato será criado como <b>Rascunho</b>. Depois você pode <b>Ativar</b>.
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  DestroyRef,
-  effect,
   inject,
   signal,
   computed,
@@ -34,12 +32,10 @@ import {
 } from '../../../shared/utils/documento.util';
 import { take } from 'rxjs/operators';
 import { EnderecoComponent } from '../../../shared/components/endereco/endereco';
-import { NgxMaskPipe } from 'ngx-mask';
 import { MaterialModule } from '../../../shared/material.module';
 import { SharedModule } from '../../../shared/shared.module';
 import { firstValueFrom } from 'rxjs';
 import { CidadeService } from '../../../core/services/cidade.service';
-import { MatSelectChange } from '@angular/material/select';
 import { Origem } from '../../../models/origem.model';
 import { OrigensService } from '../../../core/services/origens.service';
 import { DadosComplementaresComponent } from './dados-complementares/dados-complementares';
@@ -86,6 +82,12 @@ export class PessoaFormComponent implements OnInit {
 
   @ViewChild(EnderecoComponent) enderecoCmp!: EnderecoComponent;
 
+  // ✅ expõe enum pro template
+  EstadoCivil = EstadoCivil;
+
+  // ✅ evita reset do cônjuge durante load
+  private carregandoEdicao = false;
+
   id = signal<string | null>(null);
   modoEdicao = computed(() => !!this.id());
   loading = signal(false);
@@ -96,29 +98,34 @@ export class PessoaFormComponent implements OnInit {
   // FORM
   form = this.fb.group({
     tipo: ['PF' as TipoPessoa, [Validators.required]],
+
     // PF
     nome: ['', []],
     dataNascimento: [''],
     rg: [''],
     orgaoExpedidor: [''],
     nacionalidade: [''],
-    estadoCivil: ['SOLTEIRO' as EstadoCivil, [Validators.required]],
+    estadoCivil: [EstadoCivil.Solteiro as EstadoCivil, [Validators.required]],
+
     // PJ
     dataAbertura: [''],
     razaoSocial: [''],
     nomeFantasia: [''],
+
     // comum
     documento: ['', []],
     origemId: [null as string | null, [Validators.required]],
+
     endereco: this.fb.group({
       cep: [''],
       logradouro: [''],
       numero: [''],
       complemento: [''],
       bairro: [''],
-      estadoId: [null],
-      cidadeId: [null]
+      estadoId: [null as string | null],
+      cidadeId: [null as string | null]
     }),
+
     conjuge: this.fb.group({
       nome: [null as string | null],
       cpf: [null as string | null],
@@ -128,20 +135,16 @@ export class PessoaFormComponent implements OnInit {
       telefone: [null as string | null],
       email: [null as string | null, [Validators.email]]
     }),
+
     dadosComplementares: this.fb.group({
       profissao: [null as string | null],
       escolaridade: [null as string | null],
       rendaMensal: [null as number | null],
       observacoes: [null as string | null]
     }),
+
     contatos: this.fb.control<ContatoDto[] | null>(null)
   });
-
-  // máscara do documento no input
-  maskDocumento(value: string) {
-    const masked = maskCpfCnpj(value);
-    this.form.controls.documento.setValue(masked, { emitEvent: false });
-  }
 
   constructor(private cdr: ChangeDetectorRef) {
     this.form.controls.tipo.valueChanges.subscribe(() =>
@@ -150,8 +153,16 @@ export class PessoaFormComponent implements OnInit {
     this.form.controls.estadoCivil.valueChanges.subscribe(() =>
       this.aplicarObrigatoriedadeConjuge()
     );
+
     this.aplicarValidadoresPorTipo();
     this.aplicarObrigatoriedadeConjuge();
+  }
+
+  // máscara do documento no input
+  maskDocumento(value: string) {
+    const v = value ?? '';
+    const masked = v ? maskCpfCnpj(v) : '';
+    this.form.controls.documento.setValue(masked, { emitEvent: false });
   }
 
   async ngOnInit(): Promise<void> {
@@ -171,9 +182,7 @@ export class PessoaFormComponent implements OnInit {
     this.form.controls.documento.setValidators([
       docValidatorFor(() => this.form.controls.tipo.value || '')
     ]);
-    this.form.controls.documento.updateValueAndValidity({
-      emitEvent: false
-    });
+    this.form.controls.documento.updateValueAndValidity({ emitEvent: false });
 
     // PF x PJ
     if (tipo === 'PF') {
@@ -190,24 +199,21 @@ export class PessoaFormComponent implements OnInit {
       ]);
       this.form.controls.nome.clearValidators();
       this.form.controls.dataNascimento.clearValidators();
-      // ao virar PJ, limpamos cônjuge
+
+      // ao virar PJ, limpamos cônjuge (aqui pode)
       (this.form.controls.conjuge as FormGroup).reset();
     }
 
     this.form.controls.nome.updateValueAndValidity({ emitEvent: false });
-    this.form.controls.razaoSocial.updateValueAndValidity({
-      emitEvent: false
-    });
-    this.form.controls.dataNascimento.updateValueAndValidity({
-      emitEvent: false
-    });
+    this.form.controls.razaoSocial.updateValueAndValidity({ emitEvent: false });
+    this.form.controls.dataNascimento.updateValueAndValidity({ emitEvent: false });
 
     this.aplicarObrigatoriedadeConjuge();
   }
 
   private aplicarObrigatoriedadeConjuge() {
     const tipo = this.form.controls.tipo.value as TipoPessoa;
-    const casado = this.form.controls.estadoCivil.value === EstadoCivil.Casado;
+    const casado = Number(this.form.controls.estadoCivil.value) === EstadoCivil.Casado;
 
     const g = this.form.controls.conjuge as FormGroup;
     const nomeCtrl = g.get('nome')!;
@@ -225,8 +231,11 @@ export class PessoaFormComponent implements OnInit {
     } else {
       nomeCtrl.clearValidators();
       cpfCtrl.clearValidators();
-      g.reset();
+
+      // ✅ não apaga durante a carga da edição
+      if (!this.carregandoEdicao) g.reset();
     }
+
     nomeCtrl.updateValueAndValidity({ emitEvent: false });
     cpfCtrl.updateValueAndValidity({ emitEvent: false });
   }
@@ -234,6 +243,7 @@ export class PessoaFormComponent implements OnInit {
   private async carregarEdicao(id: string) {
     try {
       this.loading.set(true);
+      this.carregandoEdicao = true;
 
       this.origens = await this.origensService.getAllLight();
 
@@ -246,13 +256,14 @@ export class PessoaFormComponent implements OnInit {
       this.form.patchValue(
         {
           tipo: p.tipoPessoa,
+
           // PF
           nome: p.tipoPessoa === 'PF' ? p.nome : '',
           dataNascimento: pf?.dataNascimento ?? '',
           rg: pf?.rg ?? '',
           orgaoExpedidor: pf?.orgaoExpedidor ?? '',
           nacionalidade: pf?.nacionalidade ?? '',
-          estadoCivil: (pf?.estadoCivil as EstadoCivil) ?? 'SOLTEIRO',
+          estadoCivil: (pf?.estadoCivil ?? EstadoCivil.Solteiro) as EstadoCivil,
 
           // PJ
           dataAbertura: pj?.dataAbertura ?? '',
@@ -267,19 +278,25 @@ export class PessoaFormComponent implements OnInit {
         { emitEvent: false }
       );
 
-      // conjuge e dadosComplementares separados, só se tiver dados
-      if (pf?.conjuge) {
-        this.conjugeForm.patchValue(pf.conjuge, { emitEvent: false });
+      // ✅ conjuge vem no ROOT
+      const conj: any = (p as any).conjuge ?? null;
+      if (conj) {
+        this.conjugeForm.patchValue(conj, { emitEvent: false });
       }
 
-      const dadosComplGroup = this.form.get('dadosComplementares') as FormGroup;
-      if (pf?.dadosComplementares) {
-        dadosComplGroup.patchValue(pf.dadosComplementares, { emitEvent: false });
+      // ✅ dadosComplementares vem no ROOT
+      const dc: any = (p as any).dadosComplementares ?? null;
+      if (dc) {
+        this.dadosComplementaresForm.patchValue(dc, { emitEvent: false });
       }
 
+      // revalida
       this.aplicarValidadoresPorTipo();
+      this.aplicarObrigatoriedadeConjuge();
 
+      // endereço
       if (!p.endereco) {
+        this.carregandoEdicao = false;
         this.loading.set(false);
         return;
       }
@@ -304,17 +321,17 @@ export class PessoaFormComponent implements OnInit {
       );
 
       await Promise.resolve();
-      this.enderecoCmp?.onEstadoChange?.();
+      await this.enderecoCmp?.onEstadoChange?.();
 
       setTimeout(() => {
-        this.enderecoForm
-          .get('cidadeId')
-          ?.setValue(cidadeId, { emitEvent: false });
+        this.enderecoForm.get('cidadeId')?.setValue(cidadeId, { emitEvent: false });
       }, 100);
 
+      this.carregandoEdicao = false;
       this.loading.set(false);
     } catch (err) {
       console.error(err);
+      this.carregandoEdicao = false;
       this.loading.set(false);
       this.errorMsg.set('Não foi possível carregar os dados.');
     }
@@ -328,7 +345,7 @@ export class PessoaFormComponent implements OnInit {
 
     const tipo = this.form.controls.tipo.value as TipoPessoa;
     const docDigits = onlyDigits(this.form.controls.documento.value || '');
-    const casado = this.form.controls.estadoCivil.value === EstadoCivil.Casado;
+    const casado = Number(this.form.controls.estadoCivil.value) === EstadoCivil.Casado;
 
     // BLOCO PF
     const dadosPF =
@@ -340,7 +357,7 @@ export class PessoaFormComponent implements OnInit {
             rg: this.form.controls.rg.value || null,
             orgaoExpedidor: this.form.controls.orgaoExpedidor.value || null,
             nacionalidade: this.form.controls.nacionalidade.value || null,
-            estadoCivil: this.form.controls.estadoCivil.value as EstadoCivil            
+            estadoCivil: Number(this.form.controls.estadoCivil.value) as EstadoCivil
           }
         : null;
 
@@ -365,12 +382,14 @@ export class PessoaFormComponent implements OnInit {
       dadosPessoaFisica: dadosPF,
       dadosPessoaJuridica: dadosPJ,
       contatos: contatos as ContatoDto[],
-      dadosComplementares: this.form.get('dadosComplementares')?.value ?? null,
-      conjuge:
-      casado && (this.form.controls.conjuge as FormGroup).valid
-        ? (this.form.controls.conjuge.getRawValue() as any)
-        : null,
 
+      // ✅ continua no root (como sua API está)
+      dadosComplementares: this.form.get('dadosComplementares')?.value ?? null,
+
+      conjuge:
+        casado && (this.form.controls.conjuge as FormGroup).valid
+          ? (this.form.controls.conjuge.getRawValue() as any)
+          : null
     };
 
     this.saving.set(true);
@@ -390,9 +409,7 @@ export class PessoaFormComponent implements OnInit {
       error: err => {
         console.error(err);
         this.saving.set(false);
-        this.errorMsg.set(
-          'Falha ao salvar. Verifique os campos e tente novamente.'
-        );
+        this.errorMsg.set('Falha ao salvar. Verifique os campos e tente novamente.');
       }
     });
   }
@@ -415,21 +432,7 @@ export class PessoaFormComponent implements OnInit {
     return this.form.get('conjuge') as FormGroup;
   }
 
-  private waitFor(
-    check: () => boolean,
-    { interval = 25, timeout = 3000 } = {}
-  ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const start = Date.now();
-      const timer = setInterval(() => {
-        if (check()) {
-          clearInterval(timer);
-          resolve();
-        } else if (Date.now() - start > timeout) {
-          clearInterval(timer);
-          reject(new Error('timeout'));
-        }
-      }, interval);
-    });
+  get dadosComplementaresForm(): FormGroup {
+    return this.form.get('dadosComplementares') as FormGroup;
   }
 }

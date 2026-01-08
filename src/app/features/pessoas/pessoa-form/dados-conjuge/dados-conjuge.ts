@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -14,10 +13,10 @@ import { MatIconModule } from '@angular/material/icon';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatDatepickerModule,
     MatIconModule
   ],
-  templateUrl: './dados-conjuge.html'
+  templateUrl: './dados-conjuge.html',
+  styleUrls: ['./dados-conjuge.scss']
 })
 export class DadosConjuge {
   @Input({ required: true }) formGroup!: FormGroup;

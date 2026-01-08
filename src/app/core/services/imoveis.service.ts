@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import {
   ImovelDto,
   ImovelUpsertRequest,
   ImovelListDto,
-  TipoImovelDto
+  TipoImovelDto,
+  ImovelFiltro
 } from './../../models/imovel.model';
 
 import { CaracteristicaCatalogoDto } from '../../models/caracteristica.model';
@@ -21,10 +22,28 @@ export class ImoveisService {
 
   constructor(private http: HttpClient) {}
 
-  // Se sua listagem é paginada no backend, mantenha PagedResult
-  listar(page = 1, pageSize = 10, termo?: string): Observable<PagedResult<ImovelListDto>> {
-    const params: any = { page, pageSize };
-    if (termo) params.termo = termo;
+  listar(filtro?: ImovelFiltro): Observable<PagedResult<ImovelListDto>> {
+    let params = new HttpParams();
+
+    if (filtro) {
+      if (filtro.page) params = params.set('page', filtro.page);
+      if (filtro.pageSize) params = params.set('pageSize', filtro.pageSize);
+
+      if (filtro.codigo)
+        params = params.set('codigo', filtro.codigo);
+
+      if (filtro.tipoImovelId)
+        params = params.set('tipoImovelId', filtro.tipoImovelId);
+
+      if (filtro.finalidade)
+        params = params.set('finalidade', filtro.finalidade);
+
+      if (filtro.cidadeId)
+        params = params.set('cidadeId', filtro.cidadeId);
+
+      if (filtro.status)
+        params = params.set('status', filtro.status);
+    }
 
     return this.http.get<PagedResult<ImovelListDto>>(this.apiUrl, { params });
   }

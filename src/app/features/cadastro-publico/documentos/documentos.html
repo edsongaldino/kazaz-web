@@ -1,0 +1,19 @@
+<div class="card">
+  <h2>Documentos</h2>
+
+  <input type="file" (change)="onFile($event)" />
+
+  <button (click)="enviar()" [disabled]="uploading || !file">
+    {{ uploading ? 'Enviando...' : 'Enviar' }}
+  </button>
+
+  <p class="erro" *ngIf="erro">{{ erro }}</p>
+
+  <ul>
+    <li *ngFor="let d of docs">
+      {{ d.nome }}
+    </li>
+  </ul>
+
+  <button class="ok" (click)="concluir()">Concluir cadastro</button>
+</div>

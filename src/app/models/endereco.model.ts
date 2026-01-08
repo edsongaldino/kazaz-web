@@ -9,6 +9,8 @@ export interface EnderecoDto {
   bairro: string;
   estadoId: number | null;
   cidadeId: number | null;
+  cidadeNome?: string;
+  estadoSigla?: string;
 }
 
 export interface EnderecoCreateRequest extends Omit<EnderecoDto, 'id'> {}

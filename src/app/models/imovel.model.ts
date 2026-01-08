@@ -1,5 +1,5 @@
 import { ImovelCaracteristicaDto, ImovelCaracteristicaUpsertRequest } from "./caracteristica.model";
-import { EnderecoCreateRequest } from "./endereco.model";
+import { EnderecoCreateRequest, EnderecoDto } from "./endereco.model";
 import { FinalidadeImovel, StatusImovel, TipoValorCaracteristica } from "./enums.model";
 
 
@@ -83,5 +83,19 @@ export interface ImovelDto {
 export interface ImovelListDto {
   id: string;
   codigo: string;
-  enderecoId: string;
+  titulo: string;
+  finalidade: FinalidadeImovel;
+  status: StatusImovel;
+  tipoImovel: string;
+  endereco: EnderecoDto;
+}
+
+export interface ImovelFiltro {
+  codigo?: string | null;
+  tipoImovelId?: string | null;
+  finalidade?: number | null;
+  cidadeId?: string | null;
+  status?: number | null;
+  page?: number;
+  pageSize?: number;
 }

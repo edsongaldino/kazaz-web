@@ -1,1 +1,72 @@
-<p>contratos-list works!</p>
+<div class="page">
+  <div class="header">
+    <h2>Contratos</h2>
+    <button mat-flat-button color="primary" (click)="novo()">Novo contrato</button>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div *ngIf="carregando" class="loading">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </div>
+
+      <table mat-table [dataSource]="dataSource" class="w-100">
+
+        <ng-container matColumnDef="numero">
+          <th mat-header-cell *matHeaderCellDef>Nº</th>
+          <td mat-cell *matCellDef="let c">{{ c.numero }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let c">{{ tipoLabel(c.tipo) }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let c">
+            <mat-chip [ngClass]="c.status === StatusContrato.Ativo ? 'chip-ativo' : 'chip-rascunho'" selected>
+              {{ statusLabel(c.status) }}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="vigencia">
+          <th mat-header-cell *matHeaderCellDef>Vigência</th>
+          <td mat-cell *matCellDef="let c">
+            {{ c.inicioVigencia }} <span *ngIf="c.fimVigencia">→ {{ c.fimVigencia }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="partes">
+          <th mat-header-cell *matHeaderCellDef>Partes</th>
+          <td mat-cell *matCellDef="let c">
+            {{ c.partes?.length ?? 0 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acoes">
+          <th mat-header-cell *matHeaderCellDef>Ações</th>
+          <td mat-cell *matCellDef="let c">
+            <button mat-button (click)="editar(c)">Editar</button>
+
+            <button
+              mat-flat-button
+              color="primary"
+              *ngIf="c.status === StatusContrato.Rascunho"
+              (click)="ativar(c)">
+              Ativar
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">Nenhum contrato encontrado.</td>
+        </tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

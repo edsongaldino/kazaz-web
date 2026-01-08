@@ -1,5 +1,7 @@
 <div class="conjuge-wrapper" [formGroup]="formGroup">
-  <h3>Dados do Cônjuge</h3>
+  <div class="header">
+    <h3>Dados do Cônjuge</h3>
+  </div>
   <hr />
 
   <div class="grid">
@@ -10,7 +12,7 @@
 
     <mat-form-field appearance="outline" class="col-3">
       <mat-label>CPF</mat-label>
-      <input matInput formControlName="cpf" />
+      <input matInput formControlName="cpf" inputmode="numeric" />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="col-3">
@@ -30,7 +32,7 @@
 
     <mat-form-field appearance="outline" class="col-3">
       <mat-label>Telefone</mat-label>
-      <input matInput formControlName="telefone" />
+      <input matInput formControlName="telefone" inputmode="numeric" />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="col-4">

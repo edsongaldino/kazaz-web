@@ -12,9 +12,7 @@
   <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
   <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
 
-  <!-- 👇 ADICIONE O FORM AQUI -->
   <form [formGroup]="form" (ngSubmit)="salvar()">
-
     <mat-card>
       <mat-card-header>
         <mat-card-title><mat-icon>account_circle</mat-icon> Dados Básicos</mat-card-title>
@@ -31,9 +29,11 @@
 
         <mat-form-field appearance="outline" class="col-3">
           <mat-label>{{ form.controls.tipo.value === 'PF' ? 'CPF' : 'CNPJ' }}</mat-label>
-          <input matInput [formControl]="form.controls.documento"
-                 (input)="maskDocumento(form.controls.documento.value || '')"
-                 inputmode="numeric" />
+          <input
+            matInput
+            [formControl]="form.controls.documento"
+            (input)="maskDocumento($any($event.target).value)"
+            inputmode="numeric" />
           <mat-error *ngIf="form.controls.documento.hasError('required')">Documento obrigatório</mat-error>
           <mat-error *ngIf="form.controls.documento.hasError('cpf')">CPF inválido</mat-error>
           <mat-error *ngIf="form.controls.documento.hasError('cnpj')">CNPJ inválido</mat-error>
@@ -41,7 +41,6 @@
 
         <mat-form-field appearance="outline" class="col-3">
           <mat-label>Origem</mat-label>
-          <!-- ✅ agora pode usar formControlName -->
           <mat-select formControlName="origemId">
             <mat-option [value]="null">Sem origem</mat-option>
             <mat-option *ngFor="let o of origens" [value]="o.id">
@@ -56,8 +55,13 @@
         <mat-form-field appearance="outline" class="col-3" *ngIf="form.controls.tipo.value === 'PF'">
           <mat-label>Estado Civil</mat-label>
           <mat-select [formControl]="form.controls.estadoCivil">
-            <mat-option value="SOLTEIRO">Solteiro</mat-option>
-            <mat-option value="CASADO">Casado</mat-option>
+            <mat-option [value]="EstadoCivil.NaoInformado">Não informado</mat-option>
+            <mat-option [value]="EstadoCivil.Solteiro">Solteiro</mat-option>
+            <mat-option [value]="EstadoCivil.Casado">Casado</mat-option>
+            <mat-option [value]="EstadoCivil.UniaoEstavel">União estável</mat-option>
+            <mat-option [value]="EstadoCivil.Separado">Separado</mat-option>
+            <mat-option [value]="EstadoCivil.Divorciado">Divorciado</mat-option>
+            <mat-option [value]="EstadoCivil.Viuvo">Viúvo</mat-option>
           </mat-select>
         </mat-form-field>
 
@@ -71,29 +75,25 @@
 
           <mat-form-field appearance="outline" class="col-2">
             <mat-label>Data de Nascimento</mat-label>
-            <input matInput type="date" [formControl]="form.controls.dataNascimento"/>
+            <input matInput type="date" [formControl]="form.controls.dataNascimento" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-3">
             <mat-label>RG</mat-label>
             <input matInput [formControl]="form.controls.rg" />
-            <mat-error *ngIf="form.controls.rg.hasError('required')">RG</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-2">
             <mat-label>Órgão Exp.</mat-label>
             <input matInput [formControl]="form.controls.orgaoExpedidor" />
-            <mat-error *ngIf="form.controls.orgaoExpedidor.hasError('required')">Órgão expedidor</mat-error>
           </mat-form-field>
-
         </ng-container>
 
         <!-- PJ -->
         <ng-container *ngIf="form.controls.tipo.value === 'PJ'">
-
           <mat-form-field appearance="outline" class="col-2">
             <mat-label>Data de Abertura</mat-label>
-            <input matInput type="date" [formControl]="form.controls.dataAbertura"/>
+            <input matInput type="date" [formControl]="form.controls.dataAbertura" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-5">
@@ -108,52 +108,49 @@
           </mat-form-field>
         </ng-container>
       </div>
-  </mat-card>
-  <mat-card>
+    </mat-card>
+
+    <mat-card>
       <mat-card-header>
         <mat-card-title><mat-icon>account_circle</mat-icon> Endereço</mat-card-title>
       </mat-card-header>
       <app-endereco *ngIf="enderecoForm" [formGroup]="enderecoForm"></app-endereco>
-  </mat-card>
+    </mat-card>
 
-  <mat-card>
+    <mat-card>
       <mat-card-header>
         <mat-card-title><mat-icon>account_circle</mat-icon> Dados de Contato</mat-card-title>
       </mat-card-header>
       <app-dados-contato formControlName="contatos"></app-dados-contato>
-  </mat-card>
+    </mat-card>
 
-  <mat-card *ngIf="form.controls.tipo.value === 'PF' && form.controls.estadoCivil.value === 'Casado'">
-    <mat-card-header>
-      <mat-card-title><mat-icon>account_circle</mat-icon> Dados do cônjuge</mat-card-title>
-    </mat-card-header>
+    <mat-card *ngIf="form.controls.tipo.value === 'PF' && form.controls.estadoCivil.value === EstadoCivil.Casado">
+      <mat-card-header>
+        <mat-card-title><mat-icon>account_circle</mat-icon> Dados do cônjuge</mat-card-title>
+      </mat-card-header>
 
-    <!-- ✅ agora passa um FormGroup de verdade -->
-    <app-dados-conjuge [formGroup]="conjugeForm"></app-dados-conjuge>
-  </mat-card>
+      <app-dados-conjuge [formGroup]="conjugeForm"></app-dados-conjuge>
+    </mat-card>
 
-  <mat-card>
+    <mat-card *ngIf="form.controls.tipo.value === 'PF'">
       <mat-card-header>
         <mat-card-title><mat-icon>account_circle</mat-icon> Dados Complementares</mat-card-title>
       </mat-card-header>
-       <div formGroupName="dadosComplementares">
+
+      <!-- ✅ como seu DadosComplementares usa ControlContainer, precisa do formGroupName -->
+      <div formGroupName="dadosComplementares">
         <app-dados-complementares></app-dados-complementares>
       </div>
-  </mat-card>
+    </mat-card>
 
-  <mat-card>
-    <div class="actions">
+    <mat-card>
+      <div class="actions">
         <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
-        <!-- ✅ usa submit do form -->
         <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
           <mat-icon>save</mat-icon>
           {{ modoEdicao() ? 'Salvar alterações' : 'Salvar' }}
         </button>
       </div>
-  </mat-card>
-      
-
-    
-
+    </mat-card>
   </form>
 </section>

@@ -4,3 +4,14 @@
   justify-content: space-between;
   margin: 8px 0 16px;
 }
+
+.status-cell { width: 52px; }
+.status-icon { vertical-align: middle; }
+
+.filtro-imoveis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: end;
+}

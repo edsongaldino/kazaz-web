@@ -1,0 +1,27 @@
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+}
+
+input {
+  height: 40px;
+  padding: 0 10px;
+}
+
+button {
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: #1976d2;
+  color: #fff;
+}
+
+.erro {
+  color: #c62828;
+}

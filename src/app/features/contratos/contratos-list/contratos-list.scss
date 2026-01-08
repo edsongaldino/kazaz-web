@@ -1,0 +1,9 @@
+.page { display: grid; gap: 12px; }
+.header { display: flex; justify-content: space-between; align-items: center; }
+.w-100 { width: 100%; }
+
+:host ::ng-deep .chip-ativo .mdc-evolution-chip__text-label { color: #fff !important; }
+:host ::ng-deep .chip-ativo { background: #2e7d32 !important; }
+
+:host ::ng-deep .chip-rascunho .mdc-evolution-chip__text-label { color: #fff !important; }
+:host ::ng-deep .chip-rascunho { background: #616161 !important; }

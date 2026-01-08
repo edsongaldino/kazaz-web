@@ -20,6 +20,11 @@
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Dashboard</span>
       </a>
 
+      <a mat-list-item routerLink="usuarios" routerLinkActive="active">
+        <mat-icon matListItemIcon>group_add</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Usuários</span>
+      </a>
+
       <a mat-list-item routerLink="pessoas" routerLinkActive="active">
         <mat-icon matListItemIcon>person</mat-icon>
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Clientes</span>

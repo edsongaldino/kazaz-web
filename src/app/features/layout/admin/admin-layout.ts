@@ -18,10 +18,10 @@ import { MatButtonModule } from '@angular/material/button';
     LayoutModule,
     MatSidenavModule, MatToolbarModule, MatIconModule, MatListModule, MatButtonModule
   ],
-  templateUrl: './layout.html',
-  styleUrls: ['./layout.scss'],
+  templateUrl: './admin-layout.html',
+  styleUrls: ['./admin-layout.scss'],
 })
-export class Layout {
+export class AdminLayout {
   private bpo = inject(BreakpointObserver);
   private router = inject(Router);
 

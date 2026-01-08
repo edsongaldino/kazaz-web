@@ -5,16 +5,95 @@
   </a>
 </div>
 
+<form [formGroup]="filtroForm" class="filtro-imoveis">
+  <mat-form-field appearance="outline">
+    <mat-label>Código</mat-label>
+    <input matInput formControlName="codigo">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Tipo</mat-label>
+    <mat-select formControlName="tipoImovelId">
+      <mat-option [value]="null">Todos</mat-option>
+      <mat-option *ngFor="let t of tipos" [value]="t.id">
+        {{ t.nome }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Finalidade</mat-label>
+    <mat-select formControlName="finalidade">
+      <mat-option [value]="null">Todas</mat-option>
+      <mat-option [value]="1">Venda</mat-option>
+      <mat-option [value]="2">Aluguel</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Cidade</mat-label>
+    <mat-select formControlName="cidadeId">
+      <mat-option [value]="null">Todas</mat-option>
+      <mat-option *ngFor="let c of cidades" [value]="c.id">
+        {{ c.nome }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Status</mat-label>
+    <mat-select formControlName="status">
+      <mat-option [value]="null">Todos</mat-option>
+      <mat-option [value]="1">Ativo</mat-option>
+      <mat-option [value]="2">Inativo</mat-option>
+      <mat-option [value]="3">Vendido</mat-option>
+      <mat-option [value]="4">Alugado</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-flat-button color="primary" (click)="aplicarFiltro()">
+    Filtrar
+  </button>
+
+  <button mat-button type="button" (click)="limparFiltro()">
+    Limpar
+  </button>
+</form>
+
+
 <div class="table-wrapper">
   <table mat-table [dataSource]="dataSource" [attr.hidden]="carregando ? '' : null">
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef></th>
+
+      <td mat-cell *matCellDef="let r" class="status-cell">
+        <mat-icon
+          class="status-icon"
+          [ngStyle]="{ color: getStatusUi(r.status).color }"
+          [matTooltip]="getStatusUi(r.status).label">
+          {{ getStatusUi(r.status).icon }}
+        </mat-icon>
+      </td>
+    </ng-container>
+
     <ng-container matColumnDef="codigo">
       <th mat-header-cell *matHeaderCellDef>Código</th>
       <td mat-cell *matCellDef="let r">{{ r.codigo }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="enderecoId">
-      <th mat-header-cell *matHeaderCellDef>Endereço (ID)</th>
-      <td mat-cell *matCellDef="let r">{{ r.enderecoId }}</td>
+    <ng-container matColumnDef="titulo">
+      <th mat-header-cell *matHeaderCellDef>Título</th>
+      <td mat-cell *matCellDef="let r">{{ r.titulo }}<br/><b>{{ r.endereco.bairro }}, {{ r.endereco.cidadeNome }} - {{ r.endereco.estadoSigla }}</b></td>
+    </ng-container>
+
+    <ng-container matColumnDef="finalidade">
+      <th mat-header-cell *matHeaderCellDef>Finalidade</th>
+      <td mat-cell *matCellDef="let r"> {{ getFinalidadeLabel(r.finalidade) }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="nomeTipo">
+      <th mat-header-cell *matHeaderCellDef>Tipo</th>
+      <td mat-cell *matCellDef="let r">{{ r.tipoImovelNome }}</td>
     </ng-container>
 
     <ng-container matColumnDef="acoes">
@@ -39,10 +118,9 @@
   </table>
 </div>
 
-<!-- Paginator FORA da table e SEM *ngIf -->
 <mat-paginator
+  [length]="total"
   [pageSize]="10"
-  [pageSizeOptions]="[5,10,25]"
-  showFirstLastButtons
-  [attr.hidden]="carregando ? '' : null">
+  [pageSizeOptions]="[10, 25, 50]"
+  (page)="onPage()">
 </mat-paginator>

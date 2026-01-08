@@ -1,0 +1,75 @@
+.page {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  .subtitle {
+    opacity: 0.75;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search {
+    width: 320px;
+  }
+}
+
+.chip-ativo {
+  background-color: #2e7d32 !important;
+}
+
+.chip-ativo .mdc-evolution-chip__text-label {
+  color: #fff !important;
+}
+
+.chip-inativo {
+  background-color: #c62828 !important;
+}
+
+.chip-inativo .mdc-evolution-chip__text-label {
+  color: #fff !important;
+}
+
+.mat-mdc-standard-chip {
+  --mat-chip-label-text-color: #ffffff !important;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+  width: 100%;
+}
+
+.col-acoes {
+  width: 220px;
+  text-align: right;
+}
+
+.empty {
+  padding: 16px;
+  opacity: 0.7;
+}
