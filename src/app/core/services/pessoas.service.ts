@@ -42,4 +42,9 @@ export class PessoasService {
   excluir(id: string) {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  obterPorDocumento(documento: string): Observable<PessoaDto> {
+    return this.http.get<PessoaDto>(`${this.apiUrl}/por-documento/${documento}`);
+  }
+  
 }

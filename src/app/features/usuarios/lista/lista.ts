@@ -10,6 +10,7 @@ import { UsuarioDialogComponent } from '../dialog/usuario-dialog';
 import { MaterialModule } from '../../../shared/material.module';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef } from '@angular/core';
+import { NotificationService } from '../../../core/services/notification.service';
 
 
 @Component({
@@ -38,7 +39,8 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     private usuarios: UsuariosService,
     private dialog: MatDialog,
     private snack: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notify: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -98,7 +100,10 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     });
 
     ref.afterClosed().subscribe((ok: boolean) => {
-      if (ok) this.carregar();
+      if (ok) {
+        this.notify.successCenter('Usuário criado com sucesso!');
+        this.carregar();
+      }
     });
   }
 
@@ -109,7 +114,10 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     });
 
     ref.afterClosed().subscribe((ok: boolean) => {
-      if (ok) this.carregar();
+      if (ok) {
+        this.notify.successCenter('Usuário atualizado com sucesso!');
+        this.carregar();
+      }
     });
   }
 
@@ -127,8 +135,25 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     });
   }
 
-  excluir(_t87: any) {
-    throw new Error('Method not implemented.');
+  async excluir(usuarioId: string) {
+    const confirmar = await this.notify.confirm(
+      'Excluir usuário',
+      'Tem certeza que deseja excluir este usuário? Essa ação não poderá ser desfeita.',
+      'Sim, excluir',
+      'Cancelar'
+    );
+
+    if (!confirmar) return; // 👈 usuário desistiu
+
+    try {
+      await this.usuarios.remover(usuarioId).toPromise();
+
+      this.notify.toastSuccess('Usuário excluído com sucesso!');
+      this.carregar(); // recarrega lista
+
+    } catch (err) {
+      this.notify.handleHttpError(err, 'Não foi possível excluir o usuário.');
+    }
   }
 
 }

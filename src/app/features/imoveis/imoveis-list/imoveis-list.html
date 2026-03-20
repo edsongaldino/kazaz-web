@@ -6,58 +6,61 @@
 </div>
 
 <form [formGroup]="filtroForm" class="filtro-imoveis">
-  <mat-form-field appearance="outline">
-    <mat-label>Código</mat-label>
-    <input matInput formControlName="codigo">
-  </mat-form-field>
+  <div class="grid">
+    <mat-form-field class="col-1" appearance="outline">
+      <mat-label>Código</mat-label>
+      <input matInput formControlName="codigo">
+    </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Tipo</mat-label>
-    <mat-select formControlName="tipoImovelId">
-      <mat-option [value]="null">Todos</mat-option>
-      <mat-option *ngFor="let t of tipos" [value]="t.id">
-        {{ t.nome }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Tipo</mat-label>
+      <mat-select formControlName="tipoImovelId">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option *ngFor="let t of tipos" [value]="t.id">
+          {{ t.nome }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Finalidade</mat-label>
-    <mat-select formControlName="finalidade">
-      <mat-option [value]="null">Todas</mat-option>
-      <mat-option [value]="1">Venda</mat-option>
-      <mat-option [value]="2">Aluguel</mat-option>
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Finalidade</mat-label>
+      <mat-select formControlName="finalidade">
+        <mat-option [value]="null">Todas</mat-option>
+        <mat-option [value]="1">Venda</mat-option>
+        <mat-option [value]="2">Aluguel</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Cidade</mat-label>
-    <mat-select formControlName="cidadeId">
-      <mat-option [value]="null">Todas</mat-option>
-      <mat-option *ngFor="let c of cidades" [value]="c.id">
-        {{ c.nome }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Cidade</mat-label>
+      <mat-select formControlName="cidadeId">
+        <mat-option [value]="null">Todas</mat-option>
+        <mat-option *ngFor="let c of cidades" [value]="c.id">
+          {{ c.nome }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Status</mat-label>
-    <mat-select formControlName="status">
-      <mat-option [value]="null">Todos</mat-option>
-      <mat-option [value]="1">Ativo</mat-option>
-      <mat-option [value]="2">Inativo</mat-option>
-      <mat-option [value]="3">Vendido</mat-option>
-      <mat-option [value]="4">Alugado</mat-option>
-    </mat-select>
-  </mat-form-field>
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option [value]="1">Ativo</mat-option>
+        <mat-option [value]="2">Inativo</mat-option>
+        <mat-option [value]="3">Vendido</mat-option>
+        <mat-option [value]="4">Alugado</mat-option>
+      </mat-select>
+    </mat-form-field>
 
-  <button mat-flat-button color="primary" (click)="aplicarFiltro()">
-    Filtrar
-  </button>
+    <button mat-flat-button class="filtrar col-1" color="primary" (click)="aplicarFiltro()">
+      <mat-icon>search</mat-icon> Filtrar
+    </button>
 
-  <button mat-button type="button" (click)="limparFiltro()">
-    Limpar
-  </button>
+    <button mat-button class="limpar col-1" type="button" (click)="limparFiltro()">
+      <mat-icon>trash</mat-icon> Limpar
+    </button>
+  </div>
+
 </form>
 
 
@@ -104,6 +107,9 @@
         </button>
         <button mat-icon-button color="warn" (click)="excluir(r.id)">
           <mat-icon>delete</mat-icon>
+        </button>
+        <button mat-stroked-button color="primary" (click)="abrirGerarLink(r.id)">
+          Gerar link
         </button>
       </td>
     </ng-container>

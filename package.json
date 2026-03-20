@@ -36,7 +36,7 @@
     "express": "^5.1.0",
     "ngx-mask": "^20.0.3",
     "rxjs": "~7.8.0",
-    "sweetalert2": "^11.26.2",
+    "sweetalert2": "^11.26.17",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

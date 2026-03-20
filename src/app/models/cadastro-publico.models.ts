@@ -43,4 +43,22 @@ export interface DocumentoCreateDto {
   alvoId: string; // PessoaId
   tipoDocumentoId: string;
   observacao?: string | null;
+  multiplicidadeIndex?: number | null;
+}
+
+export interface DocumentoRequeridoDto {
+  tipoDocumentoId: string;
+  nome: string;
+  obrigatorio: boolean;
+  ordem: number;
+  multiplicidadeIndex?: number | null;
+}
+
+export interface DocumentosRequeridosResponse {
+  contratoId: string;
+  pessoaId: string | null;
+  tipoContrato: number;
+  papelContrato: number;
+  tipoPessoa: 'PF' | 'PJ';
+  itens: DocumentoRequeridoDto[];
 }

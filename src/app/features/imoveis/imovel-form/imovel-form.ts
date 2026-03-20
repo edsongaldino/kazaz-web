@@ -11,6 +11,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ImovelDto } from '../../../models/imovel.model';
 import { ImoveisService } from '../../../core/services/imoveis.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { NotificationService } from '../../../core/services/notification.service';
 
 // Ajuste conforme seu backend
 type TipoImovelItem = { id: string; nome: string };
@@ -29,6 +30,7 @@ export class ImovelFormComponent {
   private router = inject(Router);
   private service = inject(ImoveisService);
   private cdr = inject(ChangeDetectorRef);
+  private notify = inject(NotificationService);
 
   @ViewChild(EnderecoComponent) enderecoCmp!: EnderecoComponent;
 
@@ -161,7 +163,7 @@ export class ImovelFormComponent {
       console.error(err);
       this.loading.set(false);
       this.caracteristicasLoading.set(false);
-      this.errorMsg.set('Não foi possível carregar os dados necessários.');
+      this.notify.toastError('Não foi possível carregar os dados necessários.');
     } finally {
       this.cdr.markForCheck();
     }
@@ -269,6 +271,7 @@ export class ImovelFormComponent {
     obs$.pipe(take(1)).subscribe({
       next: () => {
         this.saving.set(false);
+        this.notify.successCenter('Os Dados do imóvel foram salvos com sucesso!');
         this.router.navigate(['/imoveis']);
       },
       error: (err: HttpErrorResponse) => {

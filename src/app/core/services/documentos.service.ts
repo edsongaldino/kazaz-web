@@ -8,10 +8,10 @@ export class DocumentosService {
   constructor(private http: HttpClient) {}
 
   criar(dto: DocumentoCreateDto): Observable<{ id: string }> {
-    return this.http.post<{ id: string }>(`/api/documentos`, dto);
+    return this.http.post<{ id: string }>(`/documentos`, dto);
   }
 
   listarPorPessoa(pessoaId: string): Observable<any[]> {
-    return this.http.get<any[]>(`/api/documentos/pessoa/${pessoaId}`);
+    return this.http.get<any[]>(`/documentos/pessoa/${pessoaId}`);
   }
 }

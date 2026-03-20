@@ -1,9 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UploadService } from '../../../core/services/upload.service';
 import { DocumentosService } from '../../../core/services/documentos.service';
-import { CadastroPublicoService } from '../../../core/services/cadastro-publico.service';
+import { CadastroPublicoService} from '../../../core/services/cadastro-publico.service';
+import { DocumentoRequeridoDto, DocumentosRequeridosResponse } from '../../../models/cadastro-publico.models';
+
+type AnexoVm = DocumentoRequeridoDto & {
+  enviado: boolean;
+  arquivoNome?: string | null;
+};
 
 @Component({
   standalone: true,
@@ -15,56 +21,102 @@ import { CadastroPublicoService } from '../../../core/services/cadastro-publico.
 export class CadastroDocumentosComponent implements OnInit {
   pessoaId: string | null = null;
 
-  file: File | null = null;
   erro: string | null = null;
-  uploading = false;
+  uploadingRowKey: string | null = null;
   concluindo = false;
 
   docs: any[] = [];
+  requeridos: DocumentoRequeridoDto[] = [];
 
-  // ⚠️ depois trocamos por lista dinâmica
-  tipoDocumentoId = 'COLE_AQUI_GUID_DO_TIPO_DOCUMENTO';
+  get anexosVm(): AnexoVm[] {
+    // Map por "chave" (tipoDocumentoId + multiplicidadeIndex)
+    const map = new Map<string, any>();
+
+    for (const d of this.docs ?? []) {
+      const tid = (d.tipoDocumentoId ?? '').toString();
+      const idx = (d.multiplicidadeIndex ?? d.slot ?? null);
+      const key = this.key(tid, idx);
+      if (!tid) continue;
+      if (!map.has(key)) map.set(key, d);
+    }
+
+    return (this.requeridos ?? [])
+      .slice()
+      .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+      .map(r => {
+        const doc = map.get(this.key(r.tipoDocumentoId, r.multiplicidadeIndex ?? null));
+        return {
+          ...r,
+          enviado: !!doc,
+          arquivoNome: doc?.nome ?? doc?.arquivoNome ?? null
+        };
+      });
+  }
+
+  get todosObrigatoriosEnviados(): boolean {
+    const enviados = new Set(this.anexosVm.filter(x => x.enviado).map(x => this.key(x.tipoDocumentoId, x.multiplicidadeIndex ?? null)));
+    return (this.requeridos ?? [])
+      .filter(x => x.obrigatorio)
+      .every(x => enviados.has(this.key(x.tipoDocumentoId, x.multiplicidadeIndex ?? null)));
+  }
 
   constructor(
     private uploadService: UploadService,
     private documentosService: DocumentosService,
     private cadastroPublicoService: CadastroPublicoService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    const token = this.route.parent?.snapshot.paramMap.get('token');
-    if (!token) {
-      this.erro = 'Token não encontrado.';
-      return;
-    }
+    const token = this.getTokenFromRoute();
+    if (!token) { this.erro = 'Token não encontrado.'; this.cdr.markForCheck(); return; }
 
-    // ✅ Opção A: buscar PessoaId pelo token (endpoint /status)
     this.cadastroPublicoService.status(token).subscribe({
       next: (st) => {
-        if (!st.pessoaId) {
-          this.erro = 'Você precisa preencher seus dados antes de enviar documentos.';
-          // opcional: voltar para a primeira etapa
-          this.router.navigate(['../'], { relativeTo: this.route });
-          return;
-        }
+        this.pessoaId = st.pessoaId ?? null;
+        this.cdr.markForCheck(); // <-- AQUI
 
-        this.pessoaId = st.pessoaId;
-        this.carregar();
+        this.cadastroPublicoService.documentosRequeridos(token).subscribe({
+          next: (res: any) => {
+            this.requeridos = res?.itens ?? [];
+            this.pessoaId = res?.pessoaId ?? this.pessoaId;
+            this.cdr.markForCheck(); // <-- AQUI
+            this.carregarDocs();
+          },
+          error: (err) => {
+            this.erro = 'Erro ao carregar lista de documentos requeridos.';
+            this.cdr.markForCheck(); // <-- AQUI
+          }
+        });
       },
       error: () => {
         this.erro = 'Erro ao carregar status do cadastro.';
+        this.cdr.markForCheck(); // <-- AQUI
       }
     });
   }
 
-  onFile(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.file = input.files?.[0] ?? null;
+  triggerFile(tipoDocumentoId: string, multiplicidadeIndex?: number | null): void {
+    const id = this.inputId(tipoDocumentoId, multiplicidadeIndex ?? null);
+    const el = document.getElementById(id) as HTMLInputElement | null;
+    el?.click();
   }
 
-  enviar(): void {
+  onFileRow(event: Event, tipoDocumentoId: string, multiplicidadeIndex?: number | null): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    // permite escolher o mesmo arquivo depois
+    input.value = '';
+
+    if (!file) return;
+
+    this.enviarDocumento(tipoDocumentoId, multiplicidadeIndex ?? null, file);
+  }
+
+  private enviarDocumento(tipoDocumentoId: string, multiplicidadeIndex: number | null, file: File): void {
     this.erro = null;
 
     if (!this.pessoaId) {
@@ -72,22 +124,11 @@ export class CadastroDocumentosComponent implements OnInit {
       return;
     }
 
-    if (!this.file) {
-      this.erro = 'Selecione um arquivo.';
-      return;
-    }
+    const rowKey = this.key(tipoDocumentoId, multiplicidadeIndex);
+    this.uploadingRowKey = rowKey;
 
-    if (!this.tipoDocumentoId || this.tipoDocumentoId.startsWith('COLE_AQUI')) {
-      this.erro = 'Configure o TipoDocumentoId antes de enviar.';
-      return;
-    }
-
-    this.uploading = true;
-
-    // 1) Upload do arquivo (salva no disco e retorna caminho)
-    this.uploadService.upload(this.file, 'pessoa').subscribe({
+    this.uploadService.upload(file, 'pessoa').subscribe({
       next: (up) => {
-        // 2) Registra no banco via /api/documentos
         this.documentosService.criar({
           nome: up.nome,
           caminho: up.caminho,
@@ -95,22 +136,24 @@ export class CadastroDocumentosComponent implements OnInit {
           tamanhoBytes: up.tamanhoBytes,
           alvo: 1, // Pessoa
           alvoId: this.pessoaId!,
-          tipoDocumentoId: this.tipoDocumentoId,
+          tipoDocumentoId: tipoDocumentoId,
           observacao: null,
+
+          // ✅ se você adicionar isso no backend (recomendado)
+          multiplicidadeIndex: multiplicidadeIndex
         }).subscribe({
           next: () => {
-            this.uploading = false;
-            this.file = null;
-            this.carregar();
+            this.uploadingRowKey = null;
+            this.carregarDocs();
           },
           error: () => {
-            this.uploading = false;
+            this.uploadingRowKey = null;
             this.erro = 'Erro ao salvar documento.';
           },
         });
       },
       error: () => {
-        this.uploading = false;
+        this.uploadingRowKey = null;
         this.erro = 'Erro no upload.';
       },
     });
@@ -119,9 +162,14 @@ export class CadastroDocumentosComponent implements OnInit {
   concluir(): void {
     this.erro = null;
 
-    const token = this.route.parent?.snapshot.paramMap.get('token');
+    const token = this.getTokenFromRoute();
     if (!token) {
       this.erro = 'Token não encontrado.';
+      return;
+    }
+
+    if (!this.todosObrigatoriosEnviados) {
+      this.erro = 'Envie todos os anexos obrigatórios antes de concluir.';
       return;
     }
 
@@ -130,8 +178,8 @@ export class CadastroDocumentosComponent implements OnInit {
     this.cadastroPublicoService.concluir(token).subscribe({
       next: () => {
         this.concluindo = false;
-        // opcional: ir para uma página "obrigado"
-        // this.router.navigate(['/cadastro-finalizado']);
+        // opcional: rota final
+        // this.router.navigate(['/cadastro-publico', token, 'finalizado']);
       },
       error: () => {
         this.concluindo = false;
@@ -140,12 +188,31 @@ export class CadastroDocumentosComponent implements OnInit {
     });
   }
 
-  private carregar(): void {
+  private carregarDocs(): void {
     if (!this.pessoaId) return;
 
     this.documentosService.listarPorPessoa(this.pessoaId).subscribe({
-      next: (d) => this.docs = d,
-      error: () => this.docs = [],
+      next: (d) => { this.docs = d ?? []; this.cdr.markForCheck(); }, // <-- AQUI
+      error: () => { this.docs = []; this.cdr.markForCheck(); },
     });
+  }
+
+  // ---------- helpers ----------
+  private key(tipoDocumentoId: string, multiplicidadeIndex: number | null): string {
+    return `${tipoDocumentoId}::${multiplicidadeIndex ?? 0}`;
+  }
+
+  private inputId(tipoDocumentoId: string, multiplicidadeIndex: number | null): string {
+    return `file_${tipoDocumentoId}_${multiplicidadeIndex ?? 0}`;
+  }
+
+  private getTokenFromRoute(): string | null {
+    let r: ActivatedRoute | null = this.route;
+    while (r) {
+      const t = r.snapshot.paramMap.get('token');
+      if (t) return t;
+      r = r.parent;
+    }
+    return null;
   }
 }

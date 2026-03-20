@@ -1,19 +1,79 @@
-<div class="card">
-  <h2>Documentos</h2>
+<div class="wrap">
+  <h2 class="title">Anexos</h2>
 
-  <input type="file" (change)="onFile($event)" />
+  <div class="error" *ngIf="erro">{{ erro }}</div>
 
-  <button (click)="enviar()" [disabled]="uploading || !file">
-    {{ uploading ? 'Enviando...' : 'Enviar' }}
-  </button>
+  <div class="table-wrap" *ngIf="!erro">
+    <table class="anexos-table">
+      <thead>
+        <tr>
+          <th>Anexo</th>
+          <th class="col-arquivo">Arquivo</th>
+          <th class="col-upload">Upload</th>
+        </tr>
+      </thead>
 
-  <p class="erro" *ngIf="erro">{{ erro }}</p>
+      <div style="padding:8px; font-size:12px; opacity:.8">
+        pessoaId: {{ pessoaId }} |
+        requeridos: {{ requeridos?.length ?? 0 }} |
+        docs: {{ docs?.length ?? 0 }} |
+        anexosVm: {{ anexosVm?.length ?? 0 }} |
+        erro: {{ erro }}
+      </div>
 
-  <ul>
-    <li *ngFor="let d of docs">
-      {{ d.nome }}
-    </li>
-  </ul>
 
-  <button class="ok" (click)="concluir()">Concluir cadastro</button>
+      <tbody>
+        <tr *ngFor="let row of anexosVm">
+          <td class="col-anexo">
+            {{ row.nome }}
+            <span class="obrig" *ngIf="row.obrigatorio">*</span>
+          </td>
+
+          <td class="col-arquivo">
+            <span
+              class="badge"
+              [class.badge-ok]="row.enviado"
+              [class.badge-pendente]="!row.enviado">
+              {{ row.enviado ? 'Enviado' : 'Pendente' }}
+            </span>
+
+            <div class="arquivo-nome" *ngIf="row.enviado && row.arquivoNome">
+              {{ row.arquivoNome }}
+            </div>
+          </td>
+
+          <td class="col-upload">
+            <input
+              type="file"
+              class="file-input"
+              [id]="'file_' + row.tipoDocumentoId + '_' + (row.multiplicidadeIndex ?? 0)"
+              (change)="onFileRow($event, row.tipoDocumentoId, row.multiplicidadeIndex ?? null)"
+              accept=".pdf,.jpg,.jpeg,.png" />
+
+            <button
+              class="btn btn-enviar"
+              type="button"
+              [disabled]="uploadingRowKey === (row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0)) || !pessoaId"
+              (click)="triggerFile(row.tipoDocumentoId, row.multiplicidadeIndex ?? null)">
+              {{ uploadingRowKey === (row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0)) ? 'Enviando...' : 'Enviar' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer">
+      <button
+        class="btn btn-outline"
+        type="button"
+        [disabled]="concluindo || !todosObrigatoriosEnviados"
+        (click)="concluir()">
+        {{ concluindo ? 'Concluindo...' : 'Concluir' }}
+      </button>
+
+      <div class="hint" *ngIf="!todosObrigatoriosEnviados">
+        Envie todos os anexos obrigatórios para concluir.
+      </div>
+    </div>
+  </div>
 </div>

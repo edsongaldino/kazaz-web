@@ -12,6 +12,9 @@ import { StatusImovel } from '../../../models/enums.model';
 import { getFinalidadeImovelLabel } from '../../../shared/helpers/finalidade-imovel.helper';
 import { getStatusImovelUi, StatusUi } from '../../../shared/helpers/status-imovel.helper';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { GerarLinkDialogComponent } from '../dialog-gerar-link/gerar-link-dialog';
+import { NotificationService } from '../../../core/services/notification.service';
 
 // ✅ ajuste se quiser colocar em arquivo separado
 export interface ImovelFiltro {
@@ -34,6 +37,11 @@ export interface ImovelFiltro {
 export class ImoveisListComponent implements OnInit {
   private service = inject(ImoveisService);
   private fb = inject(FormBuilder);
+  private notify = inject(NotificationService);
+
+  constructor(
+    private dialog: MatDialog,
+  ) {}
 
   getFinalidadeLabel = getFinalidadeImovelLabel;
   getStatusUi = getStatusImovelUi;
@@ -133,10 +141,35 @@ export class ImoveisListComponent implements OnInit {
   }
 
   async excluir(id: string) {
-    if (!confirm('Confirma a exclusão?')) return;
-    await firstValueFrom(this.service.excluir(id));
 
-    // recarrega pra manter total/paginação consistente
-    await this.carregar();
+    const confirmar = await this.notify.confirm(
+      'Excluir imóvel',
+      'Tem certeza que deseja excluir este imóvel? Essa ação não poderá ser desfeita.',
+      'Sim, excluir',
+      'Cancelar'
+    );
+
+    if (!confirmar) return; // 👈 usuário desistiu
+
+    try {
+       await firstValueFrom(this.service.excluir(id));
+
+      this.notify.toastSuccess('Imóvel excluído com sucesso!');
+      await this.carregar();
+
+    } catch (err) {
+      this.notify.handleHttpError(err, 'Não foi possível excluir o imóvel.');
+    }
+    
+  }
+
+  abrirGerarLink(imovelId: string) {
+    this.dialog.open(GerarLinkDialogComponent, {
+      width: '800px',
+      data: {
+        imovelId,
+        gerarLinks: (body: any) => this.service.gerarLinksConvite(imovelId, body),
+      }
+    });
   }
 }

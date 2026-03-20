@@ -25,8 +25,16 @@ export const appRoutes: Routes = [
           import('./features/cadastro-publico/documentos/documentos')
             .then(m => m.CadastroDocumentosComponent),
       },
+      {
+        path: 'pessoas/editar/:id',
+        loadComponent: () =>
+          import('./features/cadastro-publico/dados/dados').then(m => m.CadastroDadosComponent),
+        data: { mode: 'admin-edit' },
+      }
     ],
   },
+
+  
 
   {
     path: '',
@@ -55,6 +63,13 @@ export const appRoutes: Routes = [
       { path: 'contratos', component: ContratosListaComponent },
       { path: 'contratos/novo', component: ContratoFormComponent },
       { path: 'contratos/editar/:id', component: ContratoFormComponent },
+
+      {
+        path: 'convites',
+        loadComponent: () =>
+          import('./features/convites-cadastro-lista/convites-cadastro-lista')
+            .then(m => m.ConvitesCadastroListaComponent),
+      },
     ]
   },
 

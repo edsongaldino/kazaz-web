@@ -43,9 +43,12 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+  gap: 12px;
 }
 
 .papel { font-weight: 600; }
+
+.papel-select { width: 240px; }
 
 .w-100 { width: 100%; }
 

@@ -1,0 +1,35 @@
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.result {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+
+.links {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.link-row {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.papel {
+  font-weight: 600;
+}
+
+.url {
+  width: 100%;
+}
+
+.info {
+  margin-bottom: 8px;
+}

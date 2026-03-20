@@ -1,0 +1,50 @@
+<h2 mat-dialog-title>Gerar link de cadastro</h2>
+
+<div mat-dialog-content>
+  <form [formGroup]="form" class="form">
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo de contrato</mat-label>
+      <mat-select formControlName="tipo">
+        <mat-option [value]="1">Locação</mat-option>
+        <mat-option [value]="2">Venda</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.tipo.invalid">Selecione um tipo</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Validade (dias)</mat-label>
+      <input matInput type="number" formControlName="expiraEmDias" min="1" />
+      <mat-error *ngIf="form.controls.expiraEmDias.invalid">Informe um valor válido</mat-error>
+    </mat-form-field>
+
+    <mat-slide-toggle *ngIf="form.value.tipo === 1" formControlName="incluirFiador">
+      Incluir fiador
+    </mat-slide-toggle>
+
+    <div class="result" *ngIf="result">
+      <div class="info">
+        <div><b>Contrato:</b> {{ result.numero }}</div>
+      </div>
+
+      <div class="links">
+        <div class="link-row" *ngFor="let l of result.links">
+          <div class="papel">{{ papelLabel(l.papel) }}</div>
+
+          <mat-form-field appearance="outline" class="url">
+            <mat-label>Link</mat-label>
+            <input matInput [value]="l.url" readonly />
+          </mat-form-field>
+
+          <button mat-stroked-button (click)="copiar(l.url)">Copiar</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Fechar</button>
+  <button mat-flat-button color="primary" (click)="gerar()" [disabled]="form.invalid || loading">
+    {{ loading ? 'Gerando...' : 'Gerar' }}
+  </button>
+</div>

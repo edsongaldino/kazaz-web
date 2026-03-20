@@ -1,0 +1,21 @@
+.logo{
+    margin: auto;
+}
+
+.public-header{
+    text-align: center;
+    background-color: #efefef;
+    padding: 15px 0;
+    border-bottom: 10px solid #058dbb;
+}
+
+.public-content{
+    width: 80%;
+    margin: auto;
+}
+
+@media (max-width: 768px) {
+  .public-content {
+    width: 100%;
+  }
+}

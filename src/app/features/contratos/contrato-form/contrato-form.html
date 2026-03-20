@@ -66,7 +66,9 @@
             [formControl]="form.controls.imovel"
             placeholder="Digite o código do imóvel..."
           />
-          <mat-autocomplete #autoImovel="matAutocomplete" [displayWith]="displayLookup"
+          <mat-autocomplete
+            #autoImovel="matAutocomplete"
+            [displayWith]="displayLookup"
             (optionSelected)="onImovelSelected($event.option.value)">
             <mat-option *ngFor="let item of imoveisFiltrados" [value]="item">
               {{ item.label }}
@@ -97,19 +99,48 @@
           <div class="partes-header">
             <h3>Partes</h3>
 
-            <button mat-stroked-button type="button"
-              *ngIf="form.controls.tipo.value === TipoContrato.Locacao"
-              (click)="addFiador()">
-              Adicionar fiador
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addParte()">
+              Adicionar parte
             </button>
           </div>
 
           <div formArrayName="partes" class="partes-grid">
-            <div class="parte-card" *ngFor="let p of partes.controls; let i = index" [formGroupName]="i">
-              <div class="parte-top">
-                <div class="papel">{{ papelLabel(p.controls.papel.value) }}</div>
+            <div
+              class="parte-card"
+              *ngFor="let p of partes.controls; let i = index"
+              [formGroupName]="i">
 
-                <button mat-icon-button type="button"
+              <div class="parte-top">
+                <!-- Obrigatórias: mostra label fixa -->
+                <div class="papel" *ngIf="isParteObrigatoria(p.controls.papel.value)">
+                  {{ papelLabel(p.controls.papel.value!) }}
+                </div>
+
+                <!-- Não obrigatórias: permite escolher papel -->
+                <mat-form-field
+                  appearance="outline"
+                  class="papel-select"
+                  *ngIf="!isParteObrigatoria(p.controls.papel.value)">
+                  <mat-label>Tipo da parte</mat-label>
+                  <mat-select
+                    [formControl]="p.controls.papel"
+                    (selectionChange)="onPapelChanged(i)">
+                    <mat-option
+                      *ngFor="let papel of papeisDisponiveis"
+                      [value]="papel"
+                      [disabled]="papelDisabled(papel, i)">
+                      {{ papelLabel(papel) }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="p.controls.papel.invalid">Selecione o tipo.</mat-error>
+                </mat-form-field>
+
+                <button
+                  mat-icon-button
+                  type="button"
                   aria-label="Remover"
                   (click)="removerParte(i)">
                   <mat-icon>delete</mat-icon>
@@ -118,11 +149,12 @@
 
               <mat-form-field appearance="outline" class="w-100">
                 <mat-label>Pessoa</mat-label>
-                <input matInput
-                       [matAutocomplete]="autoPessoa"
-                       formControlName="pessoa"
-                       (focus)="onPessoaInput(i)"
-                       placeholder="Digite o nome..." />
+                <input
+                  matInput
+                  [matAutocomplete]="autoPessoa"
+                  formControlName="pessoa"
+                  (focus)="onPessoaInput(i)"
+                  placeholder="Digite o nome..." />
                 <mat-autocomplete #autoPessoa="matAutocomplete" [displayWith]="displayLookup">
                   <mat-option *ngFor="let item of (pessoasFiltradasPorIndex[i] ?? [])" [value]="item">
                     {{ item.label }}
@@ -131,7 +163,10 @@
                 <mat-error *ngIf="p.controls.pessoa.invalid">Selecione uma pessoa.</mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="w-100" *ngIf="p.controls.papel.value === PapelContrato.Comprador || p.controls.papel.value === PapelContrato.Vendedor">
+              <mat-form-field
+                appearance="outline"
+                class="w-100"
+                *ngIf="p.controls.papel.value === PapelContrato.Comprador || p.controls.papel.value === PapelContrato.Vendedor">
                 <mat-label>Percentual (opcional)</mat-label>
                 <input matInput type="number" formControlName="percentual" min="0" max="100" />
                 <mat-hint>Use para múltiplos compradores/vendedores</mat-hint>

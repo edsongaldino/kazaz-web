@@ -39,18 +39,18 @@
           <mat-error *ngIf="form.controls.documento.hasError('cnpj')">CNPJ inválido</mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="col-3">
-          <mat-label>Origem</mat-label>
-          <mat-select formControlName="origemId">
-            <mat-option [value]="null">Sem origem</mat-option>
-            <mat-option *ngFor="let o of origens" [value]="o.id">
-              {{ o.nome }}
-            </mat-option>
-          </mat-select>
-          <mat-hint *ngIf="form.get('origemId')?.value as oid">
-            {{ hintOrigem(oid) }}
-          </mat-hint>
-        </mat-form-field>
+       <mat-form-field appearance="outline" class="col-3" *ngIf="!hideOrigem">
+        <mat-label>Origem</mat-label>
+        <mat-select formControlName="origemId">
+          <mat-option [value]="null">Sem origem</mat-option>
+          <mat-option *ngFor="let o of origens" [value]="o.id">
+            {{ o.nome }}
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="form.get('origemId')?.value as oid">
+          {{ hintOrigem(oid) }}
+        </mat-hint>
+      </mat-form-field>
 
         <mat-form-field appearance="outline" class="col-3" *ngIf="form.controls.tipo.value === 'PF'">
           <mat-label>Estado Civil</mat-label>
@@ -94,6 +94,11 @@
           <mat-form-field appearance="outline" class="col-2">
             <mat-label>Data de Abertura</mat-label>
             <input matInput type="date" [formControl]="form.controls.dataAbertura" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="col-2">
+            <mat-label>Inscrição Estadual</mat-label>
+            <input matInput [formControl]="form.controls.inscricaoEstadual" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-5">

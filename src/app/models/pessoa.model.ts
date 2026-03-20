@@ -21,6 +21,7 @@ export interface DadosPessoaJuridicaDto {
   razaoSocial: string;
   nomeFantasia?: string | null;
   dataAbertura?: string | null;
+  inscricaoEstadual?: string | null;
 }
 
 interface PessoaBaseDto {
@@ -74,3 +75,7 @@ export interface PessoasPageResponse {
   total: number;
   items: PessoaListItem[];
 }
+
+export type PessoaCreateOrLinkRequest =
+  | PessoaCreateRequest
+  | { pessoaId: string; origemId: string | null };

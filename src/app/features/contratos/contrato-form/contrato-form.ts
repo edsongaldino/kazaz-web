@@ -21,7 +21,7 @@ import { ImoveisLookupService } from '../../../core/services/imoveis-lookup.serv
 type ParteFg = FormGroup<{
   pessoa: FormControl<LookupItem | null>;
   pessoaId: FormControl<string>;
-  papel: FormControl<number>;
+  papel: FormControl<number | null>; // 👈 agora pode ser null (para partes adicionadas)
   percentual: FormControl<number | null>;
 }>;
 
@@ -60,7 +60,6 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
   imoveisFiltrados: LookupItem[] = [];
   pessoasFiltradasPorIndex: Record<number, LookupItem[]> = {};
 
-  // ✅ agora inicializa no ngOnInit
   form!: ContratoFormFg;
 
   get partes(): FormArray<ParteFg> {
@@ -108,7 +107,6 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
       )
       .subscribe((items) => (this.imoveisFiltrados = items));
 
-    // se está editando, carrega
     if (this.id) {
       this.carregarContrato(this.id);
     }
@@ -137,18 +135,15 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
           this.contrato = c;
           this.carregando = false;
 
-          // seta tipo (isso vai rebuildPartes automaticamente)
           this.form.controls.tipo.setValue(c.tipo, { emitEvent: true });
 
-          // imovelId e placeholder
           this.form.controls.imovelId.setValue(c.imovelId);
           this.form.controls.imovel.setValue({ id: c.imovelId, label: `Imóvel ${c.imovelId}` });
 
-          // datas
           this.form.controls.inicioVigencia.setValue(this.parseDateOnly(c.inicioVigencia));
           this.form.controls.fimVigencia.setValue(c.fimVigencia ? this.parseDateOnly(c.fimVigencia) : null);
 
-          // partes: preenche pelos papéis existentes
+          // preenche partes vindas do back
           this.partes.clear();
           for (const p of c.partes ?? []) {
             this.partes.push(this.criarParteFg(p.papel, {
@@ -183,6 +178,84 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
     return StatusContrato[status] ?? `Status ${status}`;
   }
 
+  // ---------- Regras de papéis ----------
+  get papeisDisponiveis(): number[] {
+    const tipo = this.form.controls.tipo.value;
+
+    if (tipo === TipoContrato.Locacao) {
+      return [PapelContrato.Locador, PapelContrato.Locatario, PapelContrato.Fiador];
+    }
+
+    // Compra/Venda
+    return [PapelContrato.Vendedor, PapelContrato.Comprador];
+  }
+
+  isParteObrigatoria(papel: number | null): boolean {
+    const tipo = this.form.controls.tipo.value;
+
+    if (tipo === TipoContrato.Locacao) {
+      return papel === PapelContrato.Locador || papel === PapelContrato.Locatario;
+    }
+
+    return papel === PapelContrato.Vendedor || papel === PapelContrato.Comprador;
+  }
+
+  papelDisabled(papel: number, indexAtual: number): boolean {
+    const tipo = this.form.controls.tipo.value;
+
+    if (tipo === TipoContrato.Locacao) {
+      // Locador e Locatário: sempre únicos (e já existem)
+      if (papel === PapelContrato.Locador || papel === PapelContrato.Locatario) {
+        return this.partes.controls.some((p, i) =>
+          i !== indexAtual && p.controls.papel.value === papel
+        );
+      }
+
+      // Fiador: permitir apenas 1
+      if (papel === PapelContrato.Fiador) {
+        return this.partes.controls.some((p, i) =>
+          i !== indexAtual && p.controls.papel.value === PapelContrato.Fiador
+        );
+      }
+    }
+
+    // Compra/Venda: permitir múltiplos compradores/vendedores
+    return false;
+  }
+
+  addParte(): void {
+    const tipo = this.form.controls.tipo.value;
+
+    // Em locação: se já tem fiador, ainda pode adicionar "parte" mas não terá opção nova útil.
+    // Para UX melhor: já bloqueia se a única parte extra possível (Fiador) já existir.
+    if (tipo === TipoContrato.Locacao) {
+      const jaTemFiador = this.partes.controls.some(p => p.controls.papel.value === PapelContrato.Fiador);
+      if (jaTemFiador) {
+        this.snack.open('Já existe um fiador neste contrato.', 'Fechar', { duration: 2500 });
+        return;
+      }
+    }
+
+    // cria parte nova (papel obrigatório selecionar)
+    this.partes.push(this.criarParteFg(null));
+  }
+
+  onPapelChanged(index: number): void {
+    const fg = this.partes.at(index);
+    const papel = fg.controls.papel.value;
+
+    if (papel != null && this.papelDisabled(papel, index)) {
+      fg.controls.papel.setValue(null);
+      this.snack.open('Esse tipo de parte já foi informado.', 'Fechar', { duration: 2500 });
+      return;
+    }
+
+    // se mudou papel, limpa pessoa para evitar inconsistência
+    fg.controls.pessoa.setValue(null);
+    fg.controls.pessoaId.setValue('');
+    fg.controls.percentual.setValue(null);
+  }
+
   // ---------- Partes ----------
   private rebuildPartes(tipo: number): void {
     this.partes.clear();
@@ -194,34 +267,27 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
       this.partes.push(this.criarParteFg(PapelContrato.Vendedor));
       this.partes.push(this.criarParteFg(PapelContrato.Comprador));
     }
-  }
 
-  addFiador(): void {
-    const tipo = this.form.controls.tipo.value;
-    if (tipo !== TipoContrato.Locacao) return;
-
-    const jaTemFiador = this.partes.controls.some(p => p.controls.papel.value === PapelContrato.Fiador);
-    if (jaTemFiador) return;
-
-    this.partes.push(this.criarParteFg(PapelContrato.Fiador));
+    // reset cache de autocomplete por índice
+    this.pessoasFiltradasPorIndex = {};
   }
 
   removerParte(index: number): void {
     const papel = this.partes.at(index).controls.papel.value;
 
-    if (papel === PapelContrato.Locador || papel === PapelContrato.Locatario ||
-        papel === PapelContrato.Vendedor || papel === PapelContrato.Comprador) {
+    if (this.isParteObrigatoria(papel)) {
       this.snack.open('Essa parte é obrigatória.', 'Fechar', { duration: 2500 });
       return;
     }
+
     this.partes.removeAt(index);
   }
 
-  private criarParteFg(papel: number, pessoa?: LookupItem | null, percentual?: number | null): ParteFg {
+  private criarParteFg(papel: number | null, pessoa?: LookupItem | null, percentual?: number | null): ParteFg {
     const fg = this.fb.group({
       pessoa: this.fb.control<LookupItem | null>(pessoa ?? null, { validators: [Validators.required] }),
       pessoaId: this.fb.control<string>(pessoa?.id ?? '', { nonNullable: true, validators: [Validators.required] }),
-      papel: this.fb.control<number>(papel, { nonNullable: true, validators: [Validators.required] }),
+      papel: this.fb.control<number | null>(papel, { validators: [Validators.required] }),
       percentual: this.fb.control<number | null>(percentual ?? null),
     });
 
@@ -300,7 +366,7 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
       fimVigencia: this.toDateOnlyString(this.form.controls.fimVigencia.value),
       partes: this.partes.controls.map(p => ({
         pessoaId: p.controls.pessoaId.value,
-        papel: p.controls.papel.value,
+        papel: p.controls.papel.value!, // já validado como required
         percentual: p.controls.percentual.value ?? null
       })),
     };
@@ -364,23 +430,20 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
 
     this.carregando = true;
     this.contratosService.encerrar(this.id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (res) => {
-            this.carregando = false;
-            this.contrato = res;
-            this.snack.open('Contrato encerrado.', 'Fechar', { duration: 2500 });
-
-            // ✅ volta pra lista
-            this.router.navigate(['/contratos']);
+          this.carregando = false;
+          this.contrato = res;
+          this.snack.open('Contrato encerrado.', 'Fechar', { duration: 2500 });
+          this.router.navigate(['/contratos']);
         },
         error: (err) => {
-            this.carregando = false;
-            this.snack.open(err?.error?.error ?? 'Erro ao encerrar', 'Fechar', { duration: 4000 });
+          this.carregando = false;
+          this.snack.open(err?.error?.error ?? 'Erro ao encerrar', 'Fechar', { duration: 4000 });
         }
-        });
-    }
-
+      });
+  }
 
   voltar(): void {
     this.router.navigate(['/contratos']);

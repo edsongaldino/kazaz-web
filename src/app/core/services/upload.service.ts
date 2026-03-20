@@ -10,6 +10,6 @@ export class UploadService {
   upload(file: File, folder = 'pessoa'): Observable<UploadArquivoResponse> {
     const form = new FormData();
     form.append('file', file);
-    return this.http.post<UploadArquivoResponse>(`/api/uploads?folder=${encodeURIComponent(folder)}`, form);
+    return this.http.post<UploadArquivoResponse>(`/uploads?folder=${encodeURIComponent(folder)}`, form);
   }
 }

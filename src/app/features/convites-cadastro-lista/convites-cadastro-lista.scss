@@ -1,0 +1,27 @@
+.page { padding: 16px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.title .sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search { width: min(420px, 90vw); }
+
+.loading { margin-bottom: 12px; }
+
+.empty { padding: 16px; opacity: .75; }
+
+.acoes { gap: 8px; flex-wrap: wrap; }
