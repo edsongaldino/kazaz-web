@@ -27,8 +27,7 @@
     </div>
   </div>
 
-  <mat-card>
-    <mat-card-content>
+  <div class="table-wrapper">
       <div *ngIf="carregando" class="loading">
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       </div>
@@ -83,6 +82,5 @@
       <div *ngIf="!carregando && view.length === 0" class="empty">
         Nenhum convite encontrado.
       </div>
-    </mat-card-content>
-  </mat-card>
+  </div>    
 </div>

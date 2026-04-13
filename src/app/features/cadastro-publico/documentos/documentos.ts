@@ -20,6 +20,7 @@ type AnexoVm = DocumentoRequeridoDto & {
 })
 export class CadastroDocumentosComponent implements OnInit {
   pessoaId: string | null = null;
+  contratoId: string | null = null;
 
   erro: string | null = null;
   uploadingRowKey: string | null = null;
@@ -82,6 +83,7 @@ export class CadastroDocumentosComponent implements OnInit {
           next: (res: any) => {
             this.requeridos = res?.itens ?? [];
             this.pessoaId = res?.pessoaId ?? this.pessoaId;
+            this.contratoId = res?.contratoId ?? this.contratoId;
             this.cdr.markForCheck(); // <-- AQUI
             this.carregarDocs();
           },
@@ -124,10 +126,17 @@ export class CadastroDocumentosComponent implements OnInit {
       return;
     }
 
+    if (!this.contratoId) {
+      this.erro = 'Contrato não definido.';
+      return;
+    }
+
     const rowKey = this.key(tipoDocumentoId, multiplicidadeIndex);
     this.uploadingRowKey = rowKey;
 
-    this.uploadService.upload(file, 'pessoa').subscribe({
+    const folder = `pessoa/${this.pessoaId}/${this.slugDocumento(tipoDocumentoId)}`;
+
+    this.uploadService.upload(file, folder).subscribe({
       next: (up) => {
         this.documentosService.criar({
           nome: up.nome,
@@ -137,6 +146,7 @@ export class CadastroDocumentosComponent implements OnInit {
           alvo: 1, // Pessoa
           alvoId: this.pessoaId!,
           tipoDocumentoId: tipoDocumentoId,
+          contratoId: this.contratoId!,
           observacao: null,
 
           // ✅ se você adicionar isso no backend (recomendado)
@@ -157,6 +167,19 @@ export class CadastroDocumentosComponent implements OnInit {
         this.erro = 'Erro no upload.';
       },
     });
+  }
+
+  private slugDocumento(tipoDocumentoId: string): string {
+    const doc = this.requeridos.find(x => x.tipoDocumentoId === tipoDocumentoId);
+    const nome = doc?.nome ?? 'documento';
+
+    return nome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-_]/g, '');
   }
 
   concluir(): void {

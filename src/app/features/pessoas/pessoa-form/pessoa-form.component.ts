@@ -46,7 +46,7 @@ import { DadosContato } from './dados-contato/dados-contato';
 import { EstadoCivil } from '../../../models/enums.model';
 import { Input } from '@angular/core';
 import { CadastroPublicoService } from '../../../core/services/cadastro-publico.service';
-
+import { environment } from './../../../../environments/environment';
 // ✅ novos operators para o lookup por CPF
 import {
   catchError,
@@ -81,7 +81,7 @@ function docValidatorFor(tipoCtrl: () => TipoPessoa | '') {
   };
 }
 
-export type PessoaFormMode = 'public' | 'admin-edit';
+export type PessoaFormMode = 'public' | 'admin-edit' | 'public-view';
 
 @Component({
   selector: 'app-pessoa-form',
@@ -214,11 +214,17 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
     this.form.controls.documento.setValue(masked, { emitEvent: false });
   }
 
+  readonly = signal(false);
+
   async ngOnInit(): Promise<void> {
     this.origens = await this.origensService.getAllLight();
 
-    // ✅ ativa lookup por CPF (funciona no admin e no public)
-    this.setupDocumentoLookup();
+    const shouldEnableLookup =
+      this.mode === 'public' || this.mode === 'admin-edit';
+
+    if (shouldEnableLookup) {
+      this.setupDocumentoLookup();
+    }
 
     if (this.mode === 'admin-edit') {
       const id = this.route.snapshot.paramMap.get('id');
@@ -229,15 +235,12 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // ===== PUBLIC =====
-    // 1) pega token
     const token = this.token ?? this.route.snapshot.paramMap.get('token');
     if (!token) {
       this.errorMsg.set('Token inválido.');
       return;
     }
 
-    // 2) se no público você vai esconder "Origem", precisa ajustar validação
     if (this.hideOrigem) {
       const convite = this.origens.find(o => (o.nome ?? '').trim().toLowerCase() === 'site');
 
@@ -249,8 +252,13 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
       this.form.controls.origemId.setValue(convite.id, { emitEvent: false });
     }
 
-    // defaults
     this.form.controls.tipo.setValue('PF', { emitEvent: false });
+
+    if (this.mode === 'public-view') {
+      await this.carregarVisualizacao(token);
+      this.form.disable({ emitEvent: false });
+      this.readonly.set(true);
+    }
   }
 
   // ✅ Carrega pessoa no form (serve para edição e para lookup por CPF)
@@ -521,6 +529,11 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
 
 
   salvar() {
+
+    if (this.mode === 'public-view') {
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -599,6 +612,16 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
 
 
   cancelar() {
+    if (this.mode === 'public-view') {
+      this.router.navigate(['/convites']);
+      return;
+    }
+
+    if (this.mode === 'public') {
+      this.router.navigate(['/']);
+      return;
+    }
+
     this.router.navigate(['/pessoas']);
   }
 
@@ -619,4 +642,38 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
   get dadosComplementaresForm(): FormGroup {
     return this.form.get('dadosComplementares') as FormGroup;
   }
+
+  documentosVisualizacao = signal<any[]>([]);
+
+  private async carregarVisualizacao(token: string) {
+    try {
+      this.loading.set(true);
+
+      const detalhes = await firstValueFrom(
+        this.cadastroPublicoService.obterDetalhes(token)
+      );
+
+      if (detalhes?.pessoa) {
+        await this.carregarPessoaNoForm(detalhes.pessoa);
+      }
+
+      this.documentosVisualizacao.set(detalhes?.documentos ?? []);
+      this.loading.set(false);
+    } catch (err) {
+      console.error(err);
+      this.loading.set(false);
+      this.errorMsg.set('Não foi possível carregar os dados do cadastro.');
+    }
+  }
+
+  modoVisualizacao(): boolean {
+    return this.mode === 'public-view';
+  }
+
+  visualizarDocumento(doc: any): void {
+    const baseUrl = environment.apiUrl.replace('/api', '');
+    const url = `${baseUrl}/files/${doc.caminho}`;
+    window.open(url, '_blank');
+  }
+
 }

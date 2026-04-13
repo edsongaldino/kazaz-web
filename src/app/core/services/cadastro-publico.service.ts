@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  CadastroPublicoDetalhesDto,
   ConvitePublicInfoResponse,
   DocumentoRequeridoDto,
   DocumentosRequeridosResponse,
@@ -41,6 +42,12 @@ export class CadastroPublicoService {
   documentosRequeridos(token: string) {
     return this.http.get<DocumentosRequeridosResponse>(
       `${this.baseUrl}/cadastro-publico/${token}/documentos-requeridos`
+    );
+  }
+
+  obterDetalhes(token: string): Observable<CadastroPublicoDetalhesDto> {
+    return this.http.get<CadastroPublicoDetalhesDto>(
+      `${this.baseUrl}/public/cadastro/${token}/detalhes`
     );
   }
 

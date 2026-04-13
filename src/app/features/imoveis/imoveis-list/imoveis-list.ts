@@ -13,8 +13,11 @@ import { getFinalidadeImovelLabel } from '../../../shared/helpers/finalidade-imo
 import { getStatusImovelUi, StatusUi } from '../../../shared/helpers/status-imovel.helper';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { GerarLinkDialogComponent } from '../dialog-gerar-link/gerar-link-dialog';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConvitesImovelDialogComponent } from '../convites-imovel-dialog/convites-imovel-dialog';
+import { getChipConfig } from '../../../shared/helpers/chip.helper';
+import { ChipComponent } from '../../../shared/components/chips/chip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 // ✅ ajuste se quiser colocar em arquivo separado
 export interface ImovelFiltro {
@@ -30,7 +33,7 @@ export interface ImovelFiltro {
 @Component({
   selector: 'app-imoveis-list',
   standalone: true,
-  imports: [CommonModule, MaterialModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, RouterModule, ReactiveFormsModule, ChipComponent, MatTooltipModule],
   templateUrl: './imoveis-list.html',
   styleUrls: ['./imoveis-list.scss'],
 })
@@ -163,13 +166,28 @@ export class ImoveisListComponent implements OnInit {
     
   }
 
-  abrirGerarLink(imovelId: string) {
-    this.dialog.open(GerarLinkDialogComponent, {
-      width: '800px',
+  abrirModalConvites(imovel: any): void {
+    this.dialog.open(ConvitesImovelDialogComponent, {
+      width: '1000px',
+      maxWidth: '95vw',
       data: {
-        imovelId,
-        gerarLinks: (body: any) => this.service.gerarLinksConvite(imovelId, body),
+        imovelId: imovel.id,
+        codigo: imovel.codigo,
+        titulo: imovel.titulo
       }
     });
   }
+
+  getFinalidadeChip(value: string) {
+    return getChipConfig('finalidade', value);
+  }
+
+  getTipoChip(value: string) {
+    return getChipConfig('tipo', value);
+  }
+
+  getStatusChip(value: string) {
+    return getChipConfig('status', value);
+  }
+
 }

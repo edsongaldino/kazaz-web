@@ -1,3 +1,5 @@
+import { PessoaDto } from "./pessoa.model";
+
 export interface ConvitePublicInfoResponse {
   valido: boolean;
   motivo?: string | null;
@@ -42,6 +44,7 @@ export interface DocumentoCreateDto {
   alvo: number;   // 1 Pessoa
   alvoId: string; // PessoaId
   tipoDocumentoId: string;
+  contratoId: string;
   observacao?: string | null;
   multiplicidadeIndex?: number | null;
 }
@@ -61,4 +64,18 @@ export interface DocumentosRequeridosResponse {
   papelContrato: number;
   tipoPessoa: 'PF' | 'PJ';
   itens: DocumentoRequeridoDto[];
+}
+
+export interface CadastroPublicoDetalhesDto {
+  pessoa: PessoaDto | null;
+  documentos: DocumentoVisualizacaoDto[];
+}
+
+export interface DocumentoVisualizacaoDto {
+  id: string;
+  nome: string;
+  tipoDocumentoId: string;
+  tipoDocumentoNome: string;
+  url: string;
+  contentType?: string | null;
 }

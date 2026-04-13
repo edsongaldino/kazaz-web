@@ -4,8 +4,7 @@
     <button mat-flat-button color="primary" (click)="novo()">Novo contrato</button>
   </div>
 
-  <mat-card>
-    <mat-card-content>
+  <div class="table-wrapper">
       <div *ngIf="carregando" class="loading">
         <mat-progress-bar mode="indeterminate"></mat-progress-bar>
       </div>
@@ -67,6 +66,5 @@
           <td class="mat-cell" [attr.colspan]="displayedColumns.length">Nenhum contrato encontrado.</td>
         </tr>
       </table>
-    </mat-card-content>
-  </mat-card>
+  </div>  
 </div>

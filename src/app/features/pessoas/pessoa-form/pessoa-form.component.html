@@ -1,6 +1,12 @@
 <section class="page">
   <header class="page__header">
-    <h1>{{ modoEdicao() ? 'Editar Cliente' : 'Cadastrar Cliente' }}</h1>
+    <h1>
+      {{
+        modoVisualizacao()
+          ? 'Visualizar Cliente'
+          : (modoEdicao() ? 'Editar Cliente' : 'Cadastrar Cliente')
+      }}
+    </h1>
     <div class="header__actions">
       <button mat-stroked-button (click)="cancelar()">
         <mat-icon>arrow_back</mat-icon>
@@ -157,5 +163,38 @@
         </button>
       </div>
     </mat-card>
+
+    <mat-card *ngIf="modoVisualizacao()">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>description</mat-icon>
+          Documentos
+        </mat-card-title>
+      </mat-card-header>
+
+      <div class="documentos-lista" *ngIf="documentosVisualizacao()?.length; else semDocs">
+        <div class="documento-item" *ngFor="let doc of documentosVisualizacao()">
+          
+          <div class="doc-info">
+            <strong>{{ doc.tipoDocumentoNome }}</strong>
+            <span>{{ doc.nome }}</span>
+          </div>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="visualizarDocumento(doc)">
+            <mat-icon>visibility</mat-icon>
+            Visualizar
+          </button>
+
+        </div>
+      </div>
+
+      <ng-template #semDocs>
+        <p class="sem-docs">Nenhum documento cadastrado.</p>
+      </ng-template>
+    </mat-card>
+
   </form>
 </section>

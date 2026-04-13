@@ -14,6 +14,8 @@ import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/op
 import { merge, Subject } from 'rxjs';
 import { PessoasService } from '../../../core/services/pessoas.service';
 import { PessoasPageResponse, PessoaListItem } from '../../../models/pessoa.model';
+import { getChipConfig } from '../../../shared/helpers/chip.helper';
+import { ChipComponent } from '../../../shared/components/chips/chip';
 
 function onlyDigits(v: string) { return v.replace(/\D/g, ''); }
 function formatCpf(cpf?: string | null) {
@@ -37,6 +39,7 @@ function formatCpf(cpf?: string | null) {
     MatButtonModule,
     MatProgressBarModule,
     MatTooltipModule,
+    ChipComponent
   ],
   templateUrl: './pessoas-list.component.html',
   styleUrls: ['./pessoas-list.component.scss']

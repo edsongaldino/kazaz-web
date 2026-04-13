@@ -105,3 +105,64 @@ mat-card{
     margin-top: 5px !important;
     line-height: 30px;
 }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 28px;              /* padroniza altura */
+  padding: 0 12px;
+
+  border-radius: 8px;        /* mais moderno */
+  font-size: 12px;
+  font-weight: 600;
+
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+
+  border: 1px solid transparent; /* importante pro padrão */
+}
+
+/* FINALIDADE */
+
+.chip-venda {
+  background: #e7f0ff;
+  color: #1d4ed8;
+  border-color: #c7dbff;
+}
+
+.chip-aluguel {
+  background: #fff7e6;
+  color: #b45309;
+  border-color: #fde7c2;
+}
+
+/* TIPO */
+
+.chip-casa {
+  background: #e6f4ea;
+  color: #2e7d32;
+  border-color: #cde7d5;
+}
+
+.chip-apartamento {
+  background: #ede9fe;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+
+.chip-terreno {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+/* DEFAULT */
+
+.chip-default {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #e2e8f0;
+}
+

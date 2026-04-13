@@ -1,0 +1,24 @@
+.documentos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.documento-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.doc-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sem-docs {
+  color: #6b7280;
+  font-style: italic;
+}

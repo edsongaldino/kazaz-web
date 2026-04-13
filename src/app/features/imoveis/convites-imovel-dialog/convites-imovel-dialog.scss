@@ -1,0 +1,218 @@
+.subtitulo {
+  margin-bottom: 16px;
+  color: #555;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.bloco {
+  margin-bottom: 24px;
+}
+
+.bloco-header {
+  margin-bottom: 12px;
+}
+
+.vazio {
+  padding: 16px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  color: #555;
+}
+
+.tabela-wrapper {
+  overflow-x: auto;
+}
+
+.tabela-convites {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela-convites th,
+.tabela-convites td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #e5e5e5;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef3ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.subtitulo {
+  margin-bottom: 20px;
+  color: #5f6368;
+  font-size: 14px;
+  margin-left: 7px;
+}
+
+.bloco-header h3 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f1f1f;
+  margin-left: 7px;
+}
+
+.tabela-wrapper {
+  border: 1px solid #e6e8ec;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.tabela-convites {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabela-convites thead th {
+  background: #0a4ea1;
+  color: #fff;
+  font-weight: 600;
+  padding: 14px 12px;
+  text-align: left;
+}
+
+.tabela-convites tbody td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #edf0f2;
+  color: #2d2d2d;
+  vertical-align: middle;
+}
+
+.tabela-convites tbody tr:hover {
+  background: #f8fbff;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+
+.status-pendente {
+  background: #fff4cc;
+  color: #9a6700;
+}
+
+.status-usado {
+  background: #dff3e4;
+  color: #1e6b3a;
+}
+
+.status-expirado {
+  background: #fde7e9;
+  color: #b42318;
+}
+
+.status-cancelado {
+  background: #eceff3;
+  color: #475467;
+}
+
+.status-default {
+  background: #eef2ff;
+  color: #344054;
+}
+
+.btn-copiar {
+  border-radius: 6px !important;
+  min-width: 110px;
+  height: 36px;
+  border-color: #cfd4dc !important;
+  color: #0a4ea1 !important;
+  font-weight: 600;
+  background: #fff;
+  margin-top: 10px;
+}
+
+.btn-copiar:hover {
+  background: #f5f9ff;
+}
+
+.btn-primary {
+  border-radius: 8px !important;
+  height: 40px;
+  padding: 0 18px;
+  background: #0a4ea1 !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover {
+  background: #083d7d !important;
+}
+
+.btn-fechar {
+  color: #4b5563 !important;
+}
+
+.vazio {
+  padding: 24px;
+  text-align: center;
+  color: #667085;
+  background: #fafafa;
+  border: 1px dashed #d0d5dd;
+  border-radius: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 8px;
+}
+
+::ng-deep .mat-mdc-paginator {
+  background: #fff;
+  border-top: 1px solid #edf0f2;
+}
+
+::ng-deep .mat-mdc-dialog-surface {
+  border-radius: 16px !important;
+}
+
+::ng-deep .mat-mdc-dialog-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1d2939;
+  padding-bottom: 4px;
+}
+
+::ng-deep .mat-mdc-dialog-actions {
+  padding-top: 18px !important;
+  gap: 10px;
+}

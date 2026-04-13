@@ -1,0 +1,137 @@
+<h2 mat-dialog-title>
+  Links do imóvel {{ data.codigo }}
+</h2>
+
+<mat-dialog-content>
+  <div class="subtitulo">
+    {{ data.titulo }}
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- MODO LISTA -->
+    <ng-container *ngIf="modo === 'lista'">
+      <section class="bloco">
+        <div class="bloco-header">
+          <h3>Links existentes</h3>
+        </div>
+
+        <div *ngIf="convites.length === 0" class="vazio">
+          Nenhum link foi gerado para este imóvel.
+        </div>
+
+        <div class="tabela-wrapper" *ngIf="convites.length > 0">
+          <table class="tabela-convites">
+            <thead>
+              <tr>
+                <th>Contrato</th>
+                <th>Papel</th>
+                <th>Status</th>
+                <th>Criado em</th>
+                <th>Expira em</th>
+                <th>Usado em</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of convites">
+                <td>{{ item.numeroContrato }}</td>
+                <td><app-chip category="papel" [value]="item.papel"></app-chip></td>
+                <td>
+                  <span class="status-chip" [ngClass]="getStatusClass(item)">
+                    {{ getStatusLabel(item) }}
+                  </span>
+                </td>
+                <td>{{ item.criadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ item.expiraEm ? (item.expiraEm | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
+                <td>{{ item.usadoEm ? (item.usadoEm | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
+                <button
+                  mat-stroked-button
+                  [color]="item.usadoEm ? 'primary' : undefined"
+                  class="btn-copiar"
+                  (click)="onAcao(item)">
+                  
+                  {{ getLabelAcao(item) }}
+                </button>
+              </tr>
+            </tbody>
+          </table>
+
+          <mat-paginator
+            *ngIf="total > 0"
+            [length]="total"
+            [pageIndex]="page - 1"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[5, 10, 20]"
+            (page)="onPageChange($event)">
+          </mat-paginator>
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="modo === 'form'">
+      <section class="bloco">
+        <div class="bloco-header">
+          <h3>Gerar novo link</h3>
+        </div>
+
+        <form [formGroup]="form" class="form-grid form-grid--3">
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo do contrato</mat-label>
+            <mat-select formControlName="tipo">
+              <mat-option [value]="1">Aluguel</mat-option>
+              <mat-option [value]="2">Venda</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Perfil do link</mat-label>
+            <mat-select formControlName="papel">
+              <mat-option *ngFor="let papel of papeisFiltrados" [value]="papel.value">
+                {{ papel.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Expira em (dias)</mat-label>
+            <input matInput type="number" min="1" formControlName="expiraEmDias" />
+          </mat-form-field>
+        </form>
+      </section>
+    </ng-container>
+
+  </ng-container>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close class="btn-fechar">
+    Fechar
+  </button>
+
+  <button
+    *ngIf="modo === 'lista'"
+    mat-flat-button
+    class="btn-primary"
+    (click)="abrirForm()">
+    Gerar novo link
+  </button>
+
+  <ng-container *ngIf="modo === 'form'">
+    <button mat-button (click)="voltarLista()">
+      Voltar
+    </button>
+
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="gerarNovo()"
+      [disabled]="gerando || loading">
+      {{ gerando ? 'Gerando...' : 'Salvar' }}
+    </button>
+  </ng-container>
+</mat-dialog-actions>

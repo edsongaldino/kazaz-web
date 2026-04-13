@@ -73,13 +73,4 @@ export class ImoveisService {
     return this.http.get<CaracteristicaCatalogoDto[]>(`${this.baseUrl}/caracteristicas`);
   }
 
-  gerarLinksConvite(imovelId: string, body: { tipo: number; expiraEmDias: number; incluirFiador: boolean }) {
-    return this.http.post(
-      `/contratos/rascunho/gerar-links`,
-      body,
-      { params: { imovelId } }
-    );
-  }
-
-
 }
