@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { getChipConfig } from '../../helpers/chip.helper';
+import { ChipCategory, getChipConfig } from '../../helpers/chip.helper';
 import { ChipVariant } from '../../../models/chip.model';
 import { MatIconModule } from '@angular/material/icon';
-
-type ChipCategory = 'status' | 'finalidade' | 'tipo' | 'tipoCadastro' | 'papel';
 
 @Component({
   selector: 'app-chip',

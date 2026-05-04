@@ -22,30 +22,19 @@ export class ImoveisService {
 
   constructor(private http: HttpClient) {}
 
-  listar(filtro?: ImovelFiltro): Observable<PagedResult<ImovelListDto>> {
-    let params = new HttpParams();
+  listar(filtro: ImovelFiltro) {
+    let params = new HttpParams()
+      .set('page', filtro.page)
+      .set('pageSize', filtro.pageSize);
 
-    if (filtro) {
-      if (filtro.page) params = params.set('page', filtro.page);
-      if (filtro.pageSize) params = params.set('pageSize', filtro.pageSize);
+    if (filtro.termo) params = params.set('termo', filtro.termo);
+    if (filtro.documentoProprietario) params = params.set('documentoProprietario', filtro.documentoProprietario);
+    if (filtro.tipoImovelId) params = params.set('tipoImovelId', filtro.tipoImovelId);
+    if (filtro.finalidade) params = params.set('finalidade', filtro.finalidade);
+    if (filtro.cidadeId) params = params.set('cidadeId', filtro.cidadeId);
+    if (filtro.status) params = params.set('status', filtro.status);
 
-      if (filtro.codigo)
-        params = params.set('codigo', filtro.codigo);
-
-      if (filtro.tipoImovelId)
-        params = params.set('tipoImovelId', filtro.tipoImovelId);
-
-      if (filtro.finalidade)
-        params = params.set('finalidade', filtro.finalidade);
-
-      if (filtro.cidadeId)
-        params = params.set('cidadeId', filtro.cidadeId);
-
-      if (filtro.status)
-        params = params.set('status', filtro.status);
-    }
-
-    return this.http.get<PagedResult<ImovelListDto>>(this.apiUrl, { params });
+    return this.http.get<PagedResult<ImovelListDto>>('/imoveis', { params });
   }
 
   obterPorId(id: string): Observable<ImovelDto> {

@@ -67,8 +67,8 @@ export const appRoutes: Routes = [
       {
         path: 'convites',
         loadComponent: () =>
-          import('./features/convites-cadastro-lista/convites-cadastro-lista')
-            .then(m => m.ConvitesCadastroListaComponent),
+          import('./features/convites/convites-list/convites-list')
+            .then(m => m.ConvitesList),
       },
     ]
   },

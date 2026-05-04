@@ -1,70 +1,150 @@
-<div class="page">
-  <div class="header">
-    <h2>Contratos</h2>
-    <button mat-flat-button color="primary" (click)="novo()">Novo contrato</button>
+<div class="toolbar">
+  <h2>Contratos</h2>
+
+  <a mat-flat-button class="btn-novo" (click)="novo()">
+    <mat-icon>add</mat-icon>
+    Novo contrato
+  </a>
+</div>
+
+<form [formGroup]="filtroForm" class="filtro-contratos">
+  <div class="grid">
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Nº contrato</mat-label>
+      <input matInput formControlName="contrato">
+    </mat-form-field>
+
+    <mat-form-field class="col-6" appearance="outline">
+      <mat-label>Imóvel</mat-label>
+      <input matInput formControlName="imovel" placeholder="Código ou título">
+    </mat-form-field>
+
+    <mat-form-field class="col-4" appearance="outline">
+      <mat-label>CPF/CNPJ da parte</mat-label>
+      <input matInput formControlName="documentoParte">
+    </mat-form-field>
+
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Vigência de</mat-label>
+      <input matInput type="date" formControlName="vigenciaDe">
+    </mat-form-field>
+
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Vigência até</mat-label>
+      <input matInput type="date" formControlName="vigenciaAte">
+    </mat-form-field>
+
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option [value]="null">Todos</mat-option>
+        <!--<mat-option [value]="1">Rascunho</mat-option>-->
+        <mat-option [value]="2">Ativo</mat-option>
+        <mat-option [value]="3">Encerrado</mat-option>
+        <mat-option [value]="4">Cancelado</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="col-3" appearance="outline">
+      <mat-label>Tipo contrato</mat-label>
+      <mat-select formControlName="tipo">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option [value]="1">Locação</mat-option>
+        <mat-option [value]="2">Venda</mat-option>
+        <mat-option [value]="3">Compra</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-flat-button class="filtrar col-2" color="primary" type="button" (click)="aplicarFiltro()">
+      <mat-icon>search</mat-icon>
+      Filtrar
+    </button>
+
+    <button mat-button class="limpar col-1" type="button" (click)="limparFiltro()">
+      <mat-icon>restore</mat-icon>
+      Limpar
+    </button>
+  </div>
+</form>
+
+<div class="table-wrapper">
+  <div *ngIf="carregando" class="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   </div>
 
-  <div class="table-wrapper">
-      <div *ngIf="carregando" class="loading">
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      </div>
+  <table mat-table [dataSource]="dataSource" class="w-100">
 
-      <table mat-table [dataSource]="dataSource" class="w-100">
+    <ng-container matColumnDef="numero">
+      <th mat-header-cell *matHeaderCellDef>Contrato</th>
+      <td mat-cell *matCellDef="let c">{{ c.numero }}</td>
+    </ng-container>
 
-        <ng-container matColumnDef="numero">
-          <th mat-header-cell *matHeaderCellDef>Nº</th>
-          <td mat-cell *matCellDef="let c">{{ c.numero }}</td>
-        </ng-container>
+    <ng-container matColumnDef="imovel">
+      <th mat-header-cell *matHeaderCellDef>Imóvel</th>
+      <td mat-cell *matCellDef="let c">
+        <strong>{{ c.codigoImovel || '-' }}</strong><br>
+        {{ c.tituloImovel || '-' }}
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="tipo">
-          <th mat-header-cell *matHeaderCellDef>Tipo</th>
-          <td mat-cell *matCellDef="let c">{{ tipoLabel(c.tipo) }}</td>
-        </ng-container>
+    <ng-container matColumnDef="tipoImovel">
+      <th mat-header-cell *matHeaderCellDef>Tipo imóvel</th>
+      <td mat-cell *matCellDef="let c">
+        <app-chip category="tipo" [value]="c.tipoImovelNome"></app-chip>
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let c">
-            <mat-chip [ngClass]="c.status === StatusContrato.Ativo ? 'chip-ativo' : 'chip-rascunho'" selected>
-              {{ statusLabel(c.status) }}
-            </mat-chip>
-          </td>
-        </ng-container>
+    <ng-container matColumnDef="tipo">
+      <th mat-header-cell *matHeaderCellDef>Tipo contrato</th>
+      <td mat-cell *matCellDef="let c">
+        <app-chip category="tipoContrato" [value]="c.tipo"></app-chip>
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="vigencia">
-          <th mat-header-cell *matHeaderCellDef>Vigência</th>
-          <td mat-cell *matCellDef="let c">
-            {{ c.inicioVigencia }} <span *ngIf="c.fimVigencia">→ {{ c.fimVigencia }}</span>
-          </td>
-        </ng-container>
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let c">
+        <app-chip category="statusContrato" [value]="c.status"></app-chip>
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="partes">
-          <th mat-header-cell *matHeaderCellDef>Partes</th>
-          <td mat-cell *matCellDef="let c">
-            {{ c.partes?.length ?? 0 }}
-          </td>
-        </ng-container>
+    <ng-container matColumnDef="vigencia">
+      <th mat-header-cell *matHeaderCellDef>Vigência</th>
+      <td mat-cell *matCellDef="let c">
+        {{ c.inicioVigencia | date:'dd/MM/yyyy' }}
+        <span *ngIf="c.fimVigencia">→ {{ c.fimVigencia | date:'dd/MM/yyyy' }}</span>
+      </td>
+    </ng-container>
 
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef>Ações</th>
-          <td mat-cell *matCellDef="let c">
-            <button mat-button (click)="editar(c)">Editar</button>
+    <ng-container matColumnDef="partes">
+      <th mat-header-cell *matHeaderCellDef>Partes</th>
+      <td mat-cell *matCellDef="let c">
+        {{ c.partes?.length ?? 0 }}
+      </td>
+    </ng-container>
 
-            <button
-              mat-flat-button
-              color="primary"
-              *ngIf="c.status === StatusContrato.Rascunho"
-              (click)="ativar(c)">
-              Ativar
-            </button>
-          </td>
-        </ng-container>
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
+      <td mat-cell *matCellDef="let c">
+        <button mat-icon-button color="primary" (click)="editar(c)">
+          <mat-icon matTooltip="Editar">edit</mat-icon>
+        </button>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <button
+          mat-icon-button
+          color="primary"
+          *ngIf="c.status === StatusContrato.Rascunho"
+          (click)="ativar(c)">
+          <mat-icon matTooltip="Ativar contrato">check_circle</mat-icon>
+        </button>
+      </td>
+    </ng-container>
 
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" [attr.colspan]="displayedColumns.length">Nenhum contrato encontrado.</td>
-        </tr>
-      </table>
-  </div>  
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length">Nenhum contrato encontrado.</td>
+    </tr>
+  </table>
 </div>

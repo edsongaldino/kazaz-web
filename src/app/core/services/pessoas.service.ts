@@ -1,14 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PessoaCreateRequest, PessoaDto, PessoaListItem, PessoasPageResponse, PessoaUpdateRequest } from '../../models/pessoa.model';
+import { PessoaCreateRequest, PessoaDto, PessoaListItem, PessoasFiltro, PessoasPageResponse, PessoaUpdateRequest } from '../../models/pessoa.model';
 import { environment } from '../../../environments/environment';
-
-export interface PessoasQuery {
-  page?: number;      // 1-based (controller já usa 1-based)
-  pageSize?: number;
-  termo?: string | null;
-}
 
 @Injectable({ providedIn: 'root' })
 export class PessoasService {
@@ -16,11 +10,26 @@ export class PessoasService {
   private apiUrl = `${environment.apiUrl}/pessoas`;
   constructor(private http: HttpClient) {}
 
-  listar(q: PessoasQuery): Observable<PessoasPageResponse> {
+  listar(q: PessoasFiltro): Observable<PessoasPageResponse> {
     let params = new HttpParams();
-    if (q.page != null) params = params.set('page', String(q.page));
-    if (q.pageSize != null) params = params.set('pageSize', String(q.pageSize));
-    if (q.termo) params = params.set('termo', q.termo.trim());
+
+    if (q.page != null)
+      params = params.set('page', String(q.page));
+
+    if (q.pageSize != null)
+      params = params.set('pageSize', String(q.pageSize));
+
+    if (q.nome)
+      params = params.set('nome', q.nome.trim());
+
+    if (q.documento)
+      params = params.set('documento', q.documento.trim());
+
+    if (q.tipo)
+      params = params.set('tipo', q.tipo);
+
+    if (q.papel != null)
+      params = params.set('papel', String(q.papel));
 
     return this.http.get<PessoasPageResponse>(this.apiUrl, { params });
   }

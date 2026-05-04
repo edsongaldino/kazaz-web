@@ -31,3 +31,19 @@ export interface PerfilDto {
   id: string;
   nome: string;
 }
+
+export interface UsuariosQuery {
+  page?: number;
+  pageSize?: number;
+
+  termo?: string | null;
+  perfilId?: string | null;
+  ativo?: boolean | null;
+}
+
+export interface UsuariosPageResponse {
+  items: UsuarioListDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

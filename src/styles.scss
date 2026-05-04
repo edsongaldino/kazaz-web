@@ -166,3 +166,37 @@ mat-card{
   border-color: #e2e8f0;
 }
 
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0 16px;
+}
+
+
+.filtrar{
+    border-radius: 5px !important;
+    width: 100% !important;
+    height: 55px !important;
+}
+
+.limpar{
+    border-radius: 5px !important;
+    width: 100% !important;
+    height: 55px !important;
+    background-color: #fff4cc !important;
+    color: #9a6700 !important;
+    font-weight: bold !important;
+    border: 1px solid #9a6700 !important;
+}
+
+.btn-novo{
+    border-radius: 5px !important;
+    width: 200px !important;
+    height: 55px !important;
+    float: right !important;
+    background-color: #26a816 !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    border: 1px solid #043308 !important;
+}

@@ -1,22 +1,30 @@
-import { Component, Inject, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, Inject, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ChangeDetectorRef } from '@angular/core';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { getChipConfig } from '../../../shared/helpers/chip.helper';
+
 import { ChipComponent } from '../../../shared/components/chips/chip';
-import { Router } from '@angular/router';
+
 import {
-  ConvitesCadastroService,
-  ConviteCadastroContratoDto
+  ConviteCadastroContratoDto,
+  ConvitesCadastroService
 } from '../../../core/services/convites.service';
+
+import {
+  convitePapelOptions,
+  getConvitePapelLabel,
+  getConviteStatusLabel
+} from '../../../shared/helpers/convite.helper';
+
+import { ConviteUiService } from '../../../shared/services/convite-ui.service';
 
 @Component({
   selector: 'app-convites-imovel-dialog',
@@ -40,7 +48,9 @@ import {
 export class ConvitesImovelDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private conviteService = inject(ConvitesCadastroService);
+  private conviteUi = inject(ConviteUiService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   loading = false;
   gerando = false;
@@ -52,7 +62,6 @@ export class ConvitesImovelDialogComponent implements OnInit {
   modo: 'lista' | 'form' = 'lista';
 
   convites: ConviteCadastroContratoDto[] = [];
-  contratos: { id: string; numero: string; tipo: string | number }[] = [];
 
   form = this.fb.group({
     tipo: [null as number | null, Validators.required],
@@ -60,19 +69,13 @@ export class ConvitesImovelDialogComponent implements OnInit {
     expiraEmDias: [7 as number | null, [Validators.required, Validators.min(1)]]
   });
 
-  papeis = [
-    { value: 1, label: 'Locador' },
-    { value: 2, label: 'Locatário' },
-    { value: 3, label: 'Fiador' },
-    { value: 10, label: 'Vendedor' },
-    { value: 11, label: 'Comprador' }
-  ];
+  papeis = convitePapelOptions;
+
+  labelPapel = getConvitePapelLabel;
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public data: { imovelId: string; codigo: string; titulo: string },
-    private cdr: ChangeDetectorRef,
-    private router: Router
+    public data: { imovelId: string; codigo: string; titulo: string }
   ) {}
 
   ngOnInit(): void {
@@ -88,21 +91,16 @@ export class ConvitesImovelDialogComponent implements OnInit {
         next: (res) => {
           this.convites = res?.items ?? [];
           this.total = res?.total ?? 0;
-
-          setTimeout(() => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          });
+          this.loading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error(err);
 
-          setTimeout(() => {
-            this.convites = [];
-            this.total = 0;
-            this.loading = false;
-            this.cdr.detectChanges();
-          });
+          this.convites = [];
+          this.total = 0;
+          this.loading = false;
+          this.cdr.detectChanges();
 
           this.snackBar.open('Erro ao carregar convites.', 'Fechar', { duration: 3000 });
         }
@@ -127,25 +125,23 @@ export class ConvitesImovelDialogComponent implements OnInit {
       next: () => {
         this.snackBar.open('Convite gerado com sucesso.', 'Fechar', { duration: 3000 });
 
-        setTimeout(() => {
-          this.form.patchValue({
-            tipo: null,
-            papel: null,
-            expiraEmDias: 7
-          });
-
-          this.gerando = false;
-          this.modo = 'lista';
-          this.page = 1;
-          this.carregarConvites();
+        this.form.reset({
+          tipo: null,
+          papel: null,
+          expiraEmDias: 7
         });
+
+        this.gerando = false;
+        this.modo = 'lista';
+        this.page = 1;
+
+        this.carregarConvites();
       },
       error: (err) => {
         console.error(err);
 
-        setTimeout(() => {
-          this.gerando = false;
-        });
+        this.gerando = false;
+        this.cdr.detectChanges();
 
         this.snackBar.open('Erro ao gerar convite.', 'Fechar', { duration: 3000 });
       }
@@ -158,40 +154,6 @@ export class ConvitesImovelDialogComponent implements OnInit {
     this.carregarConvites();
   }
 
-  copiar(url?: string | null): void {
-    if (!url) return;
-
-    navigator.clipboard.writeText(url);
-    this.snackBar.open('Link copiado.', 'Fechar', { duration: 2000 });
-  }
-
-  getStatusLabel(item: ConviteCadastroContratoDto): string {
-    if (item.usadoEm) return 'Usado';
-
-    if (item.expiraEm && new Date(item.expiraEm) < new Date()) {
-      return 'Expirado';
-    }
-
-    switch (item.status) {
-      case 1: return 'Pendente';
-      case 2: return 'Usado';
-      case 3: return 'Expirado';
-      case 4: return 'Cancelado';
-      default: return String(item.status);
-    }
-  }
-
-  getPapelLabel(papel: number): string {
-    switch (papel) {
-      case 1: return 'Locador';
-      case 2: return 'Locatário';
-      case 3: return 'Fiador';
-      case 10: return 'Vendedor';
-      case 11: return 'Comprador';
-      default: return String(papel);
-    }
-  }
-
   abrirForm(): void {
     this.modo = 'form';
   }
@@ -200,49 +162,37 @@ export class ConvitesImovelDialogComponent implements OnInit {
     this.modo = 'lista';
   }
 
-  getStatusClass(item: any): string {
-    const label = this.getStatusLabel(item);
-
-    switch (label) {
-      case 'Pendente':
-        return 'status-pendente';
-      case 'Usado':
-        return 'status-usado';
-      case 'Expirado':
-        return 'status-expirado';
-      case 'Cancelado':
-        return 'status-cancelado';
-      default:
-        return 'status-default';
-    }
-  }
-
   get papeisFiltrados() {
     const tipo = this.form.value.tipo;
 
     if (tipo === 1) {
-      return this.papeis.filter(p => p.value === 1 || p.value === 2 || p.value === 3);
+      return this.papeis.filter(p => [1, 2, 3].includes(p.value));
     }
 
     if (tipo === 2) {
-      return this.papeis.filter(p => p.value === 10 || p.value === 11);
+      return this.papeis.filter(p => [10, 11].includes(p.value));
     }
 
     return this.papeis;
   }
 
-  verDados(item: any): void {
-    this.router.navigate(
-      ['/cadastro-publico', item.token],
-      { queryParams: { modo: 'visualizar' } }
-    );
+  getStatusLabel(item: ConviteCadastroContratoDto): string {
+    return getConviteStatusLabel(item.status);
   }
 
-  getLabelAcao(item: any): string {
+  copiar(url?: string | null): void {
+    this.conviteUi.copiarLink(url);
+  }
+
+  verDados(item: ConviteCadastroContratoDto): void {
+    this.conviteUi.verDados(item.token);
+  }
+
+  getLabelAcao(item: ConviteCadastroContratoDto): string {
     return item.usadoEm ? 'Ver dados' : 'Copiar link';
   }
 
-  onAcao(item: any): void {
+  onAcao(item: ConviteCadastroContratoDto): void {
     if (item.usadoEm) {
       this.verDados(item);
       return;
@@ -250,5 +200,4 @@ export class ConvitesImovelDialogComponent implements OnInit {
 
     this.copiar(item.url);
   }
-
 }

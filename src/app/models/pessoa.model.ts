@@ -67,6 +67,12 @@ export interface PessoaListItem {
   dataAbertura?: string | null;   // "YYYY-MM-DD"
   enderecoId?: string | null;
   origemId?: string;
+  quantidadeContratos: number;
+  ehLocador: boolean;
+  ehLocatario: boolean;
+  ehFiador: boolean;
+  ehVendedor: boolean;
+  ehComprador: boolean;
 }
 
 export interface PessoasPageResponse {
@@ -79,3 +85,13 @@ export interface PessoasPageResponse {
 export type PessoaCreateOrLinkRequest =
   | PessoaCreateRequest
   | { pessoaId: string; origemId: string | null };
+
+
+export interface PessoasFiltro {
+  page: number;
+  pageSize: number;
+  nome?: string | null;
+  documento?: string | null;
+  tipo?: string | null;
+  papel?: number | null;
+}

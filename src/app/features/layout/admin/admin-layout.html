@@ -35,6 +35,11 @@
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Imóveis</span>
       </a>
 
+      <a mat-list-item routerLink="convites" routerLinkActive="active">
+        <mat-icon matListItemIcon>send</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Convites</span>
+      </a>
+
       <a mat-list-item routerLink="contratos" routerLinkActive="active">
         <mat-icon matListItemIcon>assignment</mat-icon>
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Contratos</span>

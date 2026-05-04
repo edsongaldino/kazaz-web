@@ -1,100 +1,152 @@
-<section class="page">
-  <header class="page__header">
-    <h1>Clientes</h1>
-    <div class="header__actions">
-      <button mat-flat-button color="primary" [routerLink]="['/pessoas/novo']">
-        <mat-icon>person_add</mat-icon>
-        Novo cliente
-      </button>
-    </div>
-  </header>
+<div class="toolbar">
+  <h2>Clientes</h2>
 
-  <div class="filters">
-    <mat-form-field appearance="outline" class="filters__field">
+  <a mat-flat-button class="btn-novo" color="primary" routerLink="/pessoas/novo">
+    <mat-icon>person_add</mat-icon>
+    Novo cliente
+  </a>
+</div>
+
+<form [formGroup]="form" class="filtro-imoveis">
+  <div class="grid">
+
+    <mat-form-field class="col-3" appearance="outline">
       <mat-label>Nome</mat-label>
-      <input matInput placeholder="Ex.: Maria Silva" [formControl]="form.controls.nome">
-      <button *ngIf="form.value.nome" matSuffix mat-icon-button (click)="form.controls.nome.setValue('')">
-        <mat-icon>close</mat-icon>
-      </button>
+      <input matInput placeholder="Ex.: Maria Silva" formControlName="nome">
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="filters__field">
-      <mat-label>CPF</mat-label>
-      <input matInput placeholder="Somente números" [formControl]="form.controls.cpf" inputmode="numeric">
-      <button *ngIf="form.value.cpf" matSuffix mat-icon-button (click)="form.controls.cpf.setValue('')">
-        <mat-icon>close</mat-icon>
-      </button>
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>CPF/CNPJ</mat-label>
+      <input matInput placeholder="Somente números" inputmode="numeric" formControlName="documento">
     </mat-form-field>
 
-    <div class="filters__buttons">
-      <button mat-stroked-button (click)="clearFilters()">
-        <mat-icon>filter_alt_off</mat-icon>
-        Limpar
-      </button>
-    </div>
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Tipo</mat-label>
+      <mat-select formControlName="tipo">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option value="FISICA">Física</mat-option>
+        <mat-option value="JURIDICA">Jurídica</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Papel</mat-label>
+      <mat-select formControlName="papel">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option [value]="1">Locador</mat-option>
+        <mat-option [value]="2">Locatário</mat-option>
+        <mat-option [value]="3">Fiador</mat-option>
+        <mat-option [value]="4">Vendedor</mat-option>
+        <mat-option [value]="5">Comprador</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-flat-button class="filtrar col-2" color="primary" type="button" (click)="filtrar()">
+      <mat-icon>search</mat-icon>
+      Filtrar
+    </button>
+
+    <button mat-button class="limpar col-1" type="button" (click)="clearFilters()">
+      <mat-icon>restore</mat-icon>
+      Limpar
+    </button>
+
   </div>
+</form>
 
-  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+<mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
 
-  <div class="table-wrapper" *ngIf="!errorMsg(); else errorTpl">
-    <table mat-table [dataSource]="items()">
+<div class="table-wrapper" *ngIf="!errorMsg(); else errorTpl">
+  <table mat-table [dataSource]="items()">
 
-      <!-- Nome -->
-      <ng-container matColumnDef="nome">
-        <th mat-header-cell *matHeaderCellDef> Nome </th>
-        <td mat-cell *matCellDef="let row">
-          {{ row.nome }}
-        </td>
-      </ng-container>
+    <ng-container matColumnDef="nome">
+      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.nome }}
+      </td>
+    </ng-container>
 
-      <!-- Documento (CPF) -->
-      <ng-container matColumnDef="documento">
-        <th mat-header-cell *matHeaderCellDef> Documento </th>
-        <td mat-cell *matCellDef="let row">{{ formatCpf(row.documento || '') }}</td>
-      </ng-container>
+    <ng-container matColumnDef="documento">
+      <th mat-header-cell *matHeaderCellDef>Documento</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.documento | documento }}
+      </td>
+    </ng-container>
 
-      <!-- Nascimento -->
-      <ng-container matColumnDef="tipo">
-        <th mat-header-cell *matHeaderCellDef> Tipo Cadastro</th>
-        <td mat-cell *matCellDef="let row">
-          <app-chip
-            [value]="row.tipo"
-            category="tipoCadastro">
-          </app-chip>
-        </td>
-      </ng-container>
+    <ng-container matColumnDef="tipo">
+      <th mat-header-cell *matHeaderCellDef>Tipo Cadastro</th>
+      <td mat-cell *matCellDef="let row">
+        <app-chip category="tipoCadastro" [value]="row.tipo"></app-chip>
+      </td>
+    </ng-container>
 
-      <!-- Ações -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let row">
-          <button mat-icon-button [routerLink]="['/pessoas/editar', row.id]" color="primary" matTooltip="Editar">
-            <mat-icon>edit</mat-icon>
-          </button>
-        </td>
-      </ng-container>
+    <ng-container matColumnDef="quantidadeContratos">
+      <th mat-header-cell *matHeaderCellDef>Contratos</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.quantidadeContratos }}
+      </td>
+    </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    <ng-container matColumnDef="papeis">
+      <th mat-header-cell *matHeaderCellDef>Papéis</th>
+      <td mat-cell *matCellDef="let row">
+        <div class="d-flex flex-wrap gap-1">
+          <app-chip *ngIf="row.ehLocador" category="papel" [value]="1"></app-chip>
+          <app-chip *ngIf="row.ehLocatario" category="papel" [value]="2"></app-chip>
+          <app-chip *ngIf="row.ehFiador" category="papel" [value]="3"></app-chip>
+          <app-chip *ngIf="row.ehVendedor" category="papel" [value]="4"></app-chip>
+          <app-chip *ngIf="row.ehComprador" category="papel" [value]="5"></app-chip>
+        </div>
+      </td>
+    </ng-container>
 
-      <tr class="empty" *ngIf="!loading() && items().length === 0">
-        <td [attr.colspan]="displayedColumns.length">Nenhum registro encontrado.</td>
-      </tr>
-    </table>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
+      <td mat-cell *matCellDef="let row">
+        <button
+          mat-icon-button
+          color="primary"
+          [routerLink]="['/pessoas/editar', row.id]"
+          matTooltip="Visualizar">
+          <mat-icon>file</mat-icon>
+        </button>
 
-    <mat-paginator
-      [length]="total()"
-      [pageIndex]="pageIndex()"
-      [pageSize]="pageSize()"
-      [pageSizeOptions]="[5,10,25,50]"
-      (page)="onPage($event)">
-    </mat-paginator>
+        <button
+          mat-icon-button
+          color="primary"
+          [routerLink]="['/pessoas/editar', row.id]"
+          matTooltip="Editar">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+        Nenhum registro encontrado.
+      </td>
+    </tr>
+
+  </table>
+
+  <mat-paginator
+    [length]="total()"
+    [pageIndex]="pageIndex()"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="[10, 25, 50]"
+    (page)="onPage($event)">
+  </mat-paginator>
+</div>
+
+<ng-template #errorTpl>
+  <div class="error">
+    <p>{{ errorMsg() }}</p>
+
+    <button mat-stroked-button type="button" (click)="clearFilters()">
+      Limpar filtros
+    </button>
   </div>
-
-  <ng-template #errorTpl>
-    <div class="error">
-      <p>{{ errorMsg() }}</p>
-      <button mat-stroked-button (click)="clearFilters()">Limpar filtros</button>
-    </div>
-  </ng-template>
-</section>
+</ng-template>

@@ -1,170 +1,149 @@
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
-import { merge, Subject } from 'rxjs';
-import { PessoasService } from '../../../core/services/pessoas.service';
-import { PessoasPageResponse, PessoaListItem } from '../../../models/pessoa.model';
-import { getChipConfig } from '../../../shared/helpers/chip.helper';
-import { ChipComponent } from '../../../shared/components/chips/chip';
+import { PessoaListItem, PessoasFiltro } from '../../../models/pessoa.model';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
-function onlyDigits(v: string) { return v.replace(/\D/g, ''); }
-function formatCpf(cpf?: string | null) {
-  if (!cpf) return '';
-  const d = onlyDigits(cpf).padStart(11, '0');
-  return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
-}
+import { PessoasService } from '../../../core/services/pessoas.service';
+import { ChipComponent } from '../../../shared/components/chips/chip';
+import { DocumentoPipe } from '../../../shared/pipes/documento-pipe';
 
 @Component({
-  selector: 'app-pessoas-list',
+  selector: 'app-clientes-list',
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     ReactiveFormsModule,
-    RouterModule,
+
     MatTableModule,
     MatPaginatorModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule,
+    MatSelectModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressBarModule,
     MatTooltipModule,
+    DocumentoPipe,
     ChipComponent
   ],
   templateUrl: './pessoas-list.component.html',
-  styleUrls: ['./pessoas-list.component.scss']
+  styleUrl: './pessoas-list.component.scss'
 })
-export class PessoasListComponent {
-  private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private service = inject(PessoasService);
+export class PessoasListComponent implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly pessoasService = inject(PessoasService);
 
-  displayedColumns = ['nome', 'documento', 'tipo', 'actions'];
+  readonly displayedColumns: string[] = [
+    'nome',
+    'documento',
+    'tipo',
+    'quantidadeContratos',
+    'papeis',
+    'actions'
+  ];
 
-  // filtros (ambos convergem para `termo`)
-  form = this.fb.group({
+  readonly form = this.fb.group({
     nome: [''],
-    cpf: [''],
+    documento: [''],
+    tipo: [''],
+    papel: [null as number | null]
   });
 
-  // paginação
-  pageIndex = signal(0); // UI 0-based
-  pageSize  = signal(10);
+  readonly items = signal<PessoaListItem[]>([]);
+  readonly total = signal(0);
+  readonly loading = signal(false);
+  readonly errorMsg = signal<string | null>(null);
 
-  // estados/dados
-  loading = signal(false);
-  errorMsg = signal<string | null>(null);
-  total = signal(0);
-  items = signal<PessoaListItem[]>([]);
+  readonly pageIndex = signal(0);
+  readonly pageSize = signal(10);
 
-  private page$ = new Subject<PageEvent>();
+  ngOnInit(): void {
+    this.carregar();
 
-  // helpers
-  protected formatCpf = formatCpf;
-
-  constructor() {
-    // estado inicial via query params
-    this.route.queryParamMap.pipe(
-      map(q => ({
-        page: +(q.get('page') ?? '1'),
-        pageSize: +(q.get('pageSize') ?? '10'),
-        termo: q.get('termo') ?? '',
-      })),
-      tap(q => {
-        // distribui `termo` nos campos (heurística simples)
-        const maybeCpf = q.termo?.match(/\d{9,11}/)?.[0] ?? '';
-        const maybeNome = q.termo?.replace(maybeCpf, '').trim() ?? '';
-
-        this.form.patchValue({ nome: maybeNome, cpf: maybeCpf }, { emitEvent: false });
-        this.pageIndex.set(Math.max(0, (q.page || 1) - 1));
-        this.pageSize.set(q.pageSize || 10);
-      }),
-      switchMap(() => this.load())
-    ).subscribe();
-
-    // filtros com debounce
-    const formChanges$ = this.form.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      tap(() => this.pageIndex.set(0)),
-      switchMap(() => this.updateUrlAndLoad())
-    );
-
-    // paginação
-    const pageChanges$ = this.page$.pipe(
-      tap(e => { this.pageIndex.set(e.pageIndex); this.pageSize.set(e.pageSize); }),
-      switchMap(() => this.updateUrlAndLoad())
-    );
-
-    merge(formChanges$, pageChanges$).subscribe();
+    this.form.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.pageIndex.set(0);
+        this.carregar();
+      });
   }
 
-  onPage(e: PageEvent) { this.page$.next(e); }
-
-  clearFilters() {
-    this.form.reset({ nome: '', cpf: '' });
+  filtrar(): void {
+    this.pageIndex.set(0);
+    this.carregar();
   }
 
-  private buildTermo(): string | null {
-    const v = this.form.getRawValue();
-    const nome = (v.nome || '').trim();
-    const cpf = onlyDigits(v.cpf || '');
-    // Estratégia: prioriza CPF se informado; senão usa nome; se ambos, concatena (o backend fará contains geral).
-    if (cpf && nome) return `${nome} ${cpf}`;
-    if (cpf) return cpf;
-    if (nome) return nome;
-    return null;
-  }
-
-  private updateUrlAndLoad() {
-    const page = this.pageIndex() + 1;
-    const pageSize = this.pageSize();
-    const termo = this.buildTermo() || undefined;
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { page, pageSize, termo },
-      queryParamsHandling: '',
+  clearFilters(): void {
+    this.form.reset({
+      nome: '',
+      documento: '',
+      tipo: '',
+      papel: null
     });
 
-    return this.load();
+    this.pageIndex.set(0);
+    this.carregar();
   }
 
-  private load() {
+  onPage(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+    this.carregar();
+  }
+
+  carregar(): void {
+    const filtro: PessoasFiltro = {
+      page: this.pageIndex() + 1,
+      pageSize: this.pageSize(),
+      nome: this.normalizarTexto(this.form.value.nome),
+      documento: this.somenteNumeros(this.form.value.documento),
+      tipo: this.normalizarTexto(this.form.value.tipo),
+      papel: this.form.value.papel
+    };
+
+    console.log(filtro);
+
     this.loading.set(true);
     this.errorMsg.set(null);
 
-    return this.service.listar({
-      page: this.pageIndex() + 1,
-      pageSize: this.pageSize(),
-      termo: this.buildTermo(),
-    }).pipe(
-      tap({
-        next: (res: PessoasPageResponse) => {
-          console.log(res.items);
-          this.items.set(res.items ?? []);
-          this.total.set(res.total ?? 0);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          console.error(err);
-          this.items.set([]);
-          this.total.set(0);
-          this.loading.set(false);
-          this.errorMsg.set('Falha ao carregar pessoas.');
-        }
-      })
-    );
+    this.pessoasService.listar(filtro).subscribe({
+      next: (res) => {
+        this.items.set(res.items ?? []);
+        this.total.set(res.total ?? 0);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.items.set([]);
+        this.total.set(0);
+        this.loading.set(false);
+        this.errorMsg.set('Não foi possível carregar os clientes.');
+      }
+    });
+  }
+
+  private normalizarTexto(value?: string | null): string | null {
+    const texto = value?.trim();
+    return texto ? texto : null;
+  }
+
+  private somenteNumeros(value?: string | null): string | null {
+    const digits = (value ?? '').replace(/\D/g, '');
+    return digits ? digits : null;
   }
 }

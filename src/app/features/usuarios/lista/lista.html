@@ -1,93 +1,104 @@
-<div class="page">
-  <div class="header">
-    <div>
-      <h2>Usuários</h2>
-      <div class="subtitle">Gerencie usuários e permissões</div>
-    </div>
+<div class="toolbar">
+  <h2>Usuários</h2>
 
-    <div class="actions">
-      <mat-form-field appearance="outline" class="search">
-        <mat-label>Buscar</mat-label>
-        <input matInput [formControl]="termoCtrl" placeholder="nome ou e-mail" />
-        <button *ngIf="termoCtrl.value" matSuffix mat-icon-button aria-label="Limpar" (click)="termoCtrl.setValue('')">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
-
-      <button mat-flat-button color="primary" (click)="novo()">
-        <mat-icon>person_add</mat-icon>
-        Novo usuário
-      </button>
-    </div>
-  </div>
-
-  <div class="table-wrapper">
-    <table mat-table [dataSource]="items" class="table">
-      <ng-container matColumnDef="nome">
-        <th mat-header-cell *matHeaderCellDef>Nome</th>
-        <td mat-cell *matCellDef="let u">{{ u.nome }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef>E-mail</th>
-        <td mat-cell *matCellDef="let u">{{ u.email }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="perfil">
-        <th mat-header-cell *matHeaderCellDef>Perfil</th>
-        <td mat-cell *matCellDef="let u">{{ u.perfilNome || '-' }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="ativo">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let u">
-          <mat-chip
-            [ngClass]="u.ativo ? 'chip-ativo' : 'chip-inativo'"
-            selected
-          >
-            {{ u.ativo ? 'Ativo' : 'Inativo' }}
-          </mat-chip>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="acoes">
-        <th mat-header-cell *matHeaderCellDef class="col-acoes">Ações</th>
-        <td mat-cell *matCellDef="let u" class="col-acoes">
-          <button mat-icon-button matTooltip="Editar" (click)="editar(u)">
-            <mat-icon>edit</mat-icon>
-          </button>
-
-          <!--
-          <button *ngIf="u.ativo" mat-icon-button matTooltip="Desativar" (click)="desativar(u)">
-            <mat-icon>toggle_off</mat-icon>
-          </button>
-
-          
-          <button *ngIf="!u.ativo" mat-icon-button matTooltip="Ativar" (click)="ativar(u)">
-            <mat-icon>toggle_on</mat-icon>
-          </button>
-          -->
-
-          <button mat-icon-button matTooltip="Excluir" (click)="excluir(u)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-
-    <div class="empty" *ngIf="!loading && items.length === 0">
-      Nenhum usuário encontrado.
-    </div>
-
-    <mat-paginator
-      [length]="total"
-      [pageIndex]="pageIndex"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="[5, 10, 25, 50]"
-      (page)="onPage($event)">
-    </mat-paginator>
-  </div>
+  <button mat-flat-button class="btn-novo" color="primary" type="button" (click)="novo()">
+    <mat-icon>person_add</mat-icon>
+    Novo usuário
+  </button>
 </div>
+
+<form [formGroup]="form" class="filtro-imoveis">
+  <div class="grid">
+
+    <mat-form-field class="col-5" appearance="outline">
+      <mat-label>Buscar</mat-label>
+      <input matInput formControlName="termo" placeholder="Nome ou e-mail">
+    </mat-form-field>
+
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Perfil</mat-label>
+      <mat-select formControlName="perfilId">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option value="b22cbc7e-c7ae-4f7b-acbc-67f09cc35a3d">Administrador</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="col-2" appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="ativo">
+        <mat-option [value]="null">Todos</mat-option>
+        <mat-option [value]="true">Ativo</mat-option>
+        <mat-option [value]="false">Inativo</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-flat-button class="filtrar col-2" color="primary" type="button" (click)="filtrar()">
+      <mat-icon>search</mat-icon>
+      Filtrar
+    </button>
+
+    <button mat-button class="limpar col-1" type="button" (click)="clearFilters()">
+      <mat-icon>restore</mat-icon>
+      Limpar
+    </button>
+
+  </div>
+</form>
+
+<div class="table-wrapper">
+  <table mat-table [dataSource]="items">
+
+    <ng-container matColumnDef="nome">
+      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <td mat-cell *matCellDef="let row">{{ row.nome }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef>E-mail</th>
+      <td mat-cell *matCellDef="let row">{{ row.email }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="perfil">
+      <th mat-header-cell *matHeaderCellDef>Perfil</th>
+      <td mat-cell *matCellDef="let row">{{ row.perfilNome }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="ativo">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let row">
+        <app-chip category="statusUsuario" [value]="row.ativo"></app-chip>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="acoes">
+      <th mat-header-cell *matHeaderCellDef>Ações</th>
+      <td mat-cell *matCellDef="let row">
+        <button mat-icon-button color="primary" type="button" (click)="editar(row)" matTooltip="Editar">
+          <mat-icon>edit</mat-icon>
+        </button>
+
+        <button mat-icon-button color="warn" type="button" (click)="excluir(row.id)" matTooltip="Excluir">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+        Nenhum usuário encontrado.
+      </td>
+    </tr>
+
+  </table>
+</div>
+
+<mat-paginator
+  [length]="total"
+  [pageIndex]="pageIndex"
+  [pageSize]="pageSize"
+  [pageSizeOptions]="[10, 25, 50]"
+  (page)="onPage($event)">
+</mat-paginator>

@@ -1,0 +1,34 @@
+<h2 mat-dialog-title>Analisar convite</h2>
+
+<mat-dialog-content>
+  <div class="info">
+    <p><strong>Contrato:</strong> {{ data.numeroContrato }}</p>
+    <p><strong>Pessoa:</strong> {{ data.nomePessoa || 'Não preenchido' }}</p>
+    <p><strong>Documento:</strong> {{ data.documento || '-' }}</p>
+  </div>
+
+  <form [formGroup]="form">
+    <mat-radio-group formControlName="resultado" class="resultado-group">
+      <mat-radio-button [value]="1">Aprovar</mat-radio-button>
+      <mat-radio-button [value]="2">Reprovar</mat-radio-button>
+      <mat-radio-button [value]="3">Solicitar correção</mat-radio-button>
+    </mat-radio-group>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Comentário</mat-label>
+      <textarea
+        matInput
+        rows="4"
+        formControlName="comentario"
+        placeholder="Informe uma observação para o cliente ou para histórico">
+      </textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  <button mat-flat-button color="primary" type="button" (click)="confirmar()">
+    Confirmar
+  </button>
+</mat-dialog-actions>

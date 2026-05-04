@@ -90,7 +90,7 @@ export class ConvitesCadastroListaComponent {
 
     this.carregando = true;
 
-    this.api.listar(usarContratoId).subscribe({
+    this.api.listarPorContrato(usarContratoId).subscribe({
       next: (res) => {
         this.items = res?.items ?? [];
         this.applyFilter(this.termoCtrl.value);

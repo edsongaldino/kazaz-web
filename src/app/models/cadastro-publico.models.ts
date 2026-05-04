@@ -1,5 +1,12 @@
 import { PessoaDto } from "./pessoa.model";
 
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
 export interface ConvitePublicInfoResponse {
   valido: boolean;
   motivo?: string | null;
@@ -78,4 +85,54 @@ export interface DocumentoVisualizacaoDto {
   tipoDocumentoNome: string;
   url: string;
   contentType?: string | null;
+}
+
+
+export interface ConviteCadastroListItemResponse {
+  id: string;
+  contratoId: string;
+  numeroContrato: string;
+  tipoContrato: number;
+  statusContrato: number;
+  imovelId: string;
+  nomeImovel?: string;
+
+  papel: number;
+  status: number;
+
+  token: string;
+  link: string;
+
+  criadoEm: string;
+  expiraEm?: string;
+  usadoEm?: string;
+  preenchidoEm?: string;
+
+  pessoaId?: string;
+  nomePessoa?: string;
+  documento?: string;
+
+  ultimoComentarioAnalise?: string;
+}
+
+export interface ListarConvitesCadastroQuery {
+  page: number;
+  pageSize: number;
+
+  contratoId?: string;
+  imovelId?: string;
+  status?: number;
+  papel?: number;
+
+  nome?: string;
+  documento?: string;
+  imovel?: string;
+
+  preenchidoDe?: string | null;
+  preenchidoAte?: string | null;
+}
+
+export interface AnalisarConviteRequest {
+  resultado: number;
+  comentario?: string;
 }

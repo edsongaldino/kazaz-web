@@ -6,6 +6,8 @@ import {
   PagedResult,
   UsuarioCreateDto,
   UsuarioListDto,
+  UsuariosPageResponse,
+  UsuariosQuery,
   UsuarioUpdateDto
 } from './../../models/usuario.models';
 import { Console } from 'console';
@@ -16,14 +18,16 @@ export class UsuariosService {
 
   constructor(private http: HttpClient) {}
 
-  listar(page: number, pageSize: number, termo?: string): Observable<PagedResult<UsuarioListDto>> {
-    let params = new HttpParams()
-      .set('page', page)
-      .set('pageSize', pageSize);
+  listar(q: UsuariosQuery): Observable<UsuariosPageResponse> {
+    let params = new HttpParams();
 
-    if (termo?.trim()) params = params.set('termo', termo.trim());
+    if (q.page != null) params = params.set('page', String(q.page));
+    if (q.pageSize != null) params = params.set('pageSize', String(q.pageSize));
+    if (q.termo?.trim()) params = params.set('termo', q.termo.trim());
+    if (q.perfilId) params = params.set('perfilId', q.perfilId);
+    if (q.ativo != null) params = params.set('ativo', String(q.ativo));
 
-    return this.http.get<PagedResult<UsuarioListDto>>(this.baseUrl, { params });
+    return this.http.get<UsuariosPageResponse>(this.baseUrl, { params });
   }
 
   obterPorId(id: string): Observable<UsuarioListDto> {

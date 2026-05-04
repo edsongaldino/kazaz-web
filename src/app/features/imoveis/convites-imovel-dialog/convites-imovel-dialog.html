@@ -28,7 +28,6 @@
           <table class="tabela-convites">
             <thead>
               <tr>
-                <th>Contrato</th>
                 <th>Papel</th>
                 <th>Status</th>
                 <th>Criado em</th>
@@ -39,17 +38,12 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of convites">
-                <td>{{ item.numeroContrato }}</td>
                 <td><app-chip category="papel" [value]="item.papel"></app-chip></td>
-                <td>
-                  <span class="status-chip" [ngClass]="getStatusClass(item)">
-                    {{ getStatusLabel(item) }}
-                  </span>
-                </td>
+                <td><app-chip category="status" [value]="item.status"></app-chip></td>
                 <td>{{ item.criadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ item.expiraEm ? (item.expiraEm | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
                 <td>{{ item.usadoEm ? (item.usadoEm | date:'dd/MM/yyyy HH:mm') : '-' }}</td>
-                <button
+                <td><button
                   mat-stroked-button
                   [color]="item.usadoEm ? 'primary' : undefined"
                   class="btn-copiar"
@@ -57,6 +51,7 @@
                   
                   {{ getLabelAcao(item) }}
                 </button>
+                </td>
               </tr>
             </tbody>
           </table>

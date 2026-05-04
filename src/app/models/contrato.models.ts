@@ -51,3 +51,39 @@ export interface ContratoResponse {
   criadoEm: string;
   partes: ContratoParteResponse[];
 }
+
+export interface ContratoResponse {
+  id: string;
+  numero: string;
+  tipo: number;
+  status: number;
+
+  imovelId: string;
+  codigoImovel?: string | null;
+  tituloImovel?: string | null;
+  tipoImovelNome?: string | null;
+
+  inicioVigencia: string;
+  fimVigencia?: string | null;
+  criadoEm: string;
+
+  partes: ContratoParteResponse[];
+}
+
+export interface ListarContratosQuery {
+  page: number;
+  pageSize: number;
+
+  imovelId?: string;
+  tipoImovelId?: string;
+
+  tipo?: number;
+  status?: number;
+
+  contrato?: string;
+  imovel?: string;
+  documentoParte?: string;
+
+  vigenciaDe?: string | null;
+  vigenciaAte?: string | null;
+}

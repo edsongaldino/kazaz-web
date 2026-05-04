@@ -91,11 +91,14 @@ export interface ImovelListDto {
 }
 
 export interface ImovelFiltro {
-  codigo?: string | null;
-  tipoImovelId?: string | null;
-  finalidade?: number | null;
-  cidadeId?: string | null;
-  status?: number | null;
-  page?: number;
-  pageSize?: number;
+  page: number;
+  pageSize: number;
+
+  termo?: string;
+  documentoProprietario?: string;
+
+  tipoImovelId?: string;
+  finalidade?: number;
+  cidadeId?: string;
+  status?: number;
 }
