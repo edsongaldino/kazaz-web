@@ -93,8 +93,8 @@ export class UsuarioDialogComponent implements OnInit {
 
       const senhaCtrl = this.form.controls.senha;
       senhaCtrl.clearValidators();
+      senhaCtrl.setValidators([Validators.minLength(6)]);
       senhaCtrl.setValue('');
-      senhaCtrl.disable({ emitEvent: false });
       senhaCtrl.updateValueAndValidity({ emitEvent: false });
     }
   }
@@ -145,12 +145,18 @@ export class UsuarioDialogComponent implements OnInit {
     // ✅ A PARTIR DAQUI O TS SABE QUE É EDIT
     const usuario = this.data.usuario; // <- NÃO é undefined aqui
 
-    const payload = {
+    const senha = this.form.controls.senha.value?.trim();
+
+    const payload: any = {
       nome: this.form.controls.nome.value,
       email: this.form.controls.email.value,
       ativo: this.form.controls.ativo.value,
       perfilId: this.form.controls.perfilId.value!,
     };
+
+    if (senha) {
+      payload.senha = senha;
+    }
 
     this.usuarios.atualizar(usuario.id, payload).subscribe({
       next: () => {

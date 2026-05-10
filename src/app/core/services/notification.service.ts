@@ -92,14 +92,17 @@ export class NotificationService {
   }
 
   /** Toast rápido de erro (canto da tela) */
-  toastError(title: string, ms: number = 3000, position: any = 'top-end') {
+  toastError(title: string, ms: number = 2500, position: any = 'top-end') {
     return Swal.fire({
       toast: true,
       position,
-      icon: 'error',
-      title,
+      icon: undefined,
+      title: `⚠️ ${title}`, // 👈 emoji leve
       showConfirmButton: false,
-      timer: ms
+      timer: ms,
+      customClass: {
+        popup: 'kazaz-toast'
+      }
     });
   }
 

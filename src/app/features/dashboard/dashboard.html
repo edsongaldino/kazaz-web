@@ -1,1 +1,184 @@
-<p>dashboard works!</p>
+<div class="dashboard">
+
+  <div class="dashboard__header">
+    <div>
+      <h2>Dashboard</h2>
+      <p>Visão geral do painel administrativo Kazaz</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+
+    <mat-card class="summary-card primary">
+      <div class="card-icon">
+        <mat-icon>home</mat-icon>
+      </div>
+      <div>
+        <span>Imóveis cadastrados</span>
+        <strong>{{ resumo.totalImoveis }}</strong>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card success">
+      <div class="card-icon">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div>
+        <span>Clientes</span>
+        <strong>{{ resumo.totalClientes }}</strong>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card warning">
+      <div class="card-icon">
+        <mat-icon>description</mat-icon>
+      </div>
+      <div>
+        <span>Contratos</span>
+        <strong>{{ resumo.totalContratos }}</strong>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card info">
+      <div class="card-icon">
+        <mat-icon>send</mat-icon>
+      </div>
+      <div>
+        <span>Convites enviados</span>
+        <strong>{{ resumo.totalConvites }}</strong>
+      </div>
+    </mat-card>
+
+  </div>
+
+  <div class="dashboard-grid">
+
+    <mat-card class="panel">
+      <h3>Status dos imóveis</h3>
+
+      <div class="status-list">
+        <div class="status-item">
+          <span>Ativos</span>
+          <strong>{{ resumo.imoveisAtivos }}</strong>
+        </div>
+
+        <div class="status-item">
+          <span>Em negociação</span>
+          <strong>{{ resumo.imoveisEmNegociacao }}</strong>
+        </div>
+
+        <div class="status-item">
+          <span>Vendidos</span>
+          <strong>{{ resumo.imoveisVendidos }}</strong>
+        </div>
+
+        <div class="status-item">
+          <span>Alugados</span>
+          <strong>{{ resumo.imoveisAlugados }}</strong>
+        </div>
+      </div>
+    </mat-card>
+
+    <mat-card class="panel">
+      <h3>Ações rápidas</h3>
+
+      <div class="quick-actions">
+        <button mat-flat-button color="primary" routerLink="/imoveis/novo">
+          <mat-icon>add_home</mat-icon>
+          Novo imóvel
+        </button>
+
+        <button mat-flat-button color="primary" routerLink="/pessoas/novo">
+          <mat-icon>person_add</mat-icon>
+          Novo cliente
+        </button>
+
+        <button mat-flat-button color="primary" routerLink="/contratos/novo">
+          <mat-icon>post_add</mat-icon>
+          Novo contrato
+        </button>
+
+        <button mat-stroked-button color="primary" routerLink="/convites">
+          <mat-icon>send</mat-icon>
+          Ver convites
+        </button>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="charts-grid">
+
+        <mat-card class="chart-card">
+            <div class="chart-header">
+            <h3>Imóveis por tipo</h3>
+            <span>Distribuição por categoria</span>
+            </div>
+
+            <div class="pie-layout">
+            <div
+                class="pie-chart"
+                [style.background]="pieTipoBackground">
+            </div>
+
+            <div class="chart-legend">
+                <div class="legend-item" *ngFor="let item of imoveisPorTipo; let i = index">
+                <span class="legend-dot" [class]="'c' + i"></span>
+                <div>
+                    <strong>{{ item.label }}</strong>
+                    <small>{{ item.quantidade }} imóveis</small>
+                </div>
+                </div>
+            </div>
+            </div>
+        </mat-card>
+
+        <mat-card class="chart-card">
+            <div class="chart-header">
+            <h3>Imóveis por finalidade</h3>
+            <span>Venda, aluguel e temporada</span>
+            </div>
+
+            <div class="pie-layout">
+            <div
+                class="pie-chart"
+                [style.background]="pieFinalidadeBackground">
+            </div>
+
+            <div class="chart-legend">
+                <div class="legend-item" *ngFor="let item of imoveisPorFinalidade; let i = index">
+                <span class="legend-dot" [class]="'c' + i"></span>
+                <div>
+                    <strong>{{ item.label }}</strong>
+                    <small>{{ item.quantidade }} imóveis</small>
+                </div>
+                </div>
+            </div>
+            </div>
+        </mat-card>
+
+        <mat-card class="chart-card">
+            <div class="chart-header">
+            <h3>Convites por status</h3>
+            <span>Contratos em fluxo de convite</span>
+            </div>
+
+            <div class="pie-layout">
+            <div
+                class="pie-chart"
+                [style.background]="pieConvitesBackground">
+            </div>
+
+            <div class="chart-legend">
+                <div class="legend-item" *ngFor="let item of convitesPorStatus; let i = index">
+                <span class="legend-dot" [class]="'c' + i"></span>
+                <div>
+                    <strong>{{ item.label }}</strong>
+                    <small>{{ item.quantidade }} registros</small>
+                </div>
+                </div>
+            </div>
+            </div>
+        </mat-card>
+    </div>
+
+</div>

@@ -23,6 +23,7 @@ export interface UsuarioCreateDto {
 export interface UsuarioUpdateDto {
   nome: string;
   email: string;
+  senha?: string;
   ativo: boolean;
   perfilId: string;
 }
@@ -46,4 +47,13 @@ export interface UsuariosPageResponse {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface LoginResponse {
+  token: string;
+  usuarioId: string;
+  nome: string;
+  email: string;
+  perfilId?: number;
+  perfilNome?: string;
 }

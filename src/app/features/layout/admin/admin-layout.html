@@ -20,7 +20,7 @@
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Dashboard</span>
       </a>
 
-      <a mat-list-item routerLink="usuarios" routerLinkActive="active">
+      <a mat-list-item routerLink="usuarios" routerLinkActive="active" *ngIf="usuarioLogado?.perfilNome === 'Administrador'">
         <mat-icon matListItemIcon>group_add</mat-icon>
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Usuários</span>
       </a>
@@ -46,6 +46,36 @@
       </a>
 
     </mat-nav-list>
+
+    <div class="sidebar-user" [class.collapsed]="collapsed() && !isHandset()">
+
+      <div
+        class="sidebar-user__avatar"
+        [matTooltip]="collapsed() && !isHandset()
+          ? (usuarioLogado?.nome || 'Usuário')
+          : ''">
+        {{ usuarioLogado?.nome?.charAt(0) || 'U' }}
+      </div>
+
+      <div
+        class="sidebar-user__info"
+        *ngIf="!collapsed() || isHandset()">
+        <strong>{{ usuarioLogado?.nome || 'Usuário' }}</strong>
+        <span>{{ usuarioLogado?.perfilNome || 'Perfil' }}</span>
+      </div>
+
+      <button
+        *ngIf="!collapsed() || isHandset()"
+        mat-icon-button
+        matTooltip="Sair"
+        class="sair"
+        type="button"
+        (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+
+    </div>
+
   </mat-sidenav>
 
   <mat-sidenav-content class="app-content">

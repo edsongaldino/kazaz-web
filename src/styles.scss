@@ -41,7 +41,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .page {
   display: grid;
-  gap: 1rem;
 }
 
 .page__header {
@@ -199,4 +198,51 @@ mat-card{
     color: #fff !important;
     font-weight: bold !important;
     border: 1px solid #043308 !important;
+}
+
+.swal2-toast {
+  border-radius: 14px !important;
+  padding: 12px 16px !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18) !important;
+}
+
+.swal2-toast .swal2-title {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+}
+
+.swal2-toast .swal2-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.swal2-popup .swal2-title{
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+}
+
+.kazaz-toast {
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.kazaz-toast .swal2-title {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
+}
+
+.kazaz-toast .swal2-icon {
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 8px 0 0 !important;
+}
+
+.kazaz-toast.swal2-icon-error {
+  border-left: 3px solid #ef4444 !important;
 }
