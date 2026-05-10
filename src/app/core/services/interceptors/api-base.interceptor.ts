@@ -6,7 +6,7 @@ import { isPlatformServer } from '@angular/common';
 // - Browser usa PROXY: base = /api
 // - SSR chama API direto: base = https://localhost:7035/api
 const BROWSER_BASE = '/api';
-const SERVER_BASE  = 'https://localhost:7035/api';
+const SERVER_BASE = '/api';
 
 export const apiBaseInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
