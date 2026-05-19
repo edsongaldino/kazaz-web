@@ -114,16 +114,61 @@
                 </mat-checkbox>
               </div>
 
-              <!-- INT / DECIMAL / MOEDA -->
+              <!-- MOEDA -->
               <mat-form-field
-                *ngIf="c.tipoValor === 'int' || c.tipoValor === 'decimal' || c.tipoValor === 'moeda'"
+                *ngIf="c.tipoValor === 'moeda'"
                 appearance="outline"
                 class="col-3 w-100"
               >
                 <mat-label>
                   {{ c.nome }} {{ c.unidade ? '(' + c.unidade + ')' : '' }}
                 </mat-label>
-                <input matInput type="number" [formControl]="getCaracControl(c.id)" />
+                <input
+                  matInput
+                  type="text"
+                  mask="separator.2"
+                  prefix="R$ "
+                  thousandSeparator="."
+                  decimalMarker=","
+                  [dropSpecialCharacters]="true"
+                  [formControl]="getCaracControl(c.id)" />
+              </mat-form-field>
+
+              <!-- DECIMAL -->
+              <mat-form-field
+                *ngIf="c.tipoValor === 'decimal'"
+                appearance="outline"
+                class="col-3 w-100"
+              >
+                <mat-label>
+                  {{ c.nome }} {{ c.unidade ? '(' + c.unidade + ')' : '' }}
+                </mat-label>
+                <input
+                  matInput
+                  type="text"
+                  mask="separator.2"
+                  thousandSeparator="."
+                  decimalMarker=","
+                  [dropSpecialCharacters]="true"
+                  [formControl]="getCaracControl(c.id)" />
+              </mat-form-field>
+
+              <!-- INT -->
+              <mat-form-field
+                *ngIf="c.tipoValor === 'int'"
+                appearance="outline"
+                class="col-3 w-100"
+              >
+                <mat-label>
+                  {{ c.nome }} {{ c.unidade ? '(' + c.unidade + ')' : '' }}
+                </mat-label>
+                <input
+                  matInput
+                  type="text"
+                  mask="separator.0"
+                  thousandSeparator="."
+                  [dropSpecialCharacters]="true"
+                  [formControl]="getCaracControl(c.id)" />
               </mat-form-field>
 
               <!-- TEXTO -->
