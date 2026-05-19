@@ -1,0 +1,39 @@
+.carac-grupo__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #005cbb;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-left: 3px solid #005cbb;
+  padding-left: 8px;
+  margin-top: 8px;
+}
+
+.checkbox-col {
+  display: flex;
+  align-items: center;
+  height: 56px;
+}
+
+.form-actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 40px;
+  padding: 16px 24px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
+
+  button {
+    height: 44px;
+    border-radius: 8px;
+    font-weight: 600;
+    
+    mat-icon {
+      margin-right: 4px;
+    }
+  }
+}

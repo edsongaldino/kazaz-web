@@ -18,6 +18,14 @@
   <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
   <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
 
+  <div *ngIf="solicitacaoCorrecaoMsg()" class="correcao-banner">
+    <div class="correcao-banner-header">
+      <mat-icon class="banner-icon">warning</mat-icon>
+      <span>Atenção: Correção de Cadastro Solicitada</span>
+    </div>
+    <p class="correcao-banner-body">{{ solicitacaoCorrecaoMsg() }}</p>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="salvar()">
     <mat-card>
       <mat-card-header>
@@ -27,6 +35,7 @@
       <div class="grid">
         <mat-form-field appearance="outline" class="col-3">
           <mat-label>Tipo</mat-label>
+          <mat-icon matPrefix>category</mat-icon>
           <mat-select [formControl]="form.controls.tipo">
             <mat-option value="PF">Pessoa Física</mat-option>
             <mat-option value="PJ">Pessoa Jurídica</mat-option>
@@ -35,6 +44,7 @@
 
         <mat-form-field appearance="outline" class="col-3">
           <mat-label>{{ form.controls.tipo.value === 'PF' ? 'CPF' : 'CNPJ' }}</mat-label>
+          <mat-icon matPrefix>badge</mat-icon>
           <input
             matInput
             [formControl]="form.controls.documento"
@@ -47,6 +57,7 @@
 
        <mat-form-field appearance="outline" class="col-3" *ngIf="!hideOrigem">
         <mat-label>Origem</mat-label>
+        <mat-icon matPrefix>explore</mat-icon>
         <mat-select formControlName="origemId">
           <mat-option [value]="null">Sem origem</mat-option>
           <mat-option *ngFor="let o of origens" [value]="o.id">
@@ -60,6 +71,7 @@
 
         <mat-form-field appearance="outline" class="col-3" *ngIf="form.controls.tipo.value === 'PF'">
           <mat-label>Estado Civil</mat-label>
+          <mat-icon matPrefix>favorite</mat-icon>
           <mat-select [formControl]="form.controls.estadoCivil">
             <mat-option [value]="EstadoCivil.NaoInformado">Não informado</mat-option>
             <mat-option [value]="EstadoCivil.Solteiro">Solteiro</mat-option>
@@ -75,6 +87,7 @@
         <ng-container *ngIf="form.controls.tipo.value === 'PF'">
           <mat-form-field appearance="outline" class="col-5">
             <mat-label>Nome</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
             <input matInput [formControl]="form.controls.nome" />
             <mat-error *ngIf="form.controls.nome.hasError('required')">Informe o nome</mat-error>
           </mat-form-field>
@@ -86,11 +99,13 @@
 
           <mat-form-field appearance="outline" class="col-3">
             <mat-label>RG</mat-label>
+            <mat-icon matPrefix>fingerprint</mat-icon>
             <input matInput [formControl]="form.controls.rg" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-2">
             <mat-label>Órgão Exp.</mat-label>
+            <mat-icon matPrefix>account_balance</mat-icon>
             <input matInput [formControl]="form.controls.orgaoExpedidor" />
           </mat-form-field>
         </ng-container>
@@ -104,17 +119,20 @@
 
           <mat-form-field appearance="outline" class="col-2">
             <mat-label>Inscrição Estadual</mat-label>
+            <mat-icon matPrefix>description</mat-icon>
             <input matInput [formControl]="form.controls.inscricaoEstadual" />
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-5">
             <mat-label>Razão Social</mat-label>
+            <mat-icon matPrefix>business</mat-icon>
             <input matInput [formControl]="form.controls.razaoSocial" />
             <mat-error *ngIf="form.controls.razaoSocial.hasError('required')">Informe a razão social</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-4">
             <mat-label>Nome Fantasia</mat-label>
+            <mat-icon matPrefix>store</mat-icon>
             <input matInput [formControl]="form.controls.nomeFantasia" />
           </mat-form-field>
         </ng-container>

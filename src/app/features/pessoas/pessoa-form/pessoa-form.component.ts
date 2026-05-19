@@ -130,6 +130,7 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
   // ✅ guarda pessoa encontrada no lookup (se quiser usar no save depois)
   pessoaEncontradaId = signal<string | null>(null);
   cpfLookupLoading = signal(false);
+  solicitacaoCorrecaoMsg = signal<string | null>(null);
 
   id = signal<string | null>(null);
   modoEdicao = computed(() => !!this.id());
@@ -239,6 +240,16 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
     if (!token) {
       this.errorMsg.set('Token inválido.');
       return;
+    }
+
+    if (this.mode === 'public') {
+      this.cadastroPublicoService.status(token).subscribe({
+        next: (st) => {
+          if (st.status === 6 && st.ultimoComentarioAnalise) {
+            this.solicitacaoCorrecaoMsg.set(st.ultimoComentarioAnalise);
+          }
+        }
+      });
     }
 
     if (this.hideOrigem) {

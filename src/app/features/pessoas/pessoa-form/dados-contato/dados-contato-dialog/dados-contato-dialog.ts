@@ -44,6 +44,27 @@ export class DadosContatoDialog {
     if (data?.contato) {
       this.form.patchValue(data.contato);
     }
+
+    this.configurarValidacoesDinamicas();
+  }
+
+  private configurarValidacoesDinamicas() {
+    const tipoCtrl = this.form.controls.tipo;
+    const valorCtrl = this.form.controls.valor;
+
+    const aplicarValidacao = (tipo: TipoContato | null) => {
+      valorCtrl.clearValidators();
+      if (tipo === 'EMAIL') {
+        valorCtrl.setValidators([Validators.required, Validators.email]);
+      } else {
+        valorCtrl.setValidators([Validators.required]);
+      }
+      valorCtrl.updateValueAndValidity();
+    };
+
+    aplicarValidacao(tipoCtrl.value);
+
+    tipoCtrl.valueChanges.subscribe(tipo => aplicarValidacao(tipo));
   }
 
   salvar() {

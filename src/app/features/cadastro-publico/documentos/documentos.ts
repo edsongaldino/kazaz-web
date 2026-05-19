@@ -1,9 +1,11 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpEvent, HttpEventType } from '@angular/common/http';
 import { UploadService } from '../../../core/services/upload.service';
 import { DocumentosService } from '../../../core/services/documentos.service';
 import { CadastroPublicoService} from '../../../core/services/cadastro-publico.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { DocumentoRequeridoDto, DocumentosRequeridosResponse } from '../../../models/cadastro-publico.models';
 
 type AnexoVm = DocumentoRequeridoDto & {
@@ -24,6 +26,7 @@ export class CadastroDocumentosComponent implements OnInit {
 
   erro: string | null = null;
   uploadingRowKey: string | null = null;
+  uploadProgressMap: { [key: string]: number } = {};
   concluindo = false;
 
   docs: any[] = [];
@@ -67,7 +70,8 @@ export class CadastroDocumentosComponent implements OnInit {
     private cadastroPublicoService: CadastroPublicoService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private notify: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -133,38 +137,52 @@ export class CadastroDocumentosComponent implements OnInit {
 
     const rowKey = this.key(tipoDocumentoId, multiplicidadeIndex);
     this.uploadingRowKey = rowKey;
+    this.uploadProgressMap[rowKey] = 0;
+    this.cdr.markForCheck();
 
     const folder = `pessoa/${this.pessoaId}/${this.slugDocumento(tipoDocumentoId)}`;
 
-    this.uploadService.upload(file, folder).subscribe({
-      next: (up) => {
-        this.documentosService.criar({
-          nome: up.nome,
-          caminho: up.caminho,
-          contentType: up.contentType,
-          tamanhoBytes: up.tamanhoBytes,
-          alvo: 1, // Pessoa
-          alvoId: this.pessoaId!,
-          tipoDocumentoId: tipoDocumentoId,
-          contratoId: this.contratoId!,
-          observacao: null,
-
-          // ✅ se você adicionar isso no backend (recomendado)
-          multiplicidadeIndex: multiplicidadeIndex
-        }).subscribe({
-          next: () => {
-            this.uploadingRowKey = null;
-            this.carregarDocs();
-          },
-          error: () => {
-            this.uploadingRowKey = null;
-            this.erro = 'Erro ao salvar documento.';
-          },
-        });
+    this.uploadService.uploadWithProgress(file, folder).subscribe({
+      next: (event: HttpEvent<any>) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const percentDone = event.total ? Math.round((100 * event.loaded) / event.total) : 0;
+          this.uploadProgressMap[rowKey] = percentDone;
+          this.cdr.markForCheck();
+        } else if (event.type === HttpEventType.Response) {
+          const up = event.body;
+          if (up) {
+            this.documentosService.criar({
+              nome: up.nome,
+              caminho: up.caminho,
+              contentType: up.contentType,
+              tamanhoBytes: up.tamanhoBytes,
+              alvo: 1, // Pessoa
+              alvoId: this.pessoaId!,
+              tipoDocumentoId: tipoDocumentoId,
+              contratoId: this.contratoId!,
+              observacao: null,
+              multiplicidadeIndex: multiplicidadeIndex
+            }).subscribe({
+              next: () => {
+                this.uploadingRowKey = null;
+                delete this.uploadProgressMap[rowKey];
+                this.carregarDocs();
+              },
+              error: () => {
+                this.uploadingRowKey = null;
+                delete this.uploadProgressMap[rowKey];
+                this.erro = 'Erro ao salvar documento.';
+                this.cdr.markForCheck();
+              },
+            });
+          }
+        }
       },
       error: () => {
         this.uploadingRowKey = null;
+        delete this.uploadProgressMap[rowKey];
         this.erro = 'Erro no upload.';
+        this.cdr.markForCheck();
       },
     });
   }
@@ -201,12 +219,13 @@ export class CadastroDocumentosComponent implements OnInit {
     this.cadastroPublicoService.concluir(token).subscribe({
       next: () => {
         this.concluindo = false;
-        // opcional: rota final
-        // this.router.navigate(['/cadastro-publico', token, 'finalizado']);
+        this.notify.toastSuccess('Cadastro finalizado com sucesso! Nossa equipe irá avaliar seus dados.');
+        this.router.navigate(['/cadastro-publico', token, 'acompanhamento']);
       },
       error: () => {
         this.concluindo = false;
         this.erro = 'Erro ao concluir cadastro.';
+        this.cdr.markForCheck();
       }
     });
   }

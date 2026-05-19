@@ -1,78 +1,85 @@
-<div class="wrap">
-  <h2 class="title">Anexos</h2>
+<div class="container-documentos">
+  <div class="card-documentos">
+    <div class="header">
+      <h2>Envio de Documentos</h2>
+      <p class="subtitle">Por favor, envie os documentos obrigatórios para darmos prosseguimento ao seu cadastro.</p>
+    </div>
 
-  <div class="error" *ngIf="erro">{{ erro }}</div>
+    <div class="error-banner" *ngIf="erro">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#b91c1c"><path d="m330-120-210-210v-300l210-210h300l210 210v300l-210 210H330Zm150-200q17 0 28.5-11.5T520-360q0-17-11.5-28.5T480-400q-17 0-28.5 11.5T440-360q0 17 11.5 28.5T480-320Zm-40-160h80v-240h-80v240Z"/></svg>
+      <span>{{ erro }}</span>
+    </div>
 
-  <div class="table-wrap" *ngIf="!erro">
-    <table class="anexos-table">
-      <thead>
-        <tr>
-          <th>Anexo</th>
-          <th class="col-arquivo">Arquivo</th>
-          <th class="col-upload">Upload</th>
-        </tr>
-      </thead>
-
-      <div style="padding:8px; font-size:12px; opacity:.8">
-        pessoaId: {{ pessoaId }} |
-        requeridos: {{ requeridos?.length ?? 0 }} |
-        docs: {{ docs?.length ?? 0 }} |
-        anexosVm: {{ anexosVm?.length ?? 0 }} |
-        erro: {{ erro }}
-      </div>
-
-
-      <tbody>
-        <tr *ngFor="let row of anexosVm">
-          <td class="col-anexo">
-            {{ row.nome }}
-            <span class="obrig" *ngIf="row.obrigatorio">*</span>
-          </td>
-
-          <td class="col-arquivo">
-            <span
-              class="badge"
-              [class.badge-ok]="row.enviado"
-              [class.badge-pendente]="!row.enviado">
-              {{ row.enviado ? 'Enviado' : 'Pendente' }}
-            </span>
-
-            <div class="arquivo-nome" *ngIf="row.enviado && row.arquivoNome">
-              {{ row.arquivoNome }}
+    <!-- Lista de documentos requeridos -->
+    <div class="documentos-list" *ngIf="!erro">
+      <div class="doc-card" *ngFor="let row of anexosVm" [class.is-enviado]="row.enviado">
+        <div class="doc-card-body">
+          <div class="doc-details">
+            <div class="doc-title-group">
+              <span class="doc-name">{{ row.nome }}</span>
+              <span class="required-badge" *ngIf="row.obrigatorio">Obrigatório</span>
             </div>
-          </td>
+            
+            <div class="status-indicator">
+              <span class="status-dot" [class.active]="row.enviado"></span>
+              <span class="status-text">{{ row.enviado ? 'Enviado' : 'Pendente' }}</span>
+            </div>
+          </div>
 
-          <td class="col-upload">
+          <div class="doc-action">
             <input
               type="file"
-              class="file-input"
+              class="file-input-hidden"
               [id]="'file_' + row.tipoDocumentoId + '_' + (row.multiplicidadeIndex ?? 0)"
               (change)="onFileRow($event, row.tipoDocumentoId, row.multiplicidadeIndex ?? null)"
               accept=".pdf,.jpg,.jpeg,.png" />
 
             <button
-              class="btn btn-enviar"
-              type="button"
+              class="btn-upload-file"
+              [class.btn-secondary]="row.enviado"
               [disabled]="uploadingRowKey === (row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0)) || !pessoaId"
               (click)="triggerFile(row.tipoDocumentoId, row.multiplicidadeIndex ?? null)">
-              {{ uploadingRowKey === (row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0)) ? 'Enviando...' : 'Enviar' }}
+              <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M440-320v-326L336-542l-56-56 200-200 200 200-56 56-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
+              <span>{{ row.enviado ? 'Substituir' : 'Enviar' }}</span>
             </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+        </div>
 
-    <div class="footer">
-      <button
-        class="btn btn-outline"
-        type="button"
-        [disabled]="concluindo || !todosObrigatoriosEnviados"
-        (click)="concluir()">
-        {{ concluindo ? 'Concluindo...' : 'Concluir' }}
-      </button>
+        <!-- Barra de carregamento/progresso -->
+        <div class="progress-section" *ngIf="uploadingRowKey === (row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0))">
+          <div class="progress-details">
+            <span class="progress-label">Enviando arquivo...</span>
+            <span class="progress-percentage">{{ uploadProgressMap[row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0)] ?? 0 }}%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" [style.width.%]="uploadProgressMap[row.tipoDocumentoId + '::' + (row.multiplicidadeIndex ?? 0)] ?? 0"></div>
+          </div>
+        </div>
 
-      <div class="hint" *ngIf="!todosObrigatoriosEnviados">
-        Envie todos os anexos obrigatórios para concluir.
+        <!-- Nome do arquivo enviado -->
+        <div class="file-name-display" *ngIf="row.enviado && row.arquivoNome">
+          <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#475569"><path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-560v-160H240v640h480v-480H520ZM240-800v160-160 640-640Z"/></svg>
+          <span class="file-name">{{ row.arquivoNome }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de Ações de Conclusão -->
+    <div class="footer-actions" *ngIf="!erro">
+      <div class="finalizar-banner animated-show" *ngIf="todosObrigatoriosEnviados">
+        <div class="banner-text">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#0f766e"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
+          <span>Todos os documentos obrigatórios foram enviados!</span>
+        </div>
+        <button class="btn-finalizar" [disabled]="concluindo" (click)="concluir()">
+          <span *ngIf="!concluindo">Finalizar Cadastro</span>
+          <span *ngIf="concluindo">Finalizando...</span>
+        </button>
+      </div>
+
+      <div class="pendente-banner" *ngIf="!todosObrigatoriosEnviados">
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#b45309"><path d="m370-80-16-128q-13-5-24.5-12T307-237l-119 42-117-202 99-82q-1-7-1-14.5t1-14.5l-99-82 117-202 119 42q11-7 22.5-13.5T354-752l16-128h234l16 128q13 5 24.5 12t22.5 17l119-42 117 202-99 82q1 7 1 14.5t-1 14.5l99 82-117 202-119-42q-11 7-22.5 13.5T606-208l-16 128H370Zm110-280q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35Z"/></svg>
+        <span>Envie todos os documentos obrigatórios para liberar a finalização.</span>
       </div>
     </div>
   </div>

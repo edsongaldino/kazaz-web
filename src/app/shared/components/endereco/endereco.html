@@ -1,10 +1,11 @@
 <div class="endereco-form" [formGroup]="formGroup">
 
-  <!-- CEP | Número | Complemento -->
-  <div class="form-grid grid-3">
-    <div>
+  <div class="grid">
+    <!-- CEP -->
+    <div class="col-3">
       <mat-form-field appearance="outline">
         <mat-label>CEP</mat-label>
+        <mat-icon matPrefix>map</mat-icon>
         <input
           matInput
           formControlName="cep"
@@ -14,40 +15,41 @@
       </mat-form-field>
     </div>
 
-    <div>
+    <!-- Número -->
+    <div class="col-3">
       <mat-form-field appearance="outline">
         <mat-label>Número</mat-label>
         <input matInput formControlName="numero" />
       </mat-form-field>
     </div>
 
-    <div>
+    <!-- Complemento -->
+    <div class="col-6">
       <mat-form-field appearance="outline">
         <mat-label>Complemento</mat-label>
         <input matInput formControlName="complemento" />
       </mat-form-field>
     </div>
-  </div>
 
-  <!-- Logradouro (2 colunas) | Bairro (1 coluna) -->
-  <div class="form-grid grid-3">
-    <div class="span-2">
+    <!-- Logradouro -->
+    <div class="col-8">
       <mat-form-field appearance="outline">
         <mat-label>Logradouro</mat-label>
+        <mat-icon matPrefix>home</mat-icon>
         <input matInput formControlName="logradouro" />
       </mat-form-field>
     </div>
 
-    <div>
+    <!-- Bairro -->
+    <div class="col-4">
       <mat-form-field appearance="outline">
         <mat-label>Bairro</mat-label>
         <input matInput formControlName="bairro" />
       </mat-form-field>
     </div>
-  </div>
 
-  <div class="form-grid grid-3">
-    <div>
+    <!-- Estado -->
+    <div class="col-4">
       <mat-form-field appearance="outline">
         <mat-label>Estado (UF)</mat-label>
         <mat-select formControlName="estadoId" (selectionChange)="onEstadoChange()">
@@ -59,7 +61,8 @@
       </mat-form-field>
     </div>
 
-    <div>
+    <!-- Cidade -->
+    <div class="col-8">
       <mat-form-field appearance="outline">
         <mat-label>Cidade</mat-label>
         <mat-select formControlName="cidadeId" (selectionChange)="onCidadeChange()">

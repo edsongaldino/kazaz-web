@@ -5,6 +5,7 @@ import { UsuariosListaComponent } from './features/usuarios/lista/lista';
 import { ContratosListaComponent } from './features/contratos/contratos-list/contratos-list';
 import { ContratoFormComponent } from './features/contratos/contrato-form/contrato-form';
 import { authGuard, authChildGuard } from './core/guards/auth.guard';
+import { cadastroPublicoGuard } from './core/guards/cadastro-publico.guard';
 
 export const appRoutes: Routes = [
 
@@ -17,6 +18,7 @@ export const appRoutes: Routes = [
   {
     path: 'cadastro-publico/:token',
     loadComponent: () => import('./features/layout/public/public-layout').then(m => m.PublicLayout),
+    canActivate: [cadastroPublicoGuard],
     children: [
       {
         path: '',
@@ -29,6 +31,12 @@ export const appRoutes: Routes = [
         loadComponent: () =>
           import('./features/cadastro-publico/documentos/documentos')
             .then(m => m.CadastroDocumentosComponent),
+      },
+      {
+        path: 'acompanhamento',
+        loadComponent: () =>
+          import('./features/cadastro-publico/acompanhamento/acompanhamento')
+            .then(m => m.CadastroAcompanhamentoComponent),
       },
       {
         path: 'pessoas/editar/:id',

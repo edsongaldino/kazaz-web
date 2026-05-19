@@ -1,0 +1,78 @@
+<div class="container-acompanhamento">
+  <div class="card-acompanhamento">
+    <div class="header">
+      <div class="icon-circle" [class.success]="status === 4" [class.danger]="status === 5" [class.warning]="status === 2 || status === 3">
+        <svg *ngIf="status === 4" xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#2e7d32"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
+        <svg *ngIf="status === 5" xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#c62828"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+        <svg *ngIf="status === 2 || status === 3" xmlns="http://www.w3.org/2000/svg" height="32px" viewBox="0 -960 960 960" width="32px" fill="#f9a825"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-60q142 0 241-99t99-241q0-142-99-241t-241-99q-142 0-241 99t-99 241q0 142 99 241t241 99Zm0-340q0-17 11.5-28.5T520-520h120q17 0 28.5-11.5T680-560q0-17-11.5-28.5T650-600H560v-80q0-17-11.5-28.5T520-720q-17 0-28.5 11.5T480-680v200q0 17 11.5 28.5T520-440h120q17 0 28.5-11.5T680-480q0-17-11.5-28.5T650-520H520v-40q0 17-11.5 28.5T480-520ZM520-440h120q17 0 28.5-11.5T680-480q0-17-11.5-28.5T650-520H520v140q0 17 11.5 28.5T520-340Z"/></svg>
+      </div>
+      <h2>Acompanhamento do Cadastro</h2>
+      <p class="subtitle">Abaixo você pode ver o status atual da sua avaliação de dados.</p>
+    </div>
+
+    <div class="status-summary" [class.summary-success]="status === 4" [class.summary-danger]="status === 5" [class.summary-warning]="status === 2 || status === 3">
+      <div class="summary-details">
+        <div class="summary-item">
+          <span class="label">Status:</span>
+          <span class="value">{{ statusLabel }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Papel:</span>
+          <span class="value">{{ papelLabel }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comentário de análise se houver -->
+    <div class="feedback-comment" *ngIf="ultimoComentario">
+      <div class="feedback-header">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#5f6368"><path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm80-164 104-104h536v-452H160v660Zm0-660v660-660Z"/></svg>
+        <span>Observação da Imobiliária</span>
+      </div>
+      <p class="comment-text">{{ ultimoComentario }}</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item completed">
+        <div class="timeline-line"></div>
+        <div class="timeline-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#ffffff"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
+        </div>
+        <div class="timeline-content">
+          <h4>Dados e Documentos Enviados</h4>
+          <p>Os seus dados cadastrais e documentos obrigatórios foram preenchidos e enviados para análise com sucesso.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" [class.completed]="status === 4" [class.failed]="status === 5" [class.active]="status === 2 || status === 3">
+        <div class="timeline-line"></div>
+        <div class="timeline-badge">
+          <svg *ngIf="status === 4" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#ffffff"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
+          <svg *ngIf="status === 5" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#ffffff"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+          <span *ngIf="status === 2 || status === 3" class="badge-text">2</span>
+        </div>
+        <div class="timeline-content">
+          <h4>Análise da Ficha Cadastral</h4>
+          <p *ngIf="status === 2 || status === 3">Seu cadastro está em fase de análise pela nossa equipe. Não se preocupe, notificaremos você em breve.</p>
+          <p *ngIf="status === 4">Seu cadastro foi aprovado! Todas as informações e documentos estão corretos.</p>
+          <p *ngIf="status === 5">Seu cadastro não foi aprovado. Caso tenha dúvidas, por favor, entre em contato.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" [class.active]="status === 4">
+        <div class="timeline-badge">
+          <span class="badge-text">3</span>
+        </div>
+        <div class="timeline-content">
+          <h4>Emissão e Assinatura do Contrato</h4>
+          <p *ngIf="status === 4">Próxima etapa: O contrato será enviado para assinatura eletrônica.</p>
+          <p *ngIf="status !== 4">Essa etapa será habilitada após a aprovação da sua análise cadastral.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-section">
+      <a href="https://kazaz.com.br" class="btn-voltar">Ir para o site da Kazaz</a>
+    </div>
+  </div>
+</div>

@@ -22,3 +22,37 @@
   color: #6b7280;
   font-style: italic;
 }
+
+.correcao-banner {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  border-left: 5px solid #d97706;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .correcao-banner-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #b45309;
+    font-size: 15px;
+
+    .banner-icon {
+      color: #d97706;
+      height: 24px;
+      width: 24px;
+    }
+  }
+
+  .correcao-banner-body {
+    font-size: 14px;
+    color: #78350f;
+    margin: 0;
+    line-height: 1.5;
+  }
+}

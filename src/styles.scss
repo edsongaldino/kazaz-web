@@ -1,4 +1,3 @@
-
 // Include theming for Angular Material with `mat.theme()`.
 // This Sass mixin will define CSS variables that are used for styling Angular Material
 // components according to the Material 3 design spec.
@@ -7,14 +6,12 @@
 @use '@angular/material' as mat;
 
 html {
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
 }
 
 body {
@@ -33,76 +30,230 @@ body {
   // Reset the user agent margin.
   margin: 0;
 }
+
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
 
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+
+:root {
+  /* Outlined text field custom tokens */
+  --mdc-outlined-text-field-container-shape: 12px;
+  --mdc-outlined-text-field-outline-color: #e2e8f0;
+  --mdc-outlined-text-field-hover-outline-color: #cbd5e1;
+  --mdc-outlined-text-field-focus-outline-color: #005cbb;
+  --mdc-outlined-text-field-outline-width: 1px;
+  --mdc-outlined-text-field-focus-outline-width: 2px;
+  --mdc-outlined-text-field-container-color: #f8fafc;
+  
+  /* Material 3 outline tokens */
+  --mat-sys-outline: #e2e8f0;
+  --mat-sys-outline-variant: #cbd5e1;
+
+  /* Select field and other form components */
+  --mat-form-field-container-shape: 12px;
+
+  /* Card styling custom tokens */
+  --mdc-elevated-card-container-shape: 16px;
+  --mdc-elevated-card-container-elevation: 0px 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-container-color: #f8fafc;
+  --mdc-outlined-text-field-outline-color: #e2e8f0;
+  --mdc-outlined-text-field-hover-outline-color: #cbd5e1;
+  --mdc-outlined-text-field-focus-outline-color: #005cbb;
+  --mat-sys-outline: #e2e8f0;
+  --mat-sys-outline-variant: #cbd5e1;
+  
+  /* Cores de texto, label e placeholder alinhados com o azul Kazaz */
+  --mdc-outlined-text-field-label-text-color: #475569;
+  --mdc-outlined-text-field-focus-label-text-color: #005cbb;
+  --mdc-outlined-text-field-input-text-color: #0f172a;
+  --mdc-outlined-text-field-focus-input-text-color: #0f172a;
+  --mat-select-trigger-text-color: #0f172a;
+  
+  transition: all 0.2s ease;
+  
+  mat-icon[matPrefix], mat-icon[matSuffix] {
+    color: #005cbb !important;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+  }
+  
+  mat-label {
+    color: #475569;
+  }
+  
+  &:hover {
+    --mdc-outlined-text-field-container-color: #f1f5f9;
+    --mat-sys-outline: #cbd5e1;
+    
+    mat-icon[matPrefix], mat-icon[matSuffix] {
+      opacity: 0.95;
+    }
+  }
+  
+  &.mat-focused {
+    --mdc-outlined-text-field-container-color: #ffffff;
+    --mat-sys-outline: #005cbb;
+    
+    mat-label {
+      color: #005cbb !important;
+    }
+    
+    mat-icon[matPrefix], mat-icon[matSuffix] {
+      color: #005cbb !important;
+      opacity: 1;
+    }
+  }
+}
 
 .page {
-  display: grid;
+  margin: 0 auto;
+  padding: 32px 16px;
+  background-color: #f8fafc;
 }
 
 .page__header {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+  }
 }
 
-mat-card { padding: 1rem; }
+mat-card {
+  margin-bottom: 24px !important;
+  border-radius: 16px !important;
+  border: 1px solid #f1f5f9 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+  padding: 24px !important;
+}
 
 .grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: .75rem;
 }
-.col-1 { grid-column: span 1; }
-.col-2 { grid-column: span 2; }
-.col-3 { grid-column: span 3; }
-.col-4 { grid-column: span 4; }
-.col-5 { grid-column: span 5; }
-.col-6 { grid-column: span 6; }
-.col-7 { grid-column: span 7; }
-.col-8 { grid-column: span 8; }
-.col-9 { grid-column: span 9; }
-.col-10 { grid-column: span 10; }
-.col-12 { grid-column: span 12; }
 
-.sub { margin: 1rem 0 .25rem; font-weight: 600; }
+.col-1 {
+  grid-column: span 1;
+}
+
+.col-2 {
+  grid-column: span 2;
+}
+
+.col-3 {
+  grid-column: span 3;
+}
+
+.col-4 {
+  grid-column: span 4;
+}
+
+.col-5 {
+  grid-column: span 5;
+}
+
+.col-6 {
+  grid-column: span 6;
+}
+
+.col-7 {
+  grid-column: span 7;
+}
+
+.col-8 {
+  grid-column: span 8;
+}
+
+.col-9 {
+  grid-column: span 9;
+}
+
+.col-10 {
+  grid-column: span 10;
+}
+
+.col-12 {
+  grid-column: span 12;
+}
+
+.sub {
+  margin: 1rem 0 .25rem;
+  font-weight: 600;
+}
 
 .actions {
   margin-top: 1rem;
-  display: flex; justify-content: flex-end; gap: .75rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: .75rem;
 }
 
-.error { color: #f44336; }
+.error {
+  color: #f44336;
+}
+
 @media (max-width: 900px) {
-  .col-3, .col-4, .col-5, .col-6 { grid-column: span 12; }
+
+  .col-3,
+  .col-4,
+  .col-5,
+  .col-6 {
+    grid-column: span 12;
+  }
 }
 
-thead{
+thead {
   background-color: #00458f !important;
   color: #FFF !important;
 }
 
-thead .mat-mdc-header-row{
+thead .mat-mdc-header-row {
   color: #FFF !important;
 }
 
-mat-card{
-  margin-bottom: 20px !important;
-}
-
 .mat-mdc-card-header {
-    padding: 0px !important;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #545455;
-    text-align: center;
-    font-size: 14px !important;
-    color: #005cbb;
+  padding: 0px !important;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px !important;
+  display: flex;
+  align-items: center;
+  color: #1e293b;
 }
 
-.mat-mdc-card-header mat-icon{
-    margin-top: 5px !important;
-    line-height: 30px;
+.mat-mdc-card-header mat-card-title {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e293b;
+}
+
+.mat-mdc-card-header mat-icon {
+  margin-top: 0px !important;
+  line-height: 24px;
+  color: #005cbb;
 }
 
 .chip {
@@ -110,17 +261,20 @@ mat-card{
   align-items: center;
   justify-content: center;
 
-  height: 28px;              /* padroniza altura */
+  height: 28px;
+  /* padroniza altura */
   padding: 0 12px;
 
-  border-radius: 8px;        /* mais moderno */
+  border-radius: 8px;
+  /* mais moderno */
   font-size: 12px;
   font-weight: 600;
 
   letter-spacing: 0.3px;
   white-space: nowrap;
 
-  border: 1px solid transparent; /* importante pro padrão */
+  border: 1px solid transparent;
+  /* importante pro padrão */
 }
 
 /* FINALIDADE */
@@ -173,31 +327,31 @@ mat-card{
 }
 
 
-.filtrar{
-    border-radius: 5px !important;
-    width: 100% !important;
-    height: 55px !important;
+.filtrar {
+  border-radius: 5px !important;
+  width: 100% !important;
+  height: 55px !important;
 }
 
-.limpar{
-    border-radius: 5px !important;
-    width: 100% !important;
-    height: 55px !important;
-    background-color: #fff4cc !important;
-    color: #9a6700 !important;
-    font-weight: bold !important;
-    border: 1px solid #9a6700 !important;
+.limpar {
+  border-radius: 5px !important;
+  width: 100% !important;
+  height: 55px !important;
+  background-color: #fff4cc !important;
+  color: #9a6700 !important;
+  font-weight: bold !important;
+  border: 1px solid #9a6700 !important;
 }
 
-.btn-novo{
-    border-radius: 5px !important;
-    width: 200px !important;
-    height: 55px !important;
-    float: right !important;
-    background-color: #26a816 !important;
-    color: #fff !important;
-    font-weight: bold !important;
-    border: 1px solid #043308 !important;
+.btn-novo {
+  border-radius: 5px !important;
+  width: 200px !important;
+  height: 55px !important;
+  float: right !important;
+  background-color: #26a816 !important;
+  color: #fff !important;
+  font-weight: bold !important;
+  border: 1px solid #043308 !important;
 }
 
 .swal2-toast {
@@ -217,7 +371,7 @@ mat-card{
   height: 24px !important;
 }
 
-.swal2-popup .swal2-title{
+.swal2-popup .swal2-title {
   font-size: 22px !important;
   font-weight: 600 !important;
   color: #334155 !important;

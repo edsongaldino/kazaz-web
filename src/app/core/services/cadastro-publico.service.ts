@@ -30,9 +30,15 @@ export class CadastroPublicoService {
   }
 
   status(token: string) {
-    return this.http.get<{ contratoId: string; pessoaId: string | null; papel: number; concluido: boolean }>(
-      `${this.baseUrl}/public/cadastro/${token}/status`
-    );
+    return this.http.get<{
+      contratoId: string;
+      pessoaId: string | null;
+      papel: number;
+      concluido: boolean;
+      iniciado: boolean;
+      status: number;
+      ultimoComentarioAnalise?: string | null;
+    }>(`${this.baseUrl}/public/cadastro/${token}/status`);
   }
 
   vincularPessoa(token: string, pessoaId: string) {

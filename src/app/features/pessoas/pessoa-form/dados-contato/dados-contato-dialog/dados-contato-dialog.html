@@ -23,6 +23,9 @@
         <mat-error *ngIf="form.controls.valor.hasError('required')">
           Informe o valor do contato
         </mat-error>
+        <mat-error *ngIf="form.controls.valor.hasError('email')">
+          E-mail inválido
+        </mat-error>
       </mat-form-field>
     </div>
 

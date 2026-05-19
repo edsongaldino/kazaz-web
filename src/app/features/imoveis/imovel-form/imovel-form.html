@@ -14,12 +14,20 @@
   <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
 
   <form [formGroup]="form" (ngSubmit)="salvar()" class="form">
+    
+    <!-- CARD 1: Dados Básicos -->
     <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>home</mat-icon> Dados Básicos
+        </mat-card-title>
+      </mat-card-header>
 
       <!-- LINHA 1 -->
       <div class="grid">
         <mat-form-field appearance="outline" class="col-4 w-100">
           <mat-label>Código</mat-label>
+          <mat-icon matPrefix>qr_code</mat-icon>
           <input matInput formControlName="codigo" />
           <mat-error *ngIf="form.controls.codigo.hasError('required')">
             Informe o código.
@@ -28,6 +36,7 @@
 
         <mat-form-field appearance="outline" class="col-8 w-100">
           <mat-label>Título</mat-label>
+          <mat-icon matPrefix>title</mat-icon>
           <input matInput formControlName="titulo" />
         </mat-form-field>
       </div>
@@ -36,6 +45,7 @@
       <div class="grid">
         <mat-form-field appearance="outline" class="col-4 w-100">
           <mat-label>Tipo do imóvel</mat-label>
+          <mat-icon matPrefix>domain</mat-icon>
           <mat-select formControlName="tipoImovelId">
             <mat-option *ngFor="let t of tiposImovel()" [value]="t.id">
               {{ t.nome }}
@@ -48,6 +58,7 @@
 
         <mat-form-field appearance="outline" class="col-4 w-100">
           <mat-label>Finalidade</mat-label>
+          <mat-icon matPrefix>sell</mat-icon>
           <mat-select formControlName="finalidade">
             <mat-option *ngFor="let o of finalidades" [value]="o.value">
               {{ o.label }}
@@ -57,6 +68,7 @@
 
         <mat-form-field appearance="outline" class="col-4 w-100">
           <mat-label>Status</mat-label>
+          <mat-icon matPrefix>toggle_on</mat-icon>
           <mat-select formControlName="status">
             <mat-option *ngFor="let o of statusOptions" [value]="o.value">
               {{ o.label }}
@@ -64,25 +76,39 @@
           </mat-select>
         </mat-form-field>
       </div>
+    </mat-card>
 
-      <h3 class="sub mt-4">Endereço</h3>
+    <!-- CARD 2: Endereço -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>place</mat-icon> Endereço
+        </mat-card-title>
+      </mat-card-header>
       <app-endereco *ngIf="enderecoForm" [formGroup]="enderecoForm"></app-endereco>
+    </mat-card>
 
-      <h3 class="sub mt-4">Características</h3>
+    <!-- CARD 3: Características -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>star</mat-icon> Características
+        </mat-card-title>
+      </mat-card-header>
 
       <div *ngIf="caracteristicasLoading()" class="muted">
         Carregando características...
       </div>
 
       <ng-container *ngIf="!caracteristicasLoading()">
-        <div *ngFor="let grupo of gruposCaracteristicas(); trackBy: trackByGrupo" class="carac-grupo mt-3">
-          <h4 class="carac-grupo__title mb-2">{{ grupo }}</h4>
+        <div *ngFor="let grupo of gruposCaracteristicas(); trackBy: trackByGrupo" class="carac-grupo mb-4">
+          <h4 class="carac-grupo__title mb-3">{{ grupo }}</h4>
 
           <div class="grid">
             <ng-container *ngFor="let c of caracteristicasPorGrupo().get(grupo) ?? []; trackBy: trackByCarac">
 
               <!-- BOOL -->
-              <div *ngIf="c.tipoValor === 'bool'" class="col-3">
+              <div *ngIf="c.tipoValor === 'bool'" class="col-3 checkbox-col">
                 <mat-checkbox [formControl]="getCaracControl(c.id)">
                   {{ c.nome }}
                 </mat-checkbox>
@@ -126,22 +152,32 @@
           </div>
         </div>
       </ng-container>
+    </mat-card>
 
-      <!-- OBSERVAÇÕES -->
-      <div class="grid mt-2">
+    <!-- CARD 4: Observações -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>description</mat-icon> Observações
+        </mat-card-title>
+      </mat-card-header>
+
+      <div class="grid">
         <mat-form-field appearance="outline" class="col-12 w-100">
           <mat-label>Observações</mat-label>
           <textarea matInput rows="3" formControlName="observacoes"></textarea>
         </mat-form-field>
       </div>
-
-      <div class="actions mt-3">
-        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
-          {{ modoEdicao() ? 'Salvar' : 'Cadastrar' }}
-        </button>
-        <button mat-button type="button" (click)="cancelar()">Cancelar</button>
-      </div>
-
     </mat-card>
+
+    <!-- Ações Finais -->
+    <div class="form-actions-bar">
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
+        <mat-icon>save</mat-icon>
+        {{ modoEdicao() ? 'Salvar Alterações' : 'Cadastrar Imóvel' }}
+      </button>
+      <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
+    </div>
+
   </form>
 </section>
