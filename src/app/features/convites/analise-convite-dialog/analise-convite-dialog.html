@@ -1,34 +1,379 @@
-<h2 mat-dialog-title>Analisar convite</h2>
+<div class="dialog-header">
+  <div class="header-titles">
+    <h2>Análise de Convite de Cadastro</h2>
+    <span class="subtitle">
+      Contrato: <strong>{{ data.numeroContrato }}</strong> |
+      Papel: <strong>
+        {{
+          data.papel === 1 ? 'Locador' :
+          data.papel === 2 ? 'Locatário' :
+          data.papel === 3 ? 'Fiador' :
+          data.papel === 10 ? 'Vendedor' :
+          data.papel === 11 ? 'Comprador' : 'Outro'
+        }}
+      </strong>
+    </span>
+  </div>
+  <button mat-icon-button (click)="cancelar()" class="close-btn">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
 
-<mat-dialog-content>
-  <div class="info">
-    <p><strong>Contrato:</strong> {{ data.numeroContrato }}</p>
-    <p><strong>Pessoa:</strong> {{ data.nomePessoa || 'Não preenchido' }}</p>
-    <p><strong>Documento:</strong> {{ data.documento || '-' }}</p>
+<mat-progress-bar *ngIf="loading" mode="indeterminate" class="dialog-progress"></mat-progress-bar>
+
+<div class="analise-layout">
+  <!-- PAINEL ESQUERDO: Dados e Documentos para Revisão -->
+  <div class="dados-review-panel">
+    <div *ngIf="!detalhes" class="sem-dados-iniciado">
+      <mat-icon>pending_actions</mat-icon>
+      <p>O cliente ainda não iniciou o preenchimento dos dados deste convite.</p>
+    </div>
+
+    <mat-tab-group *ngIf="detalhes" class="review-tabs">
+      <!-- ABA 1: DADOS CADASTRAIS -->
+      <mat-tab>
+        <ng-template matTabLabel>
+          <mat-icon class="tab-icon">person</mat-icon>
+          Dados Cadastrais
+        </ng-template>
+
+        <div class="tab-content scrollable">
+          <!-- CARD 1: DADOS BÁSICOS -->
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>account_box</mat-icon>
+                Identificação Básica
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="data-grid">
+                <div class="data-item">
+                  <label>Nome / Razão Social</label>
+                  <span>{{ detalhes.pessoa?.nome || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Tipo de Pessoa</label>
+                  <span>{{ detalhes.pessoa?.tipoPessoa === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>{{ detalhes.pessoa?.tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }}</label>
+                  <span>{{ detalhes.pessoa?.documento || '-' }}</span>
+                </div>
+
+                <!-- Campos de PF -->
+                <ng-container *ngIf="detalhes.pessoa?.tipoPessoa === 'PF'">
+                  <div class="data-item">
+                    <label>RG / Órgão Exp.</label>
+                    <span>
+                      {{ detalhes.pessoa?.dadosPessoaFisica?.rg || '-' }}
+                      {{ detalhes.pessoa?.dadosPessoaFisica?.orgaoExpedidor ? '/ ' + detalhes.pessoa?.dadosPessoaFisica?.orgaoExpedidor : '' }}
+                    </span>
+                  </div>
+                  <div class="data-item">
+                    <label>Data de Nascimento</label>
+                    <span>{{ detalhes.pessoa?.dadosPessoaFisica?.dataNascimento ? (detalhes.pessoa?.dadosPessoaFisica?.dataNascimento | date:'dd/MM/yyyy') : '-' }}</span>
+                  </div>
+                  <div class="data-item">
+                    <label>Estado Civil</label>
+                    <span>
+                      {{
+                        detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 1 ? 'Solteiro(a)' :
+                        detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 2 ? 'Casado(a)' :
+                        detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 3 ? 'União Estável' :
+                        detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 4 ? 'Separado(a)' :
+                        detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 5 ? 'Divorciado(a)' :
+                        detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 6 ? 'Viúvo(a)' : '-'
+                      }}
+                    </span>
+                  </div>
+                  <div class="data-item">
+                    <label>Nacionalidade</label>
+                    <span>{{ detalhes.pessoa?.dadosPessoaFisica?.nacionalidade || '-' }}</span>
+                  </div>
+                </ng-container>
+
+                <!-- Campos de PJ -->
+                <ng-container *ngIf="detalhes.pessoa?.tipoPessoa === 'PJ'">
+                  <div class="data-item">
+                    <label>Razão Social</label>
+                    <span>{{ detalhes.pessoa?.dadosPessoaJuridica?.razaoSocial || '-' }}</span>
+                  </div>
+                  <div class="data-item">
+                    <label>Nome Fantasia</label>
+                    <span>{{ detalhes.pessoa?.dadosPessoaJuridica?.nomeFantasia || '-' }}</span>
+                  </div>
+                  <div class="data-item">
+                    <label>Inscrição Estadual</label>
+                    <span>{{ detalhes.pessoa?.dadosPessoaJuridica?.inscricaoEstadual || '-' }}</span>
+                  </div>
+                  <div class="data-item">
+                    <label>Data de Abertura</label>
+                    <span>{{ detalhes.pessoa?.dadosPessoaJuridica?.dataAbertura ? (detalhes.pessoa?.dadosPessoaJuridica?.dataAbertura | date:'dd/MM/yyyy') : '-' }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- CARD 2: ENDEREÇO -->
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>home</mat-icon>
+                Endereço
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="data-grid">
+                <div class="data-item col-span-2">
+                  <label>Logradouro / Rua</label>
+                  <span>{{ detalhes.pessoa?.endereco?.logradouro || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Número</label>
+                  <span>{{ detalhes.pessoa?.endereco?.numero || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Complemento</label>
+                  <span>{{ detalhes.pessoa?.endereco?.complemento || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Bairro</label>
+                  <span>{{ detalhes.pessoa?.endereco?.bairro || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>CEP</label>
+                  <span>{{ detalhes.pessoa?.endereco?.cep || '-' }}</span>
+                </div>
+                <div class="data-item col-span-2">
+                  <label>Cidade / UF</label>
+                  <span>{{ cidadeNome ? cidadeNome + ' - ' + (estadoUf || '') : '-' }}</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- CARD 3: CONTATOS -->
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>contact_phone</mat-icon>
+                Contatos Cadastrados
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="contatos-list" *ngIf="detalhes.pessoa?.contatos?.length; else semContatos">
+                <div class="contato-row" *ngFor="let c of detalhes.pessoa.contatos">
+                  <mat-icon class="contato-icon">{{ c.tipo === 1 ? 'email' : 'phone' }}</mat-icon>
+                  <span class="contato-valor">{{ c.valor }}</span>
+                  <span class="badge badge-principal" *ngIf="c.principal">Principal</span>
+                  <span class="badge badge-secundario" *ngIf="!c.principal">Secundário</span>
+                </div>
+              </div>
+              <ng-template #semContatos>
+                <p class="sem-registros-texto">Nenhum meio de contato registrado.</p>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- CARD 4: CÔNJUGE (se casado ou união estável) -->
+          <mat-card class="info-card" *ngIf="detalhes.pessoa?.tipoPessoa === 'PF' && (detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 2 || detalhes.pessoa?.dadosPessoaFisica?.estadoCivil === 3)">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>people</mat-icon>
+                Dados do Cônjuge
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="data-grid" *ngIf="detalhes.pessoa?.conjuge; else semConjuge">
+                <div class="data-item">
+                  <label>Nome Completo</label>
+                  <span>{{ detalhes.pessoa.conjuge.nome || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>CPF</label>
+                  <span>{{ detalhes.pessoa.conjuge.cpf || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>RG / Órgão Exp.</label>
+                  <span>
+                    {{ detalhes.pessoa.conjuge.rg || '-' }}
+                    {{ detalhes.pessoa.conjuge.orgaoExpedidor ? '/ ' + detalhes.pessoa.conjuge.orgaoExpedidor : '' }}
+                  </span>
+                </div>
+                <div class="data-item">
+                  <label>Data de Nascimento</label>
+                  <span>{{ detalhes.pessoa.conjuge.dataNascimento ? (detalhes.pessoa.conjuge.dataNascimento | date:'dd/MM/yyyy') : '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Telefone</label>
+                  <span>{{ detalhes.pessoa.conjuge.telefone || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>E-mail</label>
+                  <span>{{ detalhes.pessoa.conjuge.email || '-' }}</span>
+                </div>
+              </div>
+              <ng-template #semConjuge>
+                <p class="sem-registros-texto text-warn">Dados do cônjuge obrigatórios, porém não foram preenchidos.</p>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- CARD 5: DADOS COMPLEMENTARES -->
+          <mat-card class="info-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>work</mat-icon>
+                Dados Profissionais & Financeiros
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="data-grid">
+                <div class="data-item">
+                  <label>Profissão</label>
+                  <span>{{ detalhes.pessoa?.dadosComplementares?.profissao || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Escolaridade</label>
+                  <span>{{ detalhes.pessoa?.dadosComplementares?.escolaridade || '-' }}</span>
+                </div>
+                <div class="data-item">
+                  <label>Renda Mensal Declarada</label>
+                  <span class="destaque-renda">
+                    {{ detalhes.pessoa?.dadosComplementares?.rendaMensal ? 'R$ ' + (detalhes.pessoa.dadosComplementares.rendaMensal | number:'1.2-2') : '-' }}
+                  </span>
+                </div>
+                <div class="data-item col-span-3">
+                  <label>Observações Adicionais</label>
+                  <p class="observacao-texto">{{ detalhes.pessoa?.dadosComplementares?.observacoes || '-' }}</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- ABA 2: DOCUMENTOS -->
+      <mat-tab>
+        <ng-template matTabLabel>
+          <mat-icon class="tab-icon">description</mat-icon>
+          Documentos Enviados ({{ detalhes.documentos?.length || 0 }})
+        </ng-template>
+
+        <div class="tab-content scrollable">
+          <div class="documentos-container">
+            <div class="docs-info-banner">
+              <mat-icon>info</mat-icon>
+              <span>Examine os arquivos anexados pelo cliente. Caso algum documento esteja incorreto ou ilegível, clique em <strong>Invalidar</strong> para excluí-lo e permitir o reenvio.</span>
+            </div>
+
+            <div class="documentos-lista" *ngIf="detalhes.documentos?.length; else semDocs">
+              <div class="documento-item" *ngFor="let doc of detalhes.documentos">
+                <div class="doc-icon-wrapper">
+                  <mat-icon class="doc-type-icon">insert_drive_file</mat-icon>
+                </div>
+                
+                <div class="doc-details">
+                  <span class="doc-tipo-nome">{{ doc.tipoDocumentoNome }}</span>
+                  <span class="doc-arquivo-nome">{{ doc.nome }}</span>
+                </div>
+
+                <div class="doc-actions">
+                  <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    (click)="visualizarDocumento(doc)"
+                    matTooltip="Visualizar arquivo em nova aba">
+                    <mat-icon>visibility</mat-icon>
+                    Visualizar
+                  </button>
+
+                  <button
+                    mat-flat-button
+                    color="warn"
+                    type="button"
+                    class="btn-recusar"
+                    (click)="invalidarDocumento(doc)"
+                    matTooltip="Rejeitar este documento">
+                    <mat-icon>block</mat-icon>
+                    Invalidar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #semDocs>
+              <div class="sem-docs-box">
+                <mat-icon>folder_open</mat-icon>
+                <p>Nenhum documento anexado para este cadastro.</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   </div>
 
-  <form [formGroup]="form">
-    <mat-radio-group formControlName="resultado" class="resultado-group">
-      <mat-radio-button [value]="1">Aprovar</mat-radio-button>
-      <mat-radio-button [value]="2">Reprovar</mat-radio-button>
-      <mat-radio-button [value]="3">Solicitar correção</mat-radio-button>
-    </mat-radio-group>
+  <!-- PAINEL DIREITO: Painel de Decisão da Análise -->
+  <div class="decisao-panel">
+    <div class="decisao-header">
+      <h3>Resultado da Análise</h3>
+      <p class="decisao-helper">Selecione o parecer final sobre os dados e documentos revisados.</p>
+    </div>
 
-    <mat-form-field appearance="outline" class="w-100">
-      <mat-label>Comentário</mat-label>
-      <textarea
-        matInput
-        rows="4"
-        formControlName="comentario"
-        placeholder="Informe uma observação para o cliente ou para histórico">
-      </textarea>
-    </mat-form-field>
-  </form>
-</mat-dialog-content>
+    <form [formGroup]="form" class="decisao-form">
+      <mat-radio-group formControlName="resultado" class="resultado-group">
+        <mat-radio-button [value]="1" class="radio-aprovado">
+          <mat-icon class="radio-icon text-success">check_circle</mat-icon>
+          <div class="radio-label-wrapper">
+            <strong>Aprovar Cadastro</strong>
+            <span>Gera/avança o contrato</span>
+          </div>
+        </mat-radio-button>
 
-<mat-dialog-actions align="end">
-  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
-  <button mat-flat-button color="primary" type="button" (click)="confirmar()">
-    Confirmar
-  </button>
-</mat-dialog-actions>
+        <mat-radio-button [value]="3" class="radio-correcao">
+          <mat-icon class="radio-icon text-warn">warning</mat-icon>
+          <div class="radio-label-wrapper">
+            <strong>Solicitar Correção</strong>
+            <span>Reenvia ao cliente para adequação</span>
+          </div>
+        </mat-radio-button>
+
+        <mat-radio-button [value]="2" class="radio-reprovado">
+          <mat-icon class="radio-icon text-danger">cancel</mat-icon>
+          <div class="radio-label-wrapper">
+            <strong>Reprovar e Cancelar</strong>
+            <span>Cancela o convite e o contrato</span>
+          </div>
+        </mat-radio-button>
+      </mat-radio-group>
+
+      <mat-form-field appearance="outline" class="w-100 comentario-field">
+        <mat-label>Motivo / Histórico da Análise</mat-label>
+        <textarea
+          matInput
+          rows="6"
+          formControlName="comentario"
+          placeholder="Descreva detalhadamente o parecer. Se solicitar correção, descreva o que o cliente precisa alterar.">
+        </textarea>
+        <mat-error *ngIf="form.get('comentario')?.hasError('required')">
+          O comentário é obrigatório para detalhar a solicitação de correção.
+        </mat-error>
+      </mat-form-field>
+    </form>
+
+    <div class="decisao-actions">
+      <button mat-flat-button color="primary" class="confirm-btn" type="button" [disabled]="loading" (click)="confirmar()">
+        <mat-icon>done</mat-icon>
+        Confirmar Parecer
+      </button>
+
+      <button mat-stroked-button class="cancel-btn" type="button" [disabled]="loading" (click)="cancelar()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>

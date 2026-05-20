@@ -1,30 +1,148 @@
-.logo{
-    margin: auto;
+.public-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8fafc;
 }
 
-.public-header{
-    text-align: center;
-    background-color: #efefef;
-    padding: 15px 0;
-    border-bottom: 10px solid #058dbb;
-}
+.public-header {
+  background: #ffffff;
+  border-top: 4px solid #058dbb;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 
-.public-content{
+  .header-container {
     width: 80%;
-    margin: auto;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    height: 48px;
+    object-fit: contain;
+  }
+
+  .header-contact {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #475569;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: #058dbb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      &.creci-item {
+        cursor: default;
+        mat-icon {
+          color: #64748b;
+        }
+      }
+
+      &:not(.creci-item):hover {
+        color: #058dbb;
+        
+        mat-icon {
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+}
+
+.public-content {
+  width: 80%;
+  margin: 32px auto;
+  flex: 1;
+}
+
+@media (max-width: 992px) {
+  .public-header {
+    .header-container {
+      width: 90%;
+    }
+  }
+  .public-content {
+    width: 90%;
+  }
 }
 
 @media (max-width: 768px) {
+  .public-header {
+    padding: 12px 0;
+    
+    .header-container {
+      width: 95%;
+      flex-direction: column;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .logo {
+      height: 40px;
+    }
+
+    .header-contact {
+      gap: 12px;
+      justify-content: center;
+      
+      .contact-item {
+        font-size: 13px;
+        
+        &:nth-child(2) {
+          display: none;
+        }
+      }
+    }
+  }
+
   .public-content {
-    width: 100%;
+    width: 95%;
+    margin: 16px auto;
   }
 }
 
 @media print {
   .public-header {
-    border-bottom: 2px solid #058dbb;
+    border-top: none;
+    border-bottom: 1px solid #cbd5e1;
     padding: 8px 0;
+    position: relative;
+    box-shadow: none;
+
+    .header-container {
+      width: 100% !important;
+    }
+
+    .header-contact {
+      display: flex !important;
+    }
   }
+
   .public-content {
     width: 100% !important;
     margin: 0 !important;

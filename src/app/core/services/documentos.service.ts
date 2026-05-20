@@ -14,4 +14,8 @@ export class DocumentosService {
   listarPorPessoa(pessoaId: string): Observable<any[]> {
     return this.http.get<any[]>(`/documentos/pessoa/${pessoaId}`);
   }
+
+  remover(id: string): Observable<void> {
+    return this.http.delete<void>(`/documentos/${id}`);
+  }
 }

@@ -125,6 +125,10 @@
           <mat-icon matTooltip="Copiar link">content_copy</mat-icon>
         </button>
 
+        <button mat-icon-button class="btn-action-share" (click)="compartilharConvite(r)">
+          <mat-icon matTooltip="Compartilhar convite">share</mat-icon>
+        </button>
+
         <button mat-icon-button class="btn-action-print" [disabled]="!r.pessoaId" (click)="imprimirFicha(r)">
           <mat-icon matTooltip="Imprimir Ficha de Cadastro">print</mat-icon>
         </button>
