@@ -126,17 +126,25 @@
     <ng-container matColumnDef="acoes">
       <th mat-header-cell *matHeaderCellDef>Ações</th>
       <td mat-cell *matCellDef="let c">
-        <button mat-icon-button color="primary" (click)="editar(c)">
-          <mat-icon matTooltip="Editar">edit</mat-icon>
-        </button>
+        <div class="acoes-buttons">
+          <button mat-flat-button class="btn-visualizar" (click)="editar(c)">
+            <mat-icon>visibility</mat-icon>
+            Visualizar Contrato
+          </button>
 
-        <button
-          mat-icon-button
-          color="primary"
-          *ngIf="c.status === StatusContrato.Rascunho"
-          (click)="ativar(c)">
-          <mat-icon matTooltip="Ativar contrato">check_circle</mat-icon>
-        </button>
+          <button mat-flat-button class="btn-imprimir" (click)="imprimir(c)">
+            <mat-icon>print</mat-icon>
+            Imprimir
+          </button>
+
+          <button
+            mat-icon-button
+            class="btn-ativar"
+            *ngIf="c.status === StatusContrato.Rascunho"
+            (click)="ativar(c)">
+            <mat-icon matTooltip="Ativar contrato">check_circle</mat-icon>
+          </button>
+        </div>
       </td>
     </ng-container>
 

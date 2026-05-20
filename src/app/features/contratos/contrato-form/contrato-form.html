@@ -1,184 +1,691 @@
 <div class="page">
   <div class="header">
-    <div>
-      <h2>{{ id ? 'Editar contrato' : 'Novo contrato' }}</h2>
-      <div class="sub" *ngIf="contrato">
-        Nº {{ contrato.numero }} • {{ statusLabel(contrato.status) }}
+    <div class="header__title-group">
+      <div class="title-with-back">
+        <h2>{{ id ? 'Editar Contrato' : 'Novo Contrato' }}</h2>
+      </div>
+      <div class="sub-title" *ngIf="contrato">
+        <span class="badge badge--dark">Nº {{ contrato.numero }}</span>
+        <span class="badge badge--primary">{{ statusLabel(contrato.status) }}</span>
+        <span class="badge badge--accent">{{ tipoLabel(contrato.tipo) }}</span>
       </div>
     </div>
 
     <div class="actions">
-      <button mat-stroked-button (click)="voltar()">Voltar</button>
+      <button mat-stroked-button (click)="voltar()" type="button">Voltar</button>
 
       <button
         mat-flat-button
-        color="primary"
+        class="btn-success"
         *ngIf="!id"
-        (click)="salvarRascunho()">
-        Salvar rascunho
+        (click)="salvarRascunho()"
+        type="button">
+        <mat-icon>save</mat-icon> Salvar Rascunho
       </button>
 
       <button
         mat-flat-button
-        color="primary"
+        class="btn-success"
+        *ngIf="id"
+        (click)="salvarAlteracoes()"
+        type="button">
+        <mat-icon>save</mat-icon> Salvar Alterações
+      </button>
+
+      <button
+        mat-flat-button
+        class="btn-print"
+        *ngIf="id"
+        (click)="imprimirContratoChecklist()"
+        type="button">
+        <mat-icon>print</mat-icon> Imprimir Contrato + Checklist
+      </button>
+
+      <button
+        mat-flat-button
+        class="btn-primary"
         *ngIf="id && contrato?.status === StatusContrato.Rascunho"
-        (click)="ativar()">
-        Ativar
+        (click)="ativar()"
+        type="button">
+        <mat-icon>check_circle</mat-icon> Ativar Contrato
       </button>
 
       <button
-        mat-stroked-button
-        color="warn"
+        mat-flat-button
+        class="btn-danger"
         *ngIf="id && contrato?.status !== StatusContrato.Cancelado"
-        (click)="cancelar()">
-        Cancelar
+        (click)="cancelar()"
+        type="button">
+        <mat-icon>cancel</mat-icon> Cancelar Contrato
       </button>
 
       <button
-        mat-stroked-button
+        mat-flat-button
+        class="btn-warning"
         *ngIf="id && contrato?.status === StatusContrato.Ativo"
-        (click)="encerrar()">
-        Encerrar
+        (click)="encerrar()"
+        type="button">
+        <mat-icon>exit_to_app</mat-icon> Encerrar Contrato
       </button>
     </div>
   </div>
 
-  <mat-card>
-    <mat-card-content>
-      <mat-progress-bar *ngIf="carregando" mode="indeterminate"></mat-progress-bar>
+  <mat-progress-bar *ngIf="carregando" mode="indeterminate" class="global-progress"></mat-progress-bar>
 
-      <form [formGroup]="form" class="grid">
-        <mat-form-field appearance="outline">
-          <mat-label>Tipo</mat-label>
-          <mat-select formControlName="tipo">
-            <mat-option [value]="TipoContrato.Locacao">Locação</mat-option>
-            <mat-option [value]="TipoContrato.Venda">Venda</mat-option>
-            <mat-option [value]="TipoContrato.Compra">Compra</mat-option>
-          </mat-select>
-          <mat-error *ngIf="form.controls.tipo.invalid">Informe o tipo.</mat-error>
-        </mat-form-field>
+  <!-- Se for criação (sem id), exibe apenas os dados básicos fora de abas -->
+  <ng-container *ngIf="!id">
+    <mat-card class="modern-card">
+      <mat-card-content>
+        <form [formGroup]="form" class="contrato-grid">
+          <!-- Campo Tipo -->
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo do Contrato</mat-label>
+            <mat-select formControlName="tipo">
+              <mat-option [value]="TipoContrato.Locacao">Locação</mat-option>
+              <mat-option [value]="TipoContrato.Venda">Venda</mat-option>
+              <mat-option [value]="TipoContrato.Compra">Compra</mat-option>
+            </mat-select>
+            <mat-icon matPrefix color="primary">assignment</mat-icon>
+            <mat-error *ngIf="form.controls.tipo.invalid">Informe o tipo.</mat-error>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" class="span-2">
-          <mat-label>Imóvel</mat-label>
-          <input
-            matInput
-            [matAutocomplete]="autoImovel"
-            [formControl]="form.controls.imovel"
-            placeholder="Digite o código do imóvel..."
-          />
-          <mat-autocomplete
-            #autoImovel="matAutocomplete"
-            [displayWith]="displayLookup"
-            (optionSelected)="onImovelSelected($event.option.value)">
-            <mat-option *ngFor="let item of imoveisFiltrados" [value]="item">
-              {{ item.label }}
-            </mat-option>
-          </mat-autocomplete>
+          <!-- Campo Imóvel -->
+          <mat-form-field appearance="outline" class="span-2">
+            <mat-label>Imóvel</mat-label>
+            <input
+              matInput
+              [matAutocomplete]="autoImovel"
+              [formControl]="form.controls.imovel"
+              placeholder="Digite o código ou título do imóvel..."
+            />
+            <mat-icon matPrefix color="primary">house</mat-icon>
+            <mat-autocomplete
+              #autoImovel="matAutocomplete"
+              [displayWith]="displayLookup"
+              (optionSelected)="onImovelSelected($event.option.value)">
+              <mat-option *ngFor="let item of imoveisFiltrados" [value]="item">
+                {{ item.label }}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.controls.imovel.invalid">Selecione um imóvel.</mat-error>
+          </mat-form-field>
 
-          <mat-error *ngIf="form.controls.imovel.invalid">Selecione um imóvel.</mat-error>
-        </mat-form-field>
+          <!-- Vigências -->
+          <mat-form-field appearance="outline">
+            <mat-label>Início da Vigência</mat-label>
+            <input matInput [matDatepicker]="dpInicio" formControlName="inicioVigencia" />
+            <mat-datepicker-toggle matSuffix [for]="dpInicio"></mat-datepicker-toggle>
+            <mat-datepicker #dpInicio></mat-datepicker>
+            <mat-error *ngIf="form.controls.inicioVigencia.invalid">Informe a data de início.</mat-error>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Início da vigência</mat-label>
-          <input matInput [matDatepicker]="dpInicio" formControlName="inicioVigencia" />
-          <mat-datepicker-toggle matSuffix [for]="dpInicio"></mat-datepicker-toggle>
-          <mat-datepicker #dpInicio></mat-datepicker>
-          <mat-error *ngIf="form.controls.inicioVigencia.invalid">Informe o início.</mat-error>
-        </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Fim da Vigência</mat-label>
+            <input matInput [matDatepicker]="dpFim" formControlName="fimVigencia" />
+            <mat-datepicker-toggle matSuffix [for]="dpFim"></mat-datepicker-toggle>
+            <mat-datepicker #dpFim></mat-datepicker>
+            <mat-hint *ngIf="form.controls.tipo.value !== TipoContrato.Locacao">Opcional para compra/venda</mat-hint>
+            <mat-error *ngIf="form.controls.fimVigencia.invalid">Obrigatório para locação.</mat-error>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Fim da vigência</mat-label>
-          <input matInput [matDatepicker]="dpFim" formControlName="fimVigencia" />
-          <mat-datepicker-toggle matSuffix [for]="dpFim"></mat-datepicker-toggle>
-          <mat-datepicker #dpFim></mat-datepicker>
-          <mat-hint *ngIf="form.controls.tipo.value !== TipoContrato.Locacao">Opcional para compra/venda</mat-hint>
-          <mat-error *ngIf="form.controls.fimVigencia.invalid">Obrigatório para locação.</mat-error>
-        </mat-form-field>
+          <!-- Seção de Partes -->
+          <div class="span-2 partes-section">
+            <div class="partes-section__header">
+              <div class="title-with-icon">
+                <mat-icon color="primary">people</mat-icon>
+                <h3>Partes Envolvidas</h3>
+              </div>
+              <button mat-stroked-button type="button" (click)="addParte()">
+                <mat-icon>add</mat-icon> Adicionar Parte
+              </button>
+            </div>
 
-        <div class="span-2 partes">
-          <div class="partes-header">
-            <h3>Partes</h3>
+            <div formArrayName="partes" class="partes-grid">
+              <div
+                class="parte-card"
+                *ngFor="let p of partes.controls; let i = index"
+                [formGroupName]="i">
 
-            <button
-              mat-stroked-button
-              type="button"
-              (click)="addParte()">
-              Adicionar parte
-            </button>
-          </div>
+                <div class="parte-card__top">
+                  <div class="papel-badge" *ngIf="isParteObrigatoria(p.controls.papel.value)">
+                    {{ papelLabel(p.controls.papel.value!) }}
+                  </div>
 
-          <div formArrayName="partes" class="partes-grid">
-            <div
-              class="parte-card"
-              *ngFor="let p of partes.controls; let i = index"
-              [formGroupName]="i">
+                  <mat-form-field
+                    appearance="outline"
+                    class="papel-select"
+                    *ngIf="!isParteObrigatoria(p.controls.papel.value)">
+                    <mat-label>Tipo da Parte</mat-label>
+                    <mat-select
+                      [formControl]="p.controls.papel"
+                      (selectionChange)="onPapelChanged(i)">
+                      <mat-option
+                        *ngFor="let papel of papeisDisponiveis"
+                        [value]="papel"
+                        [disabled]="papelDisabled(papel, i)">
+                        {{ papelLabel(papel) }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="p.controls.papel.invalid">Informe o tipo.</mat-error>
+                  </mat-form-field>
 
-              <div class="parte-top">
-                <!-- Obrigatórias: mostra label fixa -->
-                <div class="papel" *ngIf="isParteObrigatoria(p.controls.papel.value)">
-                  {{ papelLabel(p.controls.papel.value!) }}
+                  <button
+                    mat-icon-button
+                    type="button"
+                    color="warn"
+                    aria-label="Remover Parte"
+                    *ngIf="!isParteObrigatoria(p.controls.papel.value)"
+                    (click)="removerParte(i)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
                 </div>
 
-                <!-- Não obrigatórias: permite escolher papel -->
-                <mat-form-field
-                  appearance="outline"
-                  class="papel-select"
-                  *ngIf="!isParteObrigatoria(p.controls.papel.value)">
-                  <mat-label>Tipo da parte</mat-label>
-                  <mat-select
-                    [formControl]="p.controls.papel"
-                    (selectionChange)="onPapelChanged(i)">
-                    <mat-option
-                      *ngFor="let papel of papeisDisponiveis"
-                      [value]="papel"
-                      [disabled]="papelDisabled(papel, i)">
-                      {{ papelLabel(papel) }}
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Buscar Pessoa</mat-label>
+                  <input
+                    matInput
+                    [matAutocomplete]="autoPessoa"
+                    formControlName="pessoa"
+                    placeholder="Digite o nome..." />
+                  <mat-autocomplete #autoPessoa="matAutocomplete" [displayWith]="displayLookup">
+                    <mat-option *ngFor="let item of (sugestoesPessoas.get(p) ?? [])" [value]="item">
+                      {{ item.label }}
                     </mat-option>
-                  </mat-select>
-                  <mat-error *ngIf="p.controls.papel.invalid">Selecione o tipo.</mat-error>
+                  </mat-autocomplete>
+                  <mat-error *ngIf="p.controls.pessoa.invalid">Selecione uma pessoa.</mat-error>
                 </mat-form-field>
 
-                <button
-                  mat-icon-button
-                  type="button"
-                  aria-label="Remover"
-                  (click)="removerParte(i)">
-                  <mat-icon>delete</mat-icon>
-                </button>
+                <mat-form-field
+                  appearance="outline"
+                  class="w-100"
+                  *ngIf="p.controls.papel.value === PapelContrato.Comprador || p.controls.papel.value === PapelContrato.Vendedor">
+                  <mat-label>Percentual de Participação (%)</mat-label>
+                  <input matInput type="number" formControlName="percentual" min="0" max="100" />
+                  <mat-hint>Opcional para múltiplos compradores/vendedores</mat-hint>
+                </mat-form-field>
               </div>
-
-              <mat-form-field appearance="outline" class="w-100">
-                <mat-label>Pessoa</mat-label>
-                <input
-                  matInput
-                  [matAutocomplete]="autoPessoa"
-                  formControlName="pessoa"
-                  (focus)="onPessoaInput(i)"
-                  placeholder="Digite o nome..." />
-                <mat-autocomplete #autoPessoa="matAutocomplete" [displayWith]="displayLookup">
-                  <mat-option *ngFor="let item of (pessoasFiltradasPorIndex[i] ?? [])" [value]="item">
-                    {{ item.label }}
-                  </mat-option>
-                </mat-autocomplete>
-                <mat-error *ngIf="p.controls.pessoa.invalid">Selecione uma pessoa.</mat-error>
-              </mat-form-field>
-
-              <mat-form-field
-                appearance="outline"
-                class="w-100"
-                *ngIf="p.controls.papel.value === PapelContrato.Comprador || p.controls.papel.value === PapelContrato.Vendedor">
-                <mat-label>Percentual (opcional)</mat-label>
-                <input matInput type="number" formControlName="percentual" min="0" max="100" />
-                <mat-hint>Use para múltiplos compradores/vendedores</mat-hint>
-              </mat-form-field>
             </div>
           </div>
-        </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
 
-        <div class="span-2 hint" *ngIf="!id">
-          Ao salvar, o contrato será criado como <b>Rascunho</b>. Depois você pode <b>Ativar</b>.
+  <!-- Se for Edição (com id), exibe visualização moderna em ABAS -->
+  <mat-tab-group *ngIf="id" color="primary" class="modern-tab-group">
+    
+    <!-- ABA 1: DADOS GERAIS -->
+    <mat-tab label="Dados Gerais">
+      <div class="tab-content">
+        <div class="tab-grid">
+          
+          <!-- Card de Dados Básicos -->
+          <mat-card class="modern-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar color="primary">assignment</mat-icon>
+              <mat-card-title>Informações da Vigência</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="card-form-grid">
+              <form [formGroup]="form" class="w-100 contrato-subgrid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Tipo do Contrato</mat-label>
+                  <mat-select formControlName="tipo" [disabled]="true">
+                    <mat-option [value]="TipoContrato.Locacao">Locação</mat-option>
+                    <mat-option [value]="TipoContrato.Venda">Venda</mat-option>
+                    <mat-option [value]="TipoContrato.Compra">Compra</mat-option>
+                  </mat-select>
+                  <mat-icon matPrefix color="primary">assignment</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Status do Contrato</mat-label>
+                  <mat-select formControlName="status">
+                    <mat-option [value]="StatusContrato.Rascunho">Rascunho</mat-option>
+                    <mat-option [value]="StatusContrato.Ativo">Ativo</mat-option>
+                    <mat-option [value]="StatusContrato.Encerrado">Encerrado</mat-option>
+                    <mat-option [value]="StatusContrato.Cancelado">Cancelado</mat-option>
+                  </mat-select>
+                  <mat-icon matPrefix color="primary">info</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Início da Vigência</mat-label>
+                  <input matInput [matDatepicker]="dpEditInicio" formControlName="inicioVigencia" />
+                  <mat-datepicker-toggle matSuffix [for]="dpEditInicio"></mat-datepicker-toggle>
+                  <mat-datepicker #dpEditInicio></mat-datepicker>
+                  <mat-error *ngIf="form.controls.inicioVigencia.invalid">Informe o início.</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Fim da Vigência</mat-label>
+                  <input matInput [matDatepicker]="dpEditFim" formControlName="fimVigencia" />
+                  <mat-datepicker-toggle matSuffix [for]="dpEditFim"></mat-datepicker-toggle>
+                  <mat-datepicker #dpEditFim></mat-datepicker>
+                  <mat-error *ngIf="form.controls.fimVigencia.invalid">Obrigatório para locação.</mat-error>
+                </mat-form-field>
+              </form>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Card de Imóvel Vinculado -->
+          <mat-card class="modern-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar color="primary">house</mat-icon>
+              <mat-card-title>Imóvel Vinculado</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="card-form-grid">
+              <form [formGroup]="form" class="w-100">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Imóvel</mat-label>
+                  <input
+                    matInput
+                    [matAutocomplete]="autoEditImovel"
+                    [formControl]="form.controls.imovel"
+                    placeholder="Digite o código do imóvel..."
+                  />
+                  <mat-icon matPrefix color="primary">house</mat-icon>
+                  <mat-autocomplete
+                    #autoEditImovel="matAutocomplete"
+                    [displayWith]="displayLookup"
+                    (optionSelected)="onImovelSelected($event.option.value)">
+                    <mat-option *ngFor="let item of imoveisFiltrados" [value]="item">
+                      {{ item.label }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+              </form>
+
+              <!-- Resumo visual do Imóvel para ficar bem profissional -->
+              <div class="imovel-info-box" *ngIf="contrato">
+                <div class="imovel-info-box__title">
+                  {{ contrato.codigoImovel }} - {{ contrato.tituloImovel }}
+                </div>
+                <div class="imovel-info-box__sub">
+                  Tipo: {{ contrato.tipoImovelNome || 'Não informado' }}
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Card de Partes -->
+          <mat-card class="modern-card span-2">
+            <mat-card-header>
+              <mat-icon mat-card-avatar color="primary">people</mat-icon>
+              <mat-card-title>Partes Envolvidas</mat-card-title>
+              <div class="card-header-actions">
+                <button mat-stroked-button type="button" (click)="addParte()">
+                  <mat-icon>add</mat-icon> Adicionar Parte
+                </button>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="form" class="w-100">
+                <div formArrayName="partes" class="partes-grid">
+                  <div
+                    class="parte-card"
+                    *ngFor="let p of partes.controls; let i = index"
+                    [formGroupName]="i">
+
+                    <div class="parte-card__top">
+                      <div class="papel-badge" *ngIf="isParteObrigatoria(p.controls.papel.value)">
+                        {{ papelLabel(p.controls.papel.value!) }}
+                      </div>
+
+                      <mat-form-field
+                        appearance="outline"
+                        class="papel-select"
+                        *ngIf="!isParteObrigatoria(p.controls.papel.value)">
+                        <mat-label>Tipo da Parte</mat-label>
+                        <mat-select
+                          [formControl]="p.controls.papel"
+                          (selectionChange)="onPapelChanged(i)">
+                          <mat-option
+                            *ngFor="let papel of papeisDisponiveis"
+                            [value]="papel"
+                            [disabled]="papelDisabled(papel, i)">
+                            {{ papelLabel(papel) }}
+                          </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="p.controls.papel.invalid">Informe o tipo.</mat-error>
+                      </mat-form-field>
+
+                      <button
+                        mat-icon-button
+                        type="button"
+                        color="warn"
+                        aria-label="Remover Parte"
+                        *ngIf="!isParteObrigatoria(p.controls.papel.value)"
+                        (click)="removerParte(i)">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                      <mat-label>Pessoa</mat-label>
+                      <input
+                        matInput
+                        [matAutocomplete]="autoEditPessoa"
+                        formControlName="pessoa"
+                        placeholder="Digite o nome..." />
+                      <mat-autocomplete #autoEditPessoa="matAutocomplete" [displayWith]="displayLookup">
+                        <mat-option *ngFor="let item of (sugestoesPessoas.get(p) ?? [])" [value]="item">
+                          {{ item.label }}
+                        </mat-option>
+                      </mat-autocomplete>
+                      <mat-error *ngIf="p.controls.pessoa.invalid">Selecione uma pessoa.</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field
+                      appearance="outline"
+                      class="w-100"
+                      *ngIf="p.controls.papel.value === PapelContrato.Comprador || p.controls.papel.value === PapelContrato.Vendedor">
+                      <mat-label>Percentual (%)</mat-label>
+                      <input matInput type="number" formControlName="percentual" min="0" max="100" />
+                    </mat-form-field>
+                  </div>
+                </div>
+              </form>
+            </mat-card-content>
+          </mat-card>
+
         </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- ABA 2: CHECK-LIST DE ENTRADA -->
+    <mat-tab label="Check-list de Entrada" *ngIf="contrato?.tipo === TipoContrato.Locacao">
+      <div class="tab-content">
+        <mat-progress-bar *ngIf="carregandoChecklistEntrada" mode="indeterminate" class="tab-progress"></mat-progress-bar>
+        
+        <form [formGroup]="formChecklistEntrada" (ngSubmit)="salvarChecklistEntrada()">
+          <div class="tab-grid">
+
+            <!-- Card 1: Assinatura e Chaves -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">vpn_key</mat-icon>
+                <mat-card-title>Assinatura & Entrega</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Contrato Assinado Em</mat-label>
+                  <input matInput [matDatepicker]="dpAssinado" formControlName="assinadoEm" />
+                  <mat-datepicker-toggle matSuffix [for]="dpAssinado"></mat-datepicker-toggle>
+                  <mat-datepicker #dpAssinado></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Seguro Incêndio</mat-label>
+                  <input matInput formControlName="seguroIncendio" placeholder="Ex: Pago / Pendente" />
+                  <mat-icon matPrefix color="primary">local_fire_department</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Entrega das Chaves</mat-label>
+                  <input matInput formControlName="chaves" placeholder="Ex: Entregues em 06/02" />
+                  <mat-icon matPrefix color="primary">vpn_key</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 2: Utilidades e Contas -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">bolt</mat-icon>
+                <mat-card-title>Contas & Utilidades</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Conta de Energia (UC)</mat-label>
+                  <input matInput formControlName="energia" placeholder="Número ou status da transferência" />
+                  <mat-icon matPrefix color="primary">bolt</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Água / Saneamento</mat-label>
+                  <input matInput formControlName="agua" placeholder="Matrícula ou status da conta" />
+                  <mat-icon matPrefix color="primary">opacity</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Gás</mat-label>
+                  <input matInput formControlName="gas" placeholder="Comercial / Holder / Botijão / Sem" />
+                  <mat-icon matPrefix color="primary">local_gas_station</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Administração do Condomínio</mat-label>
+                  <input matInput formControlName="condominio" placeholder="Status do condomínio" />
+                  <mat-icon matPrefix color="primary">domain</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 3: Impostos e Documentos -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">receipt</mat-icon>
+                <mat-card-title>IPTU</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>IPTU Principal</mat-label>
+                  <input matInput formControlName="iptu" placeholder="Código cadastral do IPTU" />
+                  <mat-icon matPrefix color="primary">receipt</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>IPTU Garagem</mat-label>
+                  <input matInput formControlName="iptuGaragem" placeholder="Código cadastral da garagem" />
+                  <mat-icon matPrefix color="primary">directions_car</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 4: Vistoria e Reparos -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">build</mat-icon>
+                <mat-card-title>Vistoria & Manutenção</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Data da Vistoria de Entrada</mat-label>
+                  <input matInput [matDatepicker]="dpVistoriaEntrada" formControlName="vistoriaEntradaEm" />
+                  <mat-datepicker-toggle matSuffix [for]="dpVistoriaEntrada"></mat-datepicker-toggle>
+                  <mat-datepicker #dpVistoriaEntrada></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Manutenções Pendentes / Notas</mat-label>
+                  <textarea matInput formControlName="manutencao" rows="3" placeholder="Reparos combinados..."></textarea>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Observações Finais</mat-label>
+                  <textarea matInput formControlName="observacoesFinais" rows="3" placeholder="Comentários gerais..."></textarea>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 5: Bônus de Locação -->
+            <mat-card class="modern-card span-2">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">attach_money</mat-icon>
+                <mat-card-title>Bônus de Locação</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid card-form-grid--2col">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Detalhamento do Bônus</mat-label>
+                  <input matInput formControlName="bonusLocacao" placeholder="Ex: Aluguel R$ 5.000,00 x 10% = 500,00" />
+                  <mat-icon matPrefix color="primary">attach_money</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Data de Pagamento do Bônus</mat-label>
+                  <input matInput [matDatepicker]="dpBonusPagto" formControlName="dataPagamentoBonus" />
+                  <mat-datepicker-toggle matSuffix [for]="dpBonusPagto"></mat-datepicker-toggle>
+                  <mat-datepicker #dpBonusPagto></mat-datepicker>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+          </div>
+
+          <div class="actions-bar">
+            <button mat-flat-button color="primary" type="submit" [disabled]="carregandoChecklistEntrada">
+              <mat-icon>save</mat-icon> Salvar Checklist de Entrada
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
+    <!-- ABA 3: CHECK-LIST DE SAÍDA -->
+    <mat-tab label="Check-list de Saída" *ngIf="contrato?.tipo === TipoContrato.Locacao">
+      <div class="tab-content">
+        <mat-progress-bar *ngIf="carregandoChecklistSaida" mode="indeterminate" class="tab-progress"></mat-progress-bar>
+        
+        <form [formGroup]="formChecklistSaida" (ngSubmit)="salvarChecklistSaida()">
+          <div class="tab-grid">
+
+            <!-- Card 1: Notificação e Chaves -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">exit_to_app</mat-icon>
+                <mat-card-title>Rescisão & Saída</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Data do Aviso de Saída</mat-label>
+                  <input matInput [matDatepicker]="dpAvisoSaida" formControlName="avisoSaidaEm" />
+                  <mat-datepicker-toggle matSuffix [for]="dpAvisoSaida"></mat-datepicker-toggle>
+                  <mat-datepicker #dpAvisoSaida></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Motivo da Saída</mat-label>
+                  <input matInput formControlName="motivoSaida" placeholder="Ex: Não quis renovar / Compra própria" />
+                  <mat-icon matPrefix color="primary">help_outline</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Devolução das Chaves</mat-label>
+                  <input matInput formControlName="chaves" placeholder="Ex: Entregues em data X" />
+                  <mat-icon matPrefix color="primary">vpn_key</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Aviso ao Proprietário</mat-label>
+                  <input matInput formControlName="avisoProprietario" placeholder="Ex: Comunicado por WhatsApp" />
+                  <mat-icon matPrefix color="primary">campaign</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 2: Financeiro e Cancelamentos -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">monetization_on</mat-icon>
+                <mat-card-title>Valores & Garantias</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Acerto de Aluguel</mat-label>
+                  <input matInput formControlName="aluguel" placeholder="Ex: Pago proporcional de X dias" />
+                  <mat-icon matPrefix color="primary">attach_money</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Multa Contratual</mat-label>
+                  <input matInput formControlName="multaContratual" placeholder="Ex: Não tem multa / Valor R$ X" />
+                  <mat-icon matPrefix color="primary">money_off</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Seguro Fiança / Fundo Garantia</mat-label>
+                  <input matInput formControlName="cancelamentoSeguroFianca" placeholder="Ex: Cancelado / A cancelar" />
+                  <mat-icon matPrefix color="primary">verified_user</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 3: Quitação de Contas -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">bolt</mat-icon>
+                <mat-card-title>Encerramento de Contas</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Energia Elétrica (UC)</mat-label>
+                  <input matInput formControlName="energia" placeholder="UC ou status da quitação" />
+                  <mat-icon matPrefix color="primary">bolt</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Gás</mat-label>
+                  <input matInput formControlName="gas" placeholder="Status do acerto do gás" />
+                  <mat-icon matPrefix color="primary">local_gas_station</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Água / Saneamento</mat-label>
+                  <input matInput formControlName="agua" placeholder="Status do nada consta" />
+                  <mat-icon matPrefix color="primary">opacity</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Condomínio</mat-label>
+                  <input matInput formControlName="condominio" placeholder="Status do condomínio final" />
+                  <mat-icon matPrefix color="primary">domain</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>IPTU Final</mat-label>
+                  <input matInput formControlName="iptu" placeholder="Status da quitação do IPTU" />
+                  <mat-icon matPrefix color="primary">receipt</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Card 4: Vistoria e Encerramento -->
+            <mat-card class="modern-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar color="primary">build</mat-icon>
+                <mat-card-title>Entrega Física & Divulgação</mat-card-title>
+              </mat-card-header>
+              <mat-card-content class="card-form-grid">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Data da Vistoria de Saída</mat-label>
+                  <input matInput [matDatepicker]="dpVistoriaSaida" formControlName="vistoriaSaidaEm" />
+                  <mat-datepicker-toggle matSuffix [for]="dpVistoriaSaida"></mat-datepicker-toggle>
+                  <mat-datepicker #dpVistoriaSaida></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Pintura / Manutenção de Saída</mat-label>
+                  <textarea matInput formControlName="pinturaManutencao" rows="3" placeholder="Pintura ok / Valor descontado..."></textarea>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>Reativar Imóvel no Site</mat-label>
+                  <input matInput formControlName="reativarImovelNoSite" placeholder="Ex: Reativo / Proprietário pegou" />
+                  <mat-icon matPrefix color="primary">language</mat-icon>
+                </mat-form-field>
+              </mat-card-content>
+            </mat-card>
+
+          </div>
+
+          <div class="actions-bar">
+            <button mat-flat-button color="primary" type="submit" [disabled]="carregandoChecklistSaida">
+              <mat-icon>save</mat-icon> Salvar Checklist de Saída
+            </button>
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
 </div>

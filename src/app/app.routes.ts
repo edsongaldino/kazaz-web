@@ -4,6 +4,7 @@ import { Home } from './features/home/home';
 import { UsuariosListaComponent } from './features/usuarios/lista/lista';
 import { ContratosListaComponent } from './features/contratos/contratos-list/contratos-list';
 import { ContratoFormComponent } from './features/contratos/contrato-form/contrato-form';
+import { ContratoImprimirComponent } from './features/contratos/contrato-imprimir/contrato-imprimir';
 import { authGuard, authChildGuard } from './core/guards/auth.guard';
 import { cadastroPublicoGuard } from './core/guards/cadastro-publico.guard';
 
@@ -80,6 +81,8 @@ export const appRoutes: Routes = [
       },
     ]
   },
+
+  { path: 'contratos/imprimir/:id', component: ContratoImprimirComponent, canActivate: [authGuard] },
 
   { path: '**', redirectTo: 'login' }
 ];

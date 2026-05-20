@@ -1,0 +1,153 @@
+<div class="print-container" *ngIf="!carregando && contrato">
+  <!-- Botões de ação (escondidos na impressão) -->
+  <div class="print-actions no-print">
+    <button mat-flat-button color="primary" (click)="imprimir()">
+      <mat-icon>print</mat-icon> Imprimir Novamente
+    </button>
+    <button mat-stroked-button (click)="fechar()">
+      <mat-icon>close</mat-icon> Fechar Janela
+    </button>
+  </div>
+
+  <!-- Documento Oficial -->
+  <div class="document">
+    <header class="doc-header">
+      <div class="logo-area">
+        <img class="logo" src="assets/img/logo/logo_kazaz.png" onerror="this.style.display='none'" />
+        <h2>KAZAZ IMÓVEIS</h2>
+      </div>
+      <div class="doc-meta">
+        <h1>FICHA DO CONTRATO</h1>
+        <div class="contrato-num">Contrato Nº {{ contrato.numero || 'Rascunho' }}</div>
+      </div>
+    </header>
+
+    <!-- Dados Gerais -->
+    <section class="doc-section">
+      <h3 class="section-title">Dados Gerais</h3>
+      <table class="data-table">
+        <tr>
+          <th>Tipo de Contrato</th>
+          <td>{{ tipoLabel(contrato.tipo) }}</td>
+          <th>Status</th>
+          <td><strong>{{ statusLabel(contrato.status) }}</strong></td>
+        </tr>
+        <tr>
+          <th>Início da Vigência</th>
+          <td>{{ contrato.inicioVigencia | date:'dd/MM/yyyy' }}</td>
+          <th>Fim da Vigência</th>
+          <td>{{ contrato.fimVigencia ? (contrato.fimVigencia | date:'dd/MM/yyyy') : 'Indeterminado' }}</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Imóvel Vinculado -->
+    <section class="doc-section">
+      <h3 class="section-title">Imóvel Vinculado</h3>
+      <table class="data-table">
+        <tr>
+          <th>Código</th>
+          <td>{{ contrato.codigoImovel || '-' }}</td>
+          <th>Título</th>
+          <td>{{ contrato.tituloImovel || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Tipo</th>
+          <td colspan="3">{{ contrato.tipoImovelNome || 'Não informado' }}</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Partes Envolvidas -->
+    <section class="doc-section">
+      <h3 class="section-title">Partes Envolvidas</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Papel</th>
+            <th>Participação (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of contrato.partes">
+            <td>{{ p.pessoaNome }}</td>
+            <td>{{ papelLabel(p.papel) }}</td>
+            <td>{{ p.percentual ? p.percentual + '%' : '-' }}</td>
+          </tr>
+          <tr *ngIf="!contrato.partes || contrato.partes.length === 0">
+            <td colspan="3" class="text-center">Nenhuma parte informada</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Checklist de Entrada (Se Locação) -->
+    <section class="doc-section" *ngIf="contrato.tipo === TipoContrato.Locacao && checklistEntrada">
+      <h3 class="section-title">Checklist de Entrada</h3>
+      <table class="data-table vertical">
+        <tr>
+          <th>Assinado Em</th>
+          <td>{{ checklistEntrada.assinadoEm ? (checklistEntrada.assinadoEm | date:'dd/MM/yyyy') : '-' }}</td>
+        </tr>
+        <tr>
+          <th>Vistoria de Entrada Realizada Em</th>
+          <td>{{ checklistEntrada.vistoriaEntradaEm ? (checklistEntrada.vistoriaEntradaEm | date:'dd/MM/yyyy') : '-' }}</td>
+        </tr>
+        <tr>
+          <th>Seguro Incêndio</th>
+          <td>{{ checklistEntrada.seguroIncendio || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Entrega das Chaves</th>
+          <td>{{ checklistEntrada.chaves || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Ligação de Energia</th>
+          <td>{{ checklistEntrada.energia || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Ligação de Água</th>
+          <td>{{ checklistEntrada.agua || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Ligação de Gás</th>
+          <td>{{ checklistEntrada.gas || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Condomínio</th>
+          <td>{{ checklistEntrada.condominio || '-' }}</td>
+        </tr>
+        <tr>
+          <th>IPTU Garagem</th>
+          <td>{{ checklistEntrada.iptuGaragem || '-' }}</td>
+        </tr>
+        <tr>
+          <th>IPTU Imóvel</th>
+          <td>{{ checklistEntrada.iptu || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Manutenção / Reparos Pendentes</th>
+          <td>{{ checklistEntrada.manutencao || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Bônus Locação</th>
+          <td>{{ checklistEntrada.bonusLocacao || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Data de Pagamento do Bônus</th>
+          <td>{{ checklistEntrada.dataPagamentoBonus ? (checklistEntrada.dataPagamentoBonus | date:'dd/MM/yyyy') : '-' }}</td>
+        </tr>
+        <tr>
+          <th>Observações Finais</th>
+          <td>{{ checklistEntrada.observacoesFinais || '-' }}</td>
+        </tr>
+      </table>
+    </section>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="carregando">
+  <mat-spinner diameter="40"></mat-spinner>
+  <p>Preparando documento para impressão...</p>
+</div>

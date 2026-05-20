@@ -139,6 +139,12 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
   errorMsg = signal<string | null>(null);
   origens: Origem[] = [];
 
+  imprimir = signal(false);
+  pessoa = signal<any | null>(null);
+  cidadeNome = signal<string>('');
+  estadoNome = signal<string>('');
+  convitePapel = signal<number | null>(null);
+
   // FORM
   form = this.fb.group({
     tipo: ['PF' as TipoPessoa, [Validators.required]],
@@ -266,14 +272,37 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
     this.form.controls.tipo.setValue('PF', { emitEvent: false });
 
     if (this.mode === 'public-view') {
+      const imprimir = this.route.snapshot.queryParamMap.get('imprimir');
+      if (imprimir === 'true') {
+        this.imprimir.set(true);
+      }
+
+      try {
+        const statusInfo = await firstValueFrom(
+          this.cadastroPublicoService.status(token)
+        );
+        if (statusInfo && statusInfo.papel) {
+          this.convitePapel.set(statusInfo.papel);
+        }
+      } catch (err) {
+        console.error('Erro ao obter status info para papel', err);
+      }
+
       await this.carregarVisualizacao(token);
       this.form.disable({ emitEvent: false });
       this.readonly.set(true);
+
+      if (imprimir === 'true') {
+        setTimeout(() => {
+          window.print();
+        }, 1000);
+      }
     }
   }
 
   // ✅ Carrega pessoa no form (serve para edição e para lookup por CPF)
   private async carregarPessoaNoForm(p: PessoaDto) {
+    this.pessoa.set(p);
     this.carregandoEdicao = true;
 
     const pf: any = p.dadosPessoaFisica ?? null;
@@ -326,6 +355,9 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
       const cidadeApi = await firstValueFrom(
         this.cidadeService.obterPorId(p.endereco.cidadeId)
       );
+
+      this.cidadeNome.set(cidadeApi.nome);
+      this.estadoNome.set(cidadeApi.uf);
 
       const estadoId = cidadeApi.estadoId;
       const cidadeId = cidadeApi.id;

@@ -31,4 +31,15 @@ export class ConviteUiService {
     window.open(url, '_blank');
   }
 
+  imprimirFicha(token: string): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(
+        ['/cadastro-publico', token],
+        { queryParams: { modo: 'visualizar', imprimir: 'true' } }
+      )
+    );
+
+    window.open(url, '_blank');
+  }
+
 }

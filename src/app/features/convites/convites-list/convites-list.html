@@ -114,18 +114,22 @@
     <ng-container matColumnDef="acoes">
       <th mat-header-cell *matHeaderCellDef>Ações</th>
       <td mat-cell *matCellDef="let r">
-        <button mat-icon-button color="primary" (click)="abrirConvite(r)">
+        <button mat-icon-button class="btn-action-view" (click)="abrirConvite(r)">
           <mat-icon
             [matTooltip]="r.pessoaId ? 'Ver cadastro preenchido' : 'Abrir convite'">
             open_in_new
           </mat-icon>
         </button>
 
-        <button mat-icon-button color="primary" (click)="copiarLink(r.link)">
+        <button mat-icon-button class="btn-action-copy" (click)="copiarLink(r.link)">
           <mat-icon matTooltip="Copiar link">content_copy</mat-icon>
         </button>
 
-        <button mat-icon-button color="accent" (click)="abrirAnalise(r)">
+        <button mat-icon-button class="btn-action-print" [disabled]="!r.pessoaId" (click)="imprimirFicha(r)">
+          <mat-icon matTooltip="Imprimir Ficha de Cadastro">print</mat-icon>
+        </button>
+
+        <button mat-icon-button class="btn-action-check" (click)="abrirAnalise(r)">
           <mat-icon matTooltip="Analisar">fact_check</mat-icon>
         </button>
       </td>

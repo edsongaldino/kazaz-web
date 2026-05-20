@@ -1,0 +1,31 @@
+.btn-action-view {
+  color: #0284c7 !important;
+  &:hover {
+    background-color: rgba(2, 132, 199, 0.08) !important;
+  }
+}
+
+.btn-action-copy {
+  color: #f59e0b !important;
+  &:hover {
+    background-color: rgba(245, 158, 11, 0.08) !important;
+  }
+}
+
+.btn-action-print {
+  color: #10b981 !important;
+  &:hover:not([disabled]) {
+    background-color: rgba(16, 185, 129, 0.08) !important;
+  }
+  
+  &:disabled {
+    color: #cbd5e1 !important;
+  }
+}
+
+.btn-action-check {
+  color: #8b5cf6 !important;
+  &:hover {
+    background-color: rgba(139, 92, 246, 0.08) !important;
+  }
+}

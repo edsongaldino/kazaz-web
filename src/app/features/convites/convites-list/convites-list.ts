@@ -183,4 +183,10 @@ export class ConvitesList implements OnInit {
       await this.carregar();
     });
   }
+
+  imprimirFicha(item: ConviteCadastroListItemResponse): void {
+    if (item.token) {
+      this.conviteUi.imprimirFicha(item.token);
+    }
+  }
 }

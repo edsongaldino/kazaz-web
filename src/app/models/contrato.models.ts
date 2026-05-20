@@ -45,18 +45,6 @@ export interface ContratoResponse {
   numero: string;
   tipo: number;
   status: number;
-  imovelId: string;
-  inicioVigencia: string;
-  fimVigencia?: string | null;
-  criadoEm: string;
-  partes: ContratoParteResponse[];
-}
-
-export interface ContratoResponse {
-  id: string;
-  numero: string;
-  tipo: number;
-  status: number;
 
   imovelId: string;
   codigoImovel?: string | null;
@@ -86,4 +74,49 @@ export interface ListarContratosQuery {
 
   vigenciaDe?: string | null;
   vigenciaAte?: string | null;
+}
+
+export interface ContratoChecklistEntrada {
+  contratoId: string;
+  assinadoEm?: string | null;
+  seguroIncendio?: string | null;
+  chaves?: string | null;
+  energia?: string | null;
+  agua?: string | null;
+  gas?: string | null;
+  condominio?: string | null;
+  iptuGaragem?: string | null;
+  iptu?: string | null;
+  vistoriaEntradaEm?: string | null;
+  manutencao?: string | null;
+  observacoesFinais?: string | null;
+  bonusLocacao?: string | null;
+  dataPagamentoBonus?: string | null;
+}
+
+export interface ContratoChecklistSaida {
+  contratoId: string;
+  motivoSaida?: string | null;
+  aluguel?: string | null;
+  multaContratual?: string | null;
+  avisoSaidaEm?: string | null;
+  chaves?: string | null;
+  avisoProprietario?: string | null;
+  energia?: string | null;
+  gas?: string | null;
+  agua?: string | null;
+  condominio?: string | null;
+  iptu?: string | null;
+  vistoriaSaidaEm?: string | null;
+  pinturaManutencao?: string | null;
+  reativarImovelNoSite?: string | null;
+  cancelamentoSeguroFianca?: string | null;
+}
+
+export interface AtualizarContratoRequest {
+  imovelId: string;
+  inicioVigencia: string; // yyyy-MM-dd
+  fimVigencia?: string | null; // yyyy-MM-dd
+  status: number;
+  partes: ContratoParteRequest[];
 }

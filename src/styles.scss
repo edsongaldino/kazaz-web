@@ -53,7 +53,7 @@ body {
   --mdc-outlined-text-field-outline-width: 1px;
   --mdc-outlined-text-field-focus-outline-width: 2px;
   --mdc-outlined-text-field-container-color: #f8fafc;
-  
+
   /* Material 3 outline tokens */
   --mat-sys-outline: #e2e8f0;
   --mat-sys-outline-variant: #cbd5e1;
@@ -73,44 +73,47 @@ body {
   --mdc-outlined-text-field-focus-outline-color: #005cbb;
   --mat-sys-outline: #e2e8f0;
   --mat-sys-outline-variant: #cbd5e1;
-  
+
   /* Cores de texto, label e placeholder alinhados com o azul Kazaz */
   --mdc-outlined-text-field-label-text-color: #475569;
   --mdc-outlined-text-field-focus-label-text-color: #005cbb;
   --mdc-outlined-text-field-input-text-color: #0f172a;
   --mdc-outlined-text-field-focus-input-text-color: #0f172a;
   --mat-select-trigger-text-color: #0f172a;
-  
+
   transition: all 0.2s ease;
-  
-  mat-icon[matPrefix], mat-icon[matSuffix] {
+
+  mat-icon[matPrefix],
+  mat-icon[matSuffix] {
     color: #005cbb !important;
     opacity: 0.8;
     transition: all 0.2s ease;
   }
-  
+
   mat-label {
     color: #475569;
   }
-  
+
   &:hover {
     --mdc-outlined-text-field-container-color: #f1f5f9;
     --mat-sys-outline: #cbd5e1;
-    
-    mat-icon[matPrefix], mat-icon[matSuffix] {
+
+    mat-icon[matPrefix],
+    mat-icon[matSuffix] {
       opacity: 0.95;
     }
   }
-  
+
   &.mat-focused {
     --mdc-outlined-text-field-container-color: #ffffff;
     --mat-sys-outline: #005cbb;
-    
+
     mat-label {
       color: #005cbb !important;
     }
-    
-    mat-icon[matPrefix], mat-icon[matSuffix] {
+
+    mat-icon[matPrefix],
+    mat-icon[matSuffix] {
       color: #005cbb !important;
       opacity: 1;
     }

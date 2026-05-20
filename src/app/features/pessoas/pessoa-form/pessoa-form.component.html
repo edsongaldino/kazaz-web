@@ -1,218 +1,394 @@
-<section class="page">
-  <header class="page__header">
-    <h1>
-      {{
-        modoVisualizacao()
-          ? 'Visualizar Cliente'
-          : (modoEdicao() ? 'Editar Cliente' : 'Cadastrar Cliente')
-      }}
-    </h1>
-    <div class="header__actions">
-      <button mat-stroked-button (click)="cancelar()">
-        <mat-icon>arrow_back</mat-icon>
-        Voltar
-      </button>
-    </div>
-  </header>
+<div *ngIf="imprimir(); else normalForm" class="word-print-layout">
+  <div class="word-document">
+    <header class="word-header">
+      <h2>FICHA DE CADASTRO DE CLIENTE</h2>
+      <div class="sub">Kazaz Imóveis</div>
+    </header>
 
-  <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
-  <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
+    <div class="word-content">
+      <!-- DADOS BÁSICOS -->
+      <table class="word-table">
+        <tr>
+          <th colspan="4" class="table-section">1. Dados Básicos</th>
+        </tr>
+        <tr *ngIf="convitePapel()">
+          <th>Tipo de Cadastro:</th>
+          <td colspan="3">
+            <strong>
+              {{
+                convitePapel() === 1 ? 'Locador' :
+                convitePapel() === 2 ? 'Locatário' :
+                convitePapel() === 3 ? 'Fiador' :
+                convitePapel() === 10 ? 'Vendedor' :
+                convitePapel() === 11 ? 'Comprador' : 'Não informado'
+              }}
+            </strong>
+          </td>
+        </tr>
+        <tr>
+          <th>Tipo:</th>
+          <td>{{ form.value.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica' }}</td>
+          <th>{{ form.value.tipo === 'PF' ? 'CPF:' : 'CNPJ:' }}</th>
+          <td>{{ form.value.documento }}</td>
+        </tr>
+        <tr *ngIf="form.value.tipo === 'PF'">
+          <th>Nome:</th>
+          <td colspan="3">{{ form.value.nome }}</td>
+        </tr>
+        <tr *ngIf="form.value.tipo === 'PF'">
+          <th>Data de Nasc.:</th>
+          <td>{{ form.value.dataNascimento ? (form.value.dataNascimento | date:'dd/MM/yyyy') : '-' }}</td>
+          <th>Estado Civil:</th>
+          <td>
+            {{
+              form.value.estadoCivil === 1 ? 'Solteiro' :
+              form.value.estadoCivil === 2 ? 'Casado' :
+              form.value.estadoCivil === 3 ? 'União estável' :
+              form.value.estadoCivil === 4 ? 'Separado' :
+              form.value.estadoCivil === 5 ? 'Divorciado' :
+              form.value.estadoCivil === 6 ? 'Viúvo' : '-'
+            }}
+          </td>
+        </tr>
+        <tr *ngIf="form.value.tipo === 'PF'">
+          <th>RG / Órgão Exp.:</th>
+          <td>{{ form.value.rg }} {{ form.value.orgaoExpedidor ? '/ ' + form.value.orgaoExpedidor : '' }}</td>
+          <th>Nacionalidade:</th>
+          <td>{{ form.value.nacionalidade || '-' }}</td>
+        </tr>
 
-  <div *ngIf="solicitacaoCorrecaoMsg()" class="correcao-banner">
-    <div class="correcao-banner-header">
-      <mat-icon class="banner-icon">warning</mat-icon>
-      <span>Atenção: Correção de Cadastro Solicitada</span>
+        <!-- PJ Specific -->
+        <tr *ngIf="form.value.tipo === 'PJ'">
+          <th>Razão Social:</th>
+          <td colspan="3">{{ form.value.razaoSocial }}</td>
+        </tr>
+        <tr *ngIf="form.value.tipo === 'PJ'">
+          <th>Nome Fantasia:</th>
+          <td colspan="3">{{ form.value.nomeFantasia || '-' }}</td>
+        </tr>
+        <tr *ngIf="form.value.tipo === 'PJ'">
+          <th>Data Abertura:</th>
+          <td>{{ form.value.dataAbertura ? (form.value.dataAbertura | date:'dd/MM/yyyy') : '-' }}</td>
+          <th>Insc. Estadual:</th>
+          <td>{{ form.value.inscricaoEstadual || '-' }}</td>
+        </tr>
+      </table>
+
+      <!-- ENDEREÇO -->
+      <table class="word-table">
+        <tr>
+          <th colspan="4" class="table-section">2. Endereço Residencial / Comercial</th>
+        </tr>
+        <tr>
+          <th>CEP:</th>
+          <td>{{ form.value.endereco?.cep || '-' }}</td>
+          <th>Bairro:</th>
+          <td>{{ form.value.endereco?.bairro || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Logradouro:</th>
+          <td colspan="3">{{ form.value.endereco?.logradouro }}{{ form.value.endereco?.numero ? ', ' + form.value.endereco?.numero : '' }}</td>
+        </tr>
+        <tr *ngIf="form.value.endereco?.complemento">
+          <th>Complemento:</th>
+          <td colspan="3">{{ form.value.endereco?.complemento }}</td>
+        </tr>
+        <tr>
+          <th>Cidade:</th>
+          <td>{{ cidadeNome() || '-' }}</td>
+          <th>Estado (UF):</th>
+          <td>{{ estadoNome() || '-' }}</td>
+        </tr>
+      </table>
+
+      <!-- CONTATOS -->
+      <table class="word-table" *ngIf="form.value.contatos && form.value.contatos.length > 0">
+        <tr>
+          <th colspan="3" class="table-section">3. Dados de Contato</th>
+        </tr>
+        <tr *ngFor="let c of form.value.contatos">
+          <th>{{ c.tipo === 'TELEFONE' ? 'Telefone' : c.tipo === 'EMAIL' ? 'E-mail' : 'Contato' }}:</th>
+          <td colspan="2">{{ c.valor }}</td>
+        </tr>
+      </table>
+
+      <!-- CÔNJUGE -->
+      <table class="word-table" *ngIf="form.value.tipo === 'PF' && (form.value.estadoCivil === 2 || form.value.estadoCivil === 3)">
+        <tr>
+          <th colspan="4" class="table-section">4. Dados do Cônjuge / Companheiro(a)</th>
+        </tr>
+        <tr>
+          <th>Nome:</th>
+          <td colspan="3">{{ form.value.conjuge?.nome || '-' }}</td>
+        </tr>
+        <tr>
+          <th>CPF:</th>
+          <td>{{ form.value.conjuge?.cpf || '-' }}</td>
+          <th>RG / Órgão Exp.:</th>
+          <td>{{ form.value.conjuge?.rg }} {{ form.value.conjuge?.orgaoExpedidor ? '/ ' + form.value.conjuge?.orgaoExpedidor : '' }}</td>
+        </tr>
+        <tr>
+          <th>Data de Nasc.:</th>
+          <td>{{ form.value.conjuge?.dataNascimento ? (form.value.conjuge?.dataNascimento | date:'dd/MM/yyyy') : '-' }}</td>
+          <th>E-mail:</th>
+          <td>{{ form.value.conjuge?.email || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Telefone:</th>
+          <td colspan="3">{{ form.value.conjuge?.telefone || '-' }}</td>
+        </tr>
+      </table>
+
+      <!-- DADOS COMPLEMENTARES -->
+      <table class="word-table">
+        <tr>
+          <th colspan="4" class="table-section">
+            {{ (form.value.tipo === 'PF' && (form.value.estadoCivil === 2 || form.value.estadoCivil === 3)) ? '5' : '4' }}. Informações Complementares
+          </th>
+        </tr>
+        <tr>
+          <th>Profissão:</th>
+          <td>{{ form.value.dadosComplementares?.profissao || '-' }}</td>
+          <th>Escolaridade:</th>
+          <td>{{ form.value.dadosComplementares?.escolaridade || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Renda Mensal:</th>
+          <td colspan="3">{{ form.value.dadosComplementares?.rendaMensal ? (form.value.dadosComplementares?.rendaMensal | currency:'BRL') : '-' }}</td>
+        </tr>
+        <tr *ngIf="form.value.dadosComplementares?.observacoes">
+          <th>Observações:</th>
+          <td colspan="3">{{ form.value.dadosComplementares?.observacoes }}</td>
+        </tr>
+      </table>
     </div>
-    <p class="correcao-banner-body">{{ solicitacaoCorrecaoMsg() }}</p>
+
+    <footer class="word-footer">
+      <p>Declaro que as informações acima prestadas são verdadeiras e corretas.</p>
+      <div class="signature-line">
+        <div class="line"></div>
+        <span>Assinatura do Proponente</span>
+      </div>
+    </footer>
   </div>
+</div>
 
-  <form [formGroup]="form" (ngSubmit)="salvar()">
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title><mat-icon>account_circle</mat-icon> Dados Básicos</mat-card-title>
-      </mat-card-header>
+<ng-template #normalForm>
+  <section class="page">
+    <header class="page__header">
+      <h1>
+        {{
+          modoVisualizacao()
+            ? 'Visualizar Cliente'
+            : (modoEdicao() ? 'Editar Cliente' : 'Cadastrar Cliente')
+        }}
+      </h1>
+      <div class="header__actions">
+        <button mat-stroked-button (click)="cancelar()">
+          <mat-icon>arrow_back</mat-icon>
+          Voltar
+        </button>
+      </div>
+    </header>
 
-      <div class="grid">
-        <mat-form-field appearance="outline" class="col-3">
-          <mat-label>Tipo</mat-label>
-          <mat-icon matPrefix>category</mat-icon>
-          <mat-select [formControl]="form.controls.tipo">
-            <mat-option value="PF">Pessoa Física</mat-option>
-            <mat-option value="PJ">Pessoa Jurídica</mat-option>
-          </mat-select>
-        </mat-form-field>
+    <mat-progress-bar *ngIf="loading()" mode="indeterminate"></mat-progress-bar>
+    <div *ngIf="errorMsg()" class="error">{{ errorMsg() }}</div>
 
-        <mat-form-field appearance="outline" class="col-3">
-          <mat-label>{{ form.controls.tipo.value === 'PF' ? 'CPF' : 'CNPJ' }}</mat-label>
-          <mat-icon matPrefix>badge</mat-icon>
-          <input
-            matInput
-            [formControl]="form.controls.documento"
-            (input)="maskDocumento($any($event.target).value)"
-            inputmode="numeric" />
-          <mat-error *ngIf="form.controls.documento.hasError('required')">Documento obrigatório</mat-error>
-          <mat-error *ngIf="form.controls.documento.hasError('cpf')">CPF inválido</mat-error>
-          <mat-error *ngIf="form.controls.documento.hasError('cnpj')">CNPJ inválido</mat-error>
-        </mat-form-field>
+    <div *ngIf="solicitacaoCorrecaoMsg()" class="correcao-banner">
+      <div class="correcao-banner-header">
+        <mat-icon class="banner-icon">warning</mat-icon>
+        <span>Atenção: Correção de Cadastro Solicitada</span>
+      </div>
+      <p class="correcao-banner-body">{{ solicitacaoCorrecaoMsg() }}</p>
+    </div>
 
-       <mat-form-field appearance="outline" class="col-3" *ngIf="!hideOrigem">
-        <mat-label>Origem</mat-label>
-        <mat-icon matPrefix>explore</mat-icon>
-        <mat-select formControlName="origemId">
-          <mat-option [value]="null">Sem origem</mat-option>
-          <mat-option *ngFor="let o of origens" [value]="o.id">
-            {{ o.nome }}
-          </mat-option>
-        </mat-select>
-        <mat-hint *ngIf="form.get('origemId')?.value as oid">
-          {{ hintOrigem(oid) }}
-        </mat-hint>
-      </mat-form-field>
+    <form [formGroup]="form" (ngSubmit)="salvar()">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title><mat-icon>account_circle</mat-icon> Dados Básicos</mat-card-title>
+        </mat-card-header>
 
-        <mat-form-field appearance="outline" class="col-3" *ngIf="form.controls.tipo.value === 'PF'">
-          <mat-label>Estado Civil</mat-label>
-          <mat-icon matPrefix>favorite</mat-icon>
-          <mat-select [formControl]="form.controls.estadoCivil">
-            <mat-option [value]="EstadoCivil.NaoInformado">Não informado</mat-option>
-            <mat-option [value]="EstadoCivil.Solteiro">Solteiro</mat-option>
-            <mat-option [value]="EstadoCivil.Casado">Casado</mat-option>
-            <mat-option [value]="EstadoCivil.UniaoEstavel">União estável</mat-option>
-            <mat-option [value]="EstadoCivil.Separado">Separado</mat-option>
-            <mat-option [value]="EstadoCivil.Divorciado">Divorciado</mat-option>
-            <mat-option [value]="EstadoCivil.Viuvo">Viúvo</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <!-- PF -->
-        <ng-container *ngIf="form.controls.tipo.value === 'PF'">
-          <mat-form-field appearance="outline" class="col-5">
-            <mat-label>Nome</mat-label>
-            <mat-icon matPrefix>person</mat-icon>
-            <input matInput [formControl]="form.controls.nome" />
-            <mat-error *ngIf="form.controls.nome.hasError('required')">Informe o nome</mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="col-2">
-            <mat-label>Data de Nascimento</mat-label>
-            <input matInput type="date" [formControl]="form.controls.dataNascimento" />
+        <div class="grid">
+          <mat-form-field appearance="outline" class="col-3">
+            <mat-label>Tipo</mat-label>
+            <mat-icon matPrefix>category</mat-icon>
+            <mat-select [formControl]="form.controls.tipo">
+              <mat-option value="PF">Pessoa Física</mat-option>
+              <mat-option value="PJ">Pessoa Jurídica</mat-option>
+            </mat-select>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="col-3">
-            <mat-label>RG</mat-label>
-            <mat-icon matPrefix>fingerprint</mat-icon>
-            <input matInput [formControl]="form.controls.rg" />
+            <mat-label>{{ form.controls.tipo.value === 'PF' ? 'CPF' : 'CNPJ' }}</mat-label>
+            <mat-icon matPrefix>badge</mat-icon>
+            <input
+              matInput
+              [formControl]="form.controls.documento"
+              (input)="maskDocumento($any($event.target).value)"
+              inputmode="numeric" />
+            <mat-error *ngIf="form.controls.documento.hasError('required')">Documento obrigatório</mat-error>
+            <mat-error *ngIf="form.controls.documento.hasError('cpf')">CPF inválido</mat-error>
+            <mat-error *ngIf="form.controls.documento.hasError('cnpj')">CNPJ inválido</mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="col-2">
-            <mat-label>Órgão Exp.</mat-label>
-            <mat-icon matPrefix>account_balance</mat-icon>
-            <input matInput [formControl]="form.controls.orgaoExpedidor" />
+         <mat-form-field appearance="outline" class="col-3" *ngIf="!hideOrigem">
+          <mat-label>Origem</mat-label>
+          <mat-icon matPrefix>explore</mat-icon>
+          <mat-select formControlName="origemId">
+            <mat-option [value]="null">Sem origem</mat-option>
+            <mat-option *ngFor="let o of origens" [value]="o.id">
+              {{ o.nome }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="form.get('origemId')?.value as oid">
+            {{ hintOrigem(oid) }}
+          </mat-hint>
+        </mat-form-field>
+
+          <mat-form-field appearance="outline" class="col-3" *ngIf="form.controls.tipo.value === 'PF'">
+            <mat-label>Estado Civil</mat-label>
+            <mat-icon matPrefix>favorite</mat-icon>
+            <mat-select [formControl]="form.controls.estadoCivil">
+              <mat-option [value]="EstadoCivil.NaoInformado">Não informado</mat-option>
+              <mat-option [value]="EstadoCivil.Solteiro">Solteiro</mat-option>
+              <mat-option [value]="EstadoCivil.Casado">Casado</mat-option>
+              <mat-option [value]="EstadoCivil.UniaoEstavel">União estável</mat-option>
+              <mat-option [value]="EstadoCivil.Separado">Separado</mat-option>
+              <mat-option [value]="EstadoCivil.Divorciado">Divorciado</mat-option>
+              <mat-option [value]="EstadoCivil.Viuvo">Viúvo</mat-option>
+            </mat-select>
           </mat-form-field>
-        </ng-container>
 
-        <!-- PJ -->
-        <ng-container *ngIf="form.controls.tipo.value === 'PJ'">
-          <mat-form-field appearance="outline" class="col-2">
-            <mat-label>Data de Abertura</mat-label>
-            <input matInput type="date" [formControl]="form.controls.dataAbertura" />
-          </mat-form-field>
+          <!-- PF -->
+          <ng-container *ngIf="form.controls.tipo.value === 'PF'">
+            <mat-form-field appearance="outline" class="col-5">
+              <mat-label>Nome</mat-label>
+              <mat-icon matPrefix>person</mat-icon>
+              <input matInput [formControl]="form.controls.nome" />
+              <mat-error *ngIf="form.controls.nome.hasError('required')">Informe o nome</mat-error>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="col-2">
-            <mat-label>Inscrição Estadual</mat-label>
-            <mat-icon matPrefix>description</mat-icon>
-            <input matInput [formControl]="form.controls.inscricaoEstadual" />
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="col-2">
+              <mat-label>Data de Nascimento</mat-label>
+              <input matInput type="date" [formControl]="form.controls.dataNascimento" />
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="col-5">
-            <mat-label>Razão Social</mat-label>
-            <mat-icon matPrefix>business</mat-icon>
-            <input matInput [formControl]="form.controls.razaoSocial" />
-            <mat-error *ngIf="form.controls.razaoSocial.hasError('required')">Informe a razão social</mat-error>
-          </mat-form-field>
+            <mat-form-field appearance="outline" class="col-3">
+              <mat-label>RG</mat-label>
+              <mat-icon matPrefix>fingerprint</mat-icon>
+              <input matInput [formControl]="form.controls.rg" />
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="col-4">
-            <mat-label>Nome Fantasia</mat-label>
-            <mat-icon matPrefix>store</mat-icon>
-            <input matInput [formControl]="form.controls.nomeFantasia" />
-          </mat-form-field>
-        </ng-container>
-      </div>
-    </mat-card>
+            <mat-form-field appearance="outline" class="col-2">
+              <mat-label>Órgão Exp.</mat-label>
+              <mat-icon matPrefix>account_balance</mat-icon>
+              <input matInput [formControl]="form.controls.orgaoExpedidor" />
+            </mat-form-field>
+          </ng-container>
 
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title><mat-icon>account_circle</mat-icon> Endereço</mat-card-title>
-      </mat-card-header>
-      <app-endereco *ngIf="enderecoForm" [formGroup]="enderecoForm"></app-endereco>
-    </mat-card>
+          <!-- PJ -->
+          <ng-container *ngIf="form.controls.tipo.value === 'PJ'">
+            <mat-form-field appearance="outline" class="col-2">
+              <mat-label>Data de Abertura</mat-label>
+              <input matInput type="date" [formControl]="form.controls.dataAbertura" />
+            </mat-form-field>
 
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title><mat-icon>account_circle</mat-icon> Dados de Contato</mat-card-title>
-      </mat-card-header>
-      <app-dados-contato formControlName="contatos"></app-dados-contato>
-    </mat-card>
+            <mat-form-field appearance="outline" class="col-2">
+              <mat-label>Inscrição Estadual</mat-label>
+              <mat-icon matPrefix>description</mat-icon>
+              <input matInput [formControl]="form.controls.inscricaoEstadual" />
+            </mat-form-field>
 
-    <mat-card *ngIf="form.controls.tipo.value === 'PF' && form.controls.estadoCivil.value === EstadoCivil.Casado">
-      <mat-card-header>
-        <mat-card-title><mat-icon>account_circle</mat-icon> Dados do cônjuge</mat-card-title>
-      </mat-card-header>
+            <mat-form-field appearance="outline" class="col-5">
+              <mat-label>Razão Social</mat-label>
+              <mat-icon matPrefix>business</mat-icon>
+              <input matInput [formControl]="form.controls.razaoSocial" />
+              <mat-error *ngIf="form.controls.razaoSocial.hasError('required')">Informe a razão social</mat-error>
+            </mat-form-field>
 
-      <app-dados-conjuge [formGroup]="conjugeForm"></app-dados-conjuge>
-    </mat-card>
-
-    <mat-card *ngIf="form.controls.tipo.value === 'PF'">
-      <mat-card-header>
-        <mat-card-title><mat-icon>account_circle</mat-icon> Dados Complementares</mat-card-title>
-      </mat-card-header>
-
-      <!-- ✅ como seu DadosComplementares usa ControlContainer, precisa do formGroupName -->
-      <div formGroupName="dadosComplementares">
-        <app-dados-complementares></app-dados-complementares>
-      </div>
-    </mat-card>
-
-    <mat-card>
-      <div class="actions">
-        <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
-        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
-          <mat-icon>save</mat-icon>
-          {{ modoEdicao() ? 'Salvar alterações' : 'Salvar' }}
-        </button>
-      </div>
-    </mat-card>
-
-    <mat-card *ngIf="modoVisualizacao()">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>description</mat-icon>
-          Documentos
-        </mat-card-title>
-      </mat-card-header>
-
-      <div class="documentos-lista" *ngIf="documentosVisualizacao()?.length; else semDocs">
-        <div class="documento-item" *ngFor="let doc of documentosVisualizacao()">
-          
-          <div class="doc-info">
-            <strong>{{ doc.tipoDocumentoNome }}</strong>
-            <span>{{ doc.nome }}</span>
-          </div>
-
-          <button
-            mat-stroked-button
-            color="primary"
-            (click)="visualizarDocumento(doc)">
-            <mat-icon>visibility</mat-icon>
-            Visualizar
-          </button>
-
+            <mat-form-field appearance="outline" class="col-4">
+              <mat-label>Nome Fantasia</mat-label>
+              <mat-icon matPrefix>store</mat-icon>
+              <input matInput [formControl]="form.controls.nomeFantasia" />
+            </mat-form-field>
+          </ng-container>
         </div>
-      </div>
+      </mat-card>
 
-      <ng-template #semDocs>
-        <p class="sem-docs">Nenhum documento cadastrado.</p>
-      </ng-template>
-    </mat-card>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title><mat-icon>account_circle</mat-icon> Endereço</mat-card-title>
+        </mat-card-header>
+        <app-endereco *ngIf="enderecoForm" [formGroup]="enderecoForm"></app-endereco>
+      </mat-card>
 
-  </form>
-</section>
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title><mat-icon>account_circle</mat-icon> Dados de Contato</mat-card-title>
+        </mat-card-header>
+        <app-dados-contato formControlName="contatos"></app-dados-contato>
+      </mat-card>
+
+      <mat-card *ngIf="form.controls.tipo.value === 'PF' && form.controls.estadoCivil.value === EstadoCivil.Casado">
+        <mat-card-header>
+          <mat-card-title><mat-icon>account_circle</mat-icon> Dados do cônjuge</mat-card-title>
+        </mat-card-header>
+
+        <app-dados-conjuge [formGroup]="conjugeForm"></app-dados-conjuge>
+      </mat-card>
+
+      <mat-card *ngIf="form.controls.tipo.value === 'PF'">
+        <mat-card-header>
+          <mat-card-title><mat-icon>account_circle</mat-icon> Dados Complementares</mat-card-title>
+        </mat-card-header>
+
+        <div formGroupName="dadosComplementares">
+          <app-dados-complementares></app-dados-complementares>
+        </div>
+      </mat-card>
+
+      <mat-card>
+        <div class="actions">
+          <button mat-stroked-button type="button" (click)="cancelar()">Cancelar</button>
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+            <mat-icon>save</mat-icon>
+            {{ modoEdicao() ? 'Salvar alterações' : 'Salvar' }}
+          </button>
+        </div>
+      </mat-card>
+
+      <mat-card *ngIf="modoVisualizacao()">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>description</mat-icon>
+            Documentos
+          </mat-card-title>
+        </mat-card-header>
+
+        <div class="documentos-lista" *ngIf="documentosVisualizacao()?.length; else semDocs">
+          <div class="documento-item" *ngFor="let doc of documentosVisualizacao()">
+            
+            <div class="doc-info">
+              <strong>{{ doc.tipoDocumentoNome }}</strong>
+              <span>{{ doc.nome }}</span>
+            </div>
+
+            <button
+              mat-stroked-button
+              color="primary"
+              (click)="visualizarDocumento(doc)">
+              <mat-icon>visibility</mat-icon>
+              Visualizar
+            </button>
+
+          </div>
+        </div>
+
+        <ng-template #semDocs>
+          <p class="sem-docs">Nenhum documento cadastrado.</p>
+        </ng-template>
+      </mat-card>
+
+    </form>
+  </section>
+</ng-template>
