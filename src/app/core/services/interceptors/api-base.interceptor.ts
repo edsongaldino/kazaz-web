@@ -12,11 +12,25 @@ export const apiBaseInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
   const isServer = isPlatformServer(platformId);
 
-  // só prefixa URLs relativas (começando com '/')
-  if (req.url.startsWith('/')) {
-    const base = isServer ? SERVER_BASE : BROWSER_BASE;
-    const url = base.replace(/\/+$/, '') + req.url;
-    return next(req.clone({ url }));
+  let clonedReq = req;
+
+  // Adiciona o token de autenticação se estiver no browser e o token existir
+  if (!isServer) {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      clonedReq = req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    }
   }
-  return next(req);
+
+  // só prefixa URLs relativas (começando com '/')
+  if (clonedReq.url.startsWith('/')) {
+    const base = isServer ? SERVER_BASE : BROWSER_BASE;
+    const url = base.replace(/\/+$/, '') + clonedReq.url;
+    return next(clonedReq.clone({ url }));
+  }
+  return next(clonedReq);
 };

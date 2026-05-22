@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
+import { NotificationService } from '../../../core/services/notification.service';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -60,6 +62,8 @@ export class ConvitesList implements OnInit {
   private dialog = inject(MatDialog);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
+  private notify = inject(NotificationService);
+  private router = inject(Router);
 
   carregando = false;
 
@@ -184,11 +188,68 @@ export class ConvitesList implements OnInit {
     dialogRef.afterClosed().subscribe(async result => {
       if (!result) return;
 
-      await firstValueFrom(
-        this.convitesService.analisar(convite.id, result)
-      );
+      try {
+        await firstValueFrom(
+          this.convitesService.analisar(convite.id, result)
+        );
 
-      await this.carregar();
+        await this.carregar();
+
+        if (result.resultado === 1) {
+          // Aprovado
+          const irParaContrato = await Swal.fire({
+            title: 'Cadastro Aprovado!',
+            text: 'O cadastro foi aprovado com sucesso. Deseja ir para a edição do contrato para incluir este cliente?',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, ir para o contrato',
+            cancelButtonText: 'Não, permanecer aqui',
+            confirmButtonColor: '#2e7d32',
+            cancelButtonColor: '#757575'
+          });
+
+          if (irParaContrato.isConfirmed && convite.contratoId) {
+            this.router.navigate(['/contratos/editar', convite.contratoId]);
+          }
+        } else if (result.resultado === 3) {
+          // Correção Solicitada
+          await Swal.fire({
+            title: 'Correção Solicitada!',
+            html: `
+              <p style="font-size: 14px; color: #555; margin-bottom: 15px;">
+                O status do convite foi alterado para correção. Compartilhe o link de preenchimento abaixo com o cliente:
+              </p>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px;">
+                <input type="text" id="link-correcao-input" readonly value="${convite.link}" 
+                  style="width: 70%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background-color: #f9f9f9; text-overflow: ellipsis;" />
+                <button type="button" id="btn-copiar-link" 
+                  style="padding: 10px 16px; font-size: 14px; background-color: #1976d2; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                  Copiar Link
+                </button>
+              </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Ok',
+            confirmButtonColor: '#1976d2',
+            didOpen: () => {
+              const btnCopiar = document.getElementById('btn-copiar-link');
+              const input = document.getElementById('link-correcao-input') as HTMLInputElement;
+              btnCopiar?.addEventListener('click', () => {
+                if (input) {
+                  input.select();
+                }
+                this.conviteUi.copiarLink(convite.link);
+              });
+            }
+          });
+        } else if (result.resultado === 2) {
+          // Reprovado
+          this.notify.toastSuccess('Convite reprovado com sucesso.');
+        }
+      } catch (err) {
+        console.error(err);
+        this.notify.handleHttpError(err, 'Erro ao processar a análise do convite.');
+      }
     });
   }
 

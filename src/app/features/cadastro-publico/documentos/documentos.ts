@@ -233,8 +233,8 @@ export class CadastroDocumentosComponent implements OnInit {
   private carregarDocs(): void {
     if (!this.pessoaId) return;
 
-    this.documentosService.listarPorPessoa(this.pessoaId).subscribe({
-      next: (d) => { this.docs = d ?? []; this.cdr.markForCheck(); }, // <-- AQUI
+    this.documentosService.listarPorPessoa(this.pessoaId, this.contratoId).subscribe({
+      next: (d) => { this.docs = d ?? []; this.cdr.markForCheck(); },
       error: () => { this.docs = []; this.cdr.markForCheck(); },
     });
   }

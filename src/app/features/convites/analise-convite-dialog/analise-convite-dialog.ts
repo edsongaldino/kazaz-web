@@ -115,14 +115,16 @@ export class AnaliseConviteDialog implements OnInit {
   }
 
   visualizarDocumento(doc: any): void {
-    const baseUrl = environment.apiUrl.replace('/api', '');
-    const url = `${baseUrl}/files/${doc.caminho}`;
+    const url = `${environment.apiUrl}/files/${doc.caminho}`;
     window.open(url, '_blank');
   }
 
   async invalidarDocumento(doc: any) {
-    const confirmou = confirm(
-      `Deseja realmente invalidar/remover o documento "${doc.nome}" (${doc.tipoDocumentoNome})? O arquivo será excluído e o cliente precisará enviar um novo.`
+    const confirmou = await this.notify.confirm(
+      'Invalidar Documento',
+      `Deseja realmente invalidar/remover o documento "${doc.nome}" (${doc.tipoDocumentoNome})? O arquivo será excluído e o cliente precisará enviar um novo.`,
+      'Sim, invalidar',
+      'Cancelar'
     );
     if (!confirmou) return;
 

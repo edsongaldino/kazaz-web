@@ -271,6 +271,23 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
 
     this.form.controls.tipo.setValue('PF', { emitEvent: false });
 
+    if (this.mode === 'public') {
+      try {
+        this.loading.set(true);
+        const detalhes = await firstValueFrom(
+          this.cadastroPublicoService.obterDetalhes(token)
+        );
+        if (detalhes?.pessoa) {
+          this.pessoaEncontradaId.set(detalhes.pessoa.id);
+          await this.carregarPessoaNoForm(detalhes.pessoa);
+        }
+        this.loading.set(false);
+      } catch (err) {
+        console.error('Erro ao obter detalhes do cadastro público:', err);
+        this.loading.set(false);
+      }
+    }
+
     if (this.mode === 'public-view') {
       const imprimir = this.route.snapshot.queryParamMap.get('imprimir');
       if (imprimir === 'true') {
@@ -714,8 +731,7 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
   }
 
   visualizarDocumento(doc: any): void {
-    const baseUrl = environment.apiUrl.replace('/api', '');
-    const url = `${baseUrl}/files/${doc.caminho}`;
+    const url = `${environment.apiUrl}/files/${doc.caminho}`;
     window.open(url, '_blank');
   }
 

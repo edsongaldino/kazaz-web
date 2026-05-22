@@ -11,8 +11,11 @@ export class DocumentosService {
     return this.http.post<{ id: string }>(`/documentos`, dto);
   }
 
-  listarPorPessoa(pessoaId: string): Observable<any[]> {
-    return this.http.get<any[]>(`/documentos/pessoa/${pessoaId}`);
+  listarPorPessoa(pessoaId: string, contratoId?: string | null): Observable<any[]> {
+    const url = contratoId
+      ? `/documentos/pessoa/${pessoaId}?contratoId=${contratoId}`
+      : `/documentos/pessoa/${pessoaId}`;
+    return this.http.get<any[]>(url);
   }
 
   remover(id: string): Observable<void> {
