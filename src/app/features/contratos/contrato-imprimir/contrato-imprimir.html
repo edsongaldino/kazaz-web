@@ -142,6 +142,97 @@
           <th>Observações Finais</th>
           <td>{{ checklistEntrada.observacoesFinais || '-' }}</td>
         </tr>
+        <!-- Etapas Personalizadas de Entrada -->
+        <tr *ngFor="let step of etapasPersonalizadasEntrada">
+          <th>{{ step.label }}</th>
+          <td>
+            <ng-container *ngIf="step.tipo === 'date'">
+              {{ step.valor ? (step.valor | date:'dd/MM/yyyy') : '-' }}
+            </ng-container>
+            <ng-container *ngIf="step.tipo !== 'date'">
+              {{ step.valor || '-' }}
+            </ng-container>
+          </td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Checklist de Saída (Se Locação) -->
+    <section class="doc-section" *ngIf="contrato.tipo === TipoContrato.Locacao && checklistSaida">
+      <h3 class="section-title">Checklist de Saída</h3>
+      <table class="data-table vertical">
+        <tr>
+          <th>Motivo da Saída</th>
+          <td>{{ checklistSaida.motivoSaida || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Acerto de Aluguel</th>
+          <td>{{ checklistSaida.aluguel || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Multa Contratual</th>
+          <td>{{ checklistSaida.multaContratual || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Data do Aviso de Saída</th>
+          <td>{{ checklistSaida.avisoSaidaEm ? (checklistSaida.avisoSaidaEm | date:'dd/MM/yyyy') : '-' }}</td>
+        </tr>
+        <tr>
+          <th>Entrega das Chaves</th>
+          <td>{{ checklistSaida.chaves || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Aviso ao Proprietário</th>
+          <td>{{ checklistSaida.avisoProprietario || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Conta de Energia (UC)</th>
+          <td>{{ checklistSaida.energia || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Gás</th>
+          <td>{{ checklistSaida.gas || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Água / Saneamento</th>
+          <td>{{ checklistSaida.agua || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Administração do Condomínio</th>
+          <td>{{ checklistSaida.condominio || '-' }}</td>
+        </tr>
+        <tr>
+          <th>IPTU</th>
+          <td>{{ checklistSaida.iptu || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Data de Vistoria de Saída</th>
+          <td>{{ checklistSaida.vistoriaSaidaEm ? (checklistSaida.vistoriaSaidaEm | date:'dd/MM/yyyy') : '-' }}</td>
+        </tr>
+        <tr>
+          <th>Pintura / Manutenção</th>
+          <td>{{ checklistSaida.pinturaManutencao || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Reativar Imóvel no Site</th>
+          <td>{{ checklistSaida.reativarImovelNoSite || '-' }}</td>
+        </tr>
+        <tr>
+          <th>Seguro Fiança / Fundo Garantia</th>
+          <td>{{ checklistSaida.cancelamentoSeguroFianca || '-' }}</td>
+        </tr>
+        <!-- Etapas Personalizadas de Saída -->
+        <tr *ngFor="let step of etapasPersonalizadasSaida">
+          <th>{{ step.label }}</th>
+          <td>
+            <ng-container *ngIf="step.tipo === 'date'">
+              {{ step.valor ? (step.valor | date:'dd/MM/yyyy') : '-' }}
+            </ng-container>
+            <ng-container *ngIf="step.tipo !== 'date'">
+              {{ step.valor || '-' }}
+            </ng-container>
+          </td>
+        </tr>
       </table>
     </section>
   </div>

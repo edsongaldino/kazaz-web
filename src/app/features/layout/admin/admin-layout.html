@@ -45,6 +45,11 @@
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Contratos</span>
       </a>
 
+      <a mat-list-item routerLink="configuracoes" routerLinkActive="active" *ngIf="usuarioLogado?.perfilNome === 'Administrador'">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Configurações</span>
+      </a>
+
     </mat-nav-list>
 
     <div class="sidebar-user" [class.collapsed]="collapsed() && !isHandset()">

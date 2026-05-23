@@ -451,3 +451,289 @@
     margin-left: 0;
   }
 }
+
+/* Painel de Checklist Visual (Tracker) */
+.checklist-tracker-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+
+  .checklist-tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 16px;
+
+    .tracker-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+
+      .tracker-badge {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+    }
+
+    .tracker-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 320px;
+
+      .progress-bar-container {
+        flex: 1;
+        height: 8px;
+        background-color: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background-color: #10b981;
+        border-radius: 4px;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .progress-pct {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+        min-width: 40px;
+        text-align: right;
+      }
+    }
+  }
+
+  .checklist-tracker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+}
+
+.tracker-card {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  user-select: none;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+    transition: color 0.2s ease;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .tracker-card__label {
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__status {
+    height: 18px;
+    display: flex;
+    align-items: center;
+
+    .status-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &--pending {
+        color: #b45309;
+        font-weight: 600;
+      }
+    }
+  }
+
+  /* Cores Concluído (Verde esmeralda bem suave) */
+  &--completed {
+    background-color: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.2);
+
+    .tracker-card__header {
+      color: #059669;
+    }
+
+    .status-text {
+      color: #047857;
+    }
+
+    &:hover {
+      background-color: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+  }
+
+  /* Cores Pendente (Laranja âmbar bem suave) */
+  &--pending {
+    background-color: rgba(245, 158, 11, 0.05);
+    border-color: rgba(245, 158, 11, 0.2);
+
+    .tracker-card__header {
+      color: #d97706;
+    }
+
+    &:hover {
+      background-color: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+  }
+}
+
+/* Efeito de Destaque Pulsante */
+.highlight-field-glow {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 2px solid #005cbb;
+    border-radius: 8px;
+    box-shadow: 0 0 12px rgba(0, 92, 187, 0.5);
+    pointer-events: none;
+    animation: pulseGlow 1.5s ease-out forwards;
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    opacity: 1;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+/* Estilos para Inclusão de Etapas Personalizadas Dinâmicas */
+.btn-add-step {
+  margin-left: 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0, 92, 187, 0.3) !important;
+  color: #005cbb !important;
+  font-weight: 600 !important;
+  height: 36px !important;
+  line-height: 34px !important;
+  font-size: 13px !important;
+  
+  mat-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-right: 4px !important;
+  }
+
+  &:hover {
+    background-color: rgba(0, 92, 187, 0.05) !important;
+    border-color: #005cbb !important;
+  }
+}
+
+.custom-field-container {
+  display: block;
+}
+
+.custom-field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+
+  .custom-field-input {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .btn-delete-custom {
+    margin-top: 8px;
+    color: #ef4444;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.05);
+      transform: scale(1.05);
+    }
+  }
+}
+
+.dialog-title-premium {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.01em !important;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+.dialog-etapa-content {
+  padding: 10px 15px !important;
+
+  .dialog-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.dialog-actions-premium {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px !important;
+  margin-top: 16px !important;
+
+  button {
+    font-weight: 600;
+    border-radius: 8px;
+  }
+}
+

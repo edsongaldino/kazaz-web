@@ -80,7 +80,7 @@ export class NotificationService {
   }
 
   /** Toast rápido de sucesso (canto da tela) */
-  toastSuccess(title: string, ms: number = 2000, position: any = 'top-end') {
+  toastSuccess(title: string, ms: number = 4000, position: any = 'top-end') {
     return Swal.fire({
       toast: true,
       position,
@@ -92,7 +92,7 @@ export class NotificationService {
   }
 
   /** Toast rápido de erro (canto da tela) */
-  toastError(title: string, ms: number = 2500, position: any = 'top-end') {
+  toastError(title: string, ms: number = 5000, position: any = 'top-end') {
     return Swal.fire({
       toast: true,
       position,
@@ -124,7 +124,7 @@ export class NotificationService {
     title: string,
     commands: any[],
     extras?: NavigationExtras,
-    ms: number = 2000,
+    ms: number = 4000,
     position: any = 'top-end'
   ) {
     return this.toastSuccess(title, ms, position).then(() =>

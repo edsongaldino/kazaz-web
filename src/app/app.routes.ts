@@ -79,6 +79,12 @@ export const appRoutes: Routes = [
           import('./features/convites/convites-list/convites-list')
             .then(m => m.ConvitesList),
       },
+      {
+        path: 'configuracoes',
+        loadComponent: () =>
+          import('./features/configuracoes/configuracoes')
+            .then(m => m.ConfiguracoesComponent),
+      },
     ]
   },
 

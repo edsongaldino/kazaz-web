@@ -12,7 +12,7 @@
 
     <!-- Lista de documentos requeridos -->
     <div class="documentos-list" *ngIf="!erro">
-      <div class="doc-card" *ngFor="let row of anexosVm" [class.is-enviado]="row.enviado">
+      <div class="doc-card" *ngFor="let row of anexosVm; trackBy: trackByFn" [class.is-enviado]="row.enviado">
         <div class="doc-card-body">
           <div class="doc-details">
             <div class="doc-title-group">
@@ -22,7 +22,7 @@
             
             <div class="status-indicator">
               <span class="status-dot" [class.active]="row.enviado"></span>
-              <span class="status-text">{{ row.enviado ? 'Enviado' : 'Pendente' }}</span>
+              <span class="status-text" [class.active]="row.enviado">{{ row.enviado ? 'Enviado' : 'Pendente' }}</span>
             </div>
           </div>
 

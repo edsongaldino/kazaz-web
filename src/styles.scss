@@ -5,6 +5,8 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
+@import 'sweetalert2/src/sweetalert2.scss';
+
 html {
   @include mat.theme((color: (primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
@@ -402,4 +404,28 @@ thead .mat-mdc-header-row {
 
 .kazaz-toast.swal2-icon-error {
   border-left: 3px solid #ef4444 !important;
+}
+
+/* Evita distorções, alongamento e desalinhamento nos ícones do SweetAlert2 */
+.swal2-icon {
+  box-sizing: content-box !important;
+}
+
+.swal2-icon .swal2-icon-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 3.75rem !important;
+  line-height: 1 !important;
+  font-family: inherit !important;
+}
+
+.swal2-success-line-tip, 
+.swal2-success-line-long {
+  font-size: 16px !important;
+}
+
+.swal2-x-mark-line-right, 
+.swal2-x-mark-line-left {
+  font-size: 16px !important;
 }

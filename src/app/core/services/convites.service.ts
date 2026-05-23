@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PagedResult } from '../../models/usuario.models';
 import { AnalisarConviteRequest, ConviteCadastroListItemResponse, ListarConvitesCadastroQuery } from '../../models/cadastro-publico.models';
+import { environment } from '../../../environments/environment';
 
 export type ConviteCadastroContratoDto = {
   id: string;
@@ -28,7 +29,7 @@ export type GerarConviteCadastroRequest = {
 @Injectable({ providedIn: 'root' })
 export class ConvitesCadastroService {
   private http = inject(HttpClient);
-  private readonly baseUrl = `/public/cadastro/convites-cadastro-contrato`;
+  private readonly baseUrl = `${environment.apiUrl}/public/cadastro/convites-cadastro-contrato`;
 
   // mantém compatibilidade com a tela atual
   listarPorContrato(contratoId?: string): Observable<PagedResult<ConviteCadastroContratoDto>> {
@@ -61,7 +62,7 @@ export class ConvitesCadastroService {
     body: { tipo: number; papel: number; expiraEmDias: number }
   ) {
     return this.http.post(
-      `/contratos/rascunho/gerar-links`,
+      `${environment.apiUrl}/contratos/rascunho/gerar-links`,
       body,
       { params: { imovelId } }
     );
@@ -91,9 +92,8 @@ export class ConvitesCadastroService {
 
   analisar(conviteId: string, request: AnalisarConviteRequest) {
     return this.http.post<void>(
-      `/public/cadastro/${conviteId}/analise`,
+      `${environment.apiUrl}/public/cadastro/${conviteId}/analise`,
       request
     );
   }
-  
 }

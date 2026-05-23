@@ -176,13 +176,25 @@
 <ng-template #normalForm>
   <section class="page">
     <header class="page__header">
-      <h1>
-        {{
-          modoVisualizacao()
-            ? 'Visualizar Cliente'
-            : (modoEdicao() ? 'Editar Cliente' : 'Cadastrar Cliente')
-        }}
-      </h1>
+      <div class="page__title-group">
+        <h1>
+          {{
+            modoVisualizacao()
+              ? 'Visualizar Cliente'
+              : (modoEdicao() ? 'Editar Cliente' : 'Cadastrar Cliente')
+          }}
+        </h1>
+        <span *ngIf="convitePapel()" class="papel-badge">
+          <mat-icon class="papel-icon">person_pin</mat-icon>
+          {{
+            convitePapel() === 1 ? 'Locador' :
+            convitePapel() === 2 ? 'Locatário' :
+            convitePapel() === 3 ? 'Fiador' :
+            convitePapel() === 10 ? 'Vendedor' :
+            convitePapel() === 11 ? 'Comprador' : ''
+          }}
+        </span>
+      </div>
       <div class="header__actions">
         <button mat-stroked-button (click)="cancelar()">
           <mat-icon>arrow_back</mat-icon>

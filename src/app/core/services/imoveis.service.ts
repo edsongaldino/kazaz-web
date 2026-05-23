@@ -34,7 +34,7 @@ export class ImoveisService {
     if (filtro.cidadeId) params = params.set('cidadeId', filtro.cidadeId);
     if (filtro.status) params = params.set('status', filtro.status);
 
-    return this.http.get<PagedResult<ImovelListDto>>('/imoveis', { params });
+    return this.http.get<PagedResult<ImovelListDto>>(this.apiUrl, { params });
   }
 
   obterPorId(id: string): Observable<ImovelDto> {

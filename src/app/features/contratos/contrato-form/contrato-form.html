@@ -212,7 +212,7 @@
   </ng-container>
 
   <!-- Se for Edição (com id), exibe visualização moderna em ABAS -->
-  <mat-tab-group *ngIf="id" color="primary" class="modern-tab-group">
+  <mat-tab-group *ngIf="id" color="primary" class="modern-tab-group" (selectedIndexChange)="onTabChanged($event)">
     
     <!-- ABA 1: DADOS GERAIS -->
     <mat-tab label="Dados Gerais">
@@ -397,6 +397,49 @@
       <div class="tab-content">
         <mat-progress-bar *ngIf="carregandoChecklistEntrada" mode="indeterminate" class="tab-progress"></mat-progress-bar>
         
+        <!-- Painel de Checklist Visual (Entrada) -->
+        <div class="checklist-tracker-panel" *ngIf="!carregandoChecklistEntrada">
+          <div class="checklist-tracker-header">
+            <div class="tracker-info">
+              <h3>Acompanhamento de Entrada</h3>
+              <span class="tracker-badge">
+                {{ getCompletedCount(formChecklistEntrada, getEntradaTrackerItems()) }} de {{ getEntradaTrackerItems().length }} concluídos
+              </span>
+              <button mat-stroked-button type="button" class="btn-add-step" (click)="abrirDialogAdicionarEtapa('entrada')">
+                <mat-icon>add</mat-icon> Adicionar Etapa
+              </button>
+            </div>
+            <div class="tracker-progress">
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" [style.width.%]="getCompletionPercentage(formChecklistEntrada, getEntradaTrackerItems())"></div>
+              </div>
+              <span class="progress-pct">{{ getCompletionPercentage(formChecklistEntrada, getEntradaTrackerItems()) }}%</span>
+            </div>
+          </div>
+
+          <div class="checklist-tracker-grid">
+            <div 
+              *ngFor="let item of getEntradaTrackerItems()"
+              class="tracker-card"
+              [class.tracker-card--completed]="isFieldCompleted(formChecklistEntrada, item.key)"
+              [class.tracker-card--pending]="!isFieldCompleted(formChecklistEntrada, item.key)"
+              (click)="scrollToField(item.domId)">
+              <div class="tracker-card__header">
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span class="tracker-card__label">{{ item.label }}</span>
+              </div>
+              <div class="tracker-card__status">
+                <span class="status-text" *ngIf="isFieldCompleted(formChecklistEntrada, item.key)">
+                  {{ getFieldValueDisplay(formChecklistEntrada, item.key) }}
+                </span>
+                <span class="status-text status-text--pending" *ngIf="!isFieldCompleted(formChecklistEntrada, item.key)">
+                  Pendente
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form [formGroup]="formChecklistEntrada" (ngSubmit)="salvarChecklistEntrada()">
           <div class="tab-grid">
 
@@ -407,24 +450,61 @@
                 <mat-card-title>Assinatura & Entrega</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-assinado">
                   <mat-label>Contrato Assinado Em</mat-label>
                   <input matInput [matDatepicker]="dpAssinado" formControlName="assinadoEm" />
                   <mat-datepicker-toggle matSuffix [for]="dpAssinado"></mat-datepicker-toggle>
                   <mat-datepicker #dpAssinado></mat-datepicker>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-seguro">
                   <mat-label>Seguro Incêndio</mat-label>
                   <input matInput formControlName="seguroIncendio" placeholder="Ex: Pago / Pendente" />
                   <mat-icon matPrefix color="primary">local_fire_department</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-chaves">
                   <mat-label>Entrega das Chaves</mat-label>
                   <input matInput formControlName="chaves" placeholder="Ex: Entregues em 06/02" />
                   <mat-icon matPrefix color="primary">vpn_key</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Assinatura & Entrega -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasEntrada, 'Assinatura & Entrega')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'entrada')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -435,29 +515,66 @@
                 <mat-card-title>Contas & Utilidades</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-energia">
                   <mat-label>Conta de Energia (UC)</mat-label>
                   <input matInput formControlName="energia" placeholder="Número ou status da transferência" />
                   <mat-icon matPrefix color="primary">bolt</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-agua">
                   <mat-label>Água / Saneamento</mat-label>
                   <input matInput formControlName="agua" placeholder="Matrícula ou status da conta" />
                   <mat-icon matPrefix color="primary">opacity</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-gas">
                   <mat-label>Gás</mat-label>
                   <input matInput formControlName="gas" placeholder="Comercial / Holder / Botijão / Sem" />
                   <mat-icon matPrefix color="primary">local_gas_station</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-condominio">
                   <mat-label>Administração do Condomínio</mat-label>
                   <input matInput formControlName="condominio" placeholder="Status do condomínio" />
                   <mat-icon matPrefix color="primary">domain</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Contas & Utilidades -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasEntrada, 'Contas & Utilidades')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'entrada')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -468,17 +585,54 @@
                 <mat-card-title>IPTU</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-iptu">
                   <mat-label>IPTU Principal</mat-label>
                   <input matInput formControlName="iptu" placeholder="Código cadastral do IPTU" />
                   <mat-icon matPrefix color="primary">receipt</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-iptuGaragem">
                   <mat-label>IPTU Garagem</mat-label>
                   <input matInput formControlName="iptuGaragem" placeholder="Código cadastral da garagem" />
                   <mat-icon matPrefix color="primary">directions_car</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para IPTU -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasEntrada, 'IPTU')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'entrada')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -489,22 +643,59 @@
                 <mat-card-title>Vistoria & Manutenção</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-vistoria">
                   <mat-label>Data da Vistoria de Entrada</mat-label>
                   <input matInput [matDatepicker]="dpVistoriaEntrada" formControlName="vistoriaEntradaEm" />
                   <mat-datepicker-toggle matSuffix [for]="dpVistoriaEntrada"></mat-datepicker-toggle>
                   <mat-datepicker #dpVistoriaEntrada></mat-datepicker>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-manutencao">
                   <mat-label>Manutenções Pendentes / Notas</mat-label>
                   <textarea matInput formControlName="manutencao" rows="3" placeholder="Reparos combinados..."></textarea>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-obs">
                   <mat-label>Observações Finais</mat-label>
                   <textarea matInput formControlName="observacoesFinais" rows="3" placeholder="Comentários gerais..."></textarea>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Vistoria & Manutenção -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasEntrada, 'Vistoria & Manutenção')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'entrada')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -515,20 +706,104 @@
                 <mat-card-title>Bônus de Locação</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid card-form-grid--2col">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-bonus">
                   <mat-label>Detalhamento do Bônus</mat-label>
                   <input matInput formControlName="bonusLocacao" placeholder="Ex: Aluguel R$ 5.000,00 x 10% = 500,00" />
                   <mat-icon matPrefix color="primary">attach_money</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-ent-pagtoBonus">
                   <mat-label>Data de Pagamento do Bônus</mat-label>
                   <input matInput [matDatepicker]="dpBonusPagto" formControlName="dataPagamentoBonus" />
                   <mat-datepicker-toggle matSuffix [for]="dpBonusPagto"></mat-datepicker-toggle>
                   <mat-datepicker #dpBonusPagto></mat-datepicker>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Bônus de Locação -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasEntrada, 'Bônus de Locação')">
+                  <div class="custom-field-container span-2" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'entrada')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
+
+            <!-- Cards Customizados Criados pelo Usuário -->
+            <ng-container *ngFor="let cardTitle of getCustomCards(etapasPersonalizadasEntrada, staticCardsEntrada)">
+              <mat-card class="modern-card span-2">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar color="primary">dashboard_customize</mat-icon>
+                  <mat-card-title>{{ cardTitle }}</mat-card-title>
+                </mat-card-header>
+                <mat-card-content class="card-form-grid card-form-grid--2col">
+                  <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasEntrada, cardTitle)">
+                    <div class="custom-field-container span-2" [id]="'field-' + step.id">
+                      <div class="custom-field-row">
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                          <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                          <mat-datepicker #dpCustom></mat-datepicker>
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <mat-select [formControlName]="step.id">
+                            <mat-option value="">Selecione...</mat-option>
+                            <mat-option value="Sim">Sim</mat-option>
+                            <mat-option value="Não">Não</mat-option>
+                          </mat-select>
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <input matInput [formControlName]="step.id" />
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                        </mat-form-field>
+                        <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'entrada')" matTooltip="Excluir esta etapa">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </ng-container>
+                </mat-card-content>
+              </mat-card>
+            </ng-container>
 
           </div>
 
@@ -546,6 +821,49 @@
       <div class="tab-content">
         <mat-progress-bar *ngIf="carregandoChecklistSaida" mode="indeterminate" class="tab-progress"></mat-progress-bar>
         
+        <!-- Painel de Checklist Visual (Saída) -->
+        <div class="checklist-tracker-panel" *ngIf="!carregandoChecklistSaida">
+          <div class="checklist-tracker-header">
+            <div class="tracker-info">
+              <h3>Acompanhamento de Saída</h3>
+              <span class="tracker-badge">
+                {{ getCompletedCount(formChecklistSaida, getSaidaTrackerItems()) }} de {{ getSaidaTrackerItems().length }} concluídos
+              </span>
+              <button mat-stroked-button type="button" class="btn-add-step" (click)="abrirDialogAdicionarEtapa('saida')">
+                <mat-icon>add</mat-icon> Adicionar Etapa
+              </button>
+            </div>
+            <div class="tracker-progress">
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" [style.width.%]="getCompletionPercentage(formChecklistSaida, getSaidaTrackerItems())"></div>
+              </div>
+              <span class="progress-pct">{{ getCompletionPercentage(formChecklistSaida, getSaidaTrackerItems()) }}%</span>
+            </div>
+          </div>
+
+          <div class="checklist-tracker-grid">
+            <div 
+              *ngFor="let item of getSaidaTrackerItems()"
+              class="tracker-card"
+              [class.tracker-card--completed]="isFieldCompleted(formChecklistSaida, item.key)"
+              [class.tracker-card--pending]="!isFieldCompleted(formChecklistSaida, item.key)"
+              (click)="scrollToField(item.domId)">
+              <div class="tracker-card__header">
+                <mat-icon>{{ item.icon }}</mat-icon>
+                <span class="tracker-card__label">{{ item.label }}</span>
+              </div>
+              <div class="tracker-card__status">
+                <span class="status-text" *ngIf="isFieldCompleted(formChecklistSaida, item.key)">
+                  {{ getFieldValueDisplay(formChecklistSaida, item.key) }}
+                </span>
+                <span class="status-text status-text--pending" *ngIf="!isFieldCompleted(formChecklistSaida, item.key)">
+                  Pendente
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form [formGroup]="formChecklistSaida" (ngSubmit)="salvarChecklistSaida()">
           <div class="tab-grid">
 
@@ -556,30 +874,67 @@
                 <mat-card-title>Rescisão & Saída</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-aviso">
                   <mat-label>Data do Aviso de Saída</mat-label>
                   <input matInput [matDatepicker]="dpAvisoSaida" formControlName="avisoSaidaEm" />
                   <mat-datepicker-toggle matSuffix [for]="dpAvisoSaida"></mat-datepicker-toggle>
                   <mat-datepicker #dpAvisoSaida></mat-datepicker>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-motivo">
                   <mat-label>Motivo da Saída</mat-label>
                   <input matInput formControlName="motivoSaida" placeholder="Ex: Não quis renovar / Compra própria" />
                   <mat-icon matPrefix color="primary">help_outline</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-chaves">
                   <mat-label>Devolução das Chaves</mat-label>
                   <input matInput formControlName="chaves" placeholder="Ex: Entregues em data X" />
                   <mat-icon matPrefix color="primary">vpn_key</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-avisoProp">
                   <mat-label>Aviso ao Proprietário</mat-label>
                   <input matInput formControlName="avisoProprietario" placeholder="Ex: Comunicado por WhatsApp" />
                   <mat-icon matPrefix color="primary">campaign</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Rescisão & Saída -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasSaida, 'Rescisão & Saída')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'saida')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -590,23 +945,60 @@
                 <mat-card-title>Valores & Garantias</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-aluguel">
                   <mat-label>Acerto de Aluguel</mat-label>
                   <input matInput formControlName="aluguel" placeholder="Ex: Pago proporcional de X dias" />
                   <mat-icon matPrefix color="primary">attach_money</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-multa">
                   <mat-label>Multa Contratual</mat-label>
                   <input matInput formControlName="multaContratual" placeholder="Ex: Não tem multa / Valor R$ X" />
                   <mat-icon matPrefix color="primary">money_off</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-seguro">
                   <mat-label>Seguro Fiança / Fundo Garantia</mat-label>
                   <input matInput formControlName="cancelamentoSeguroFianca" placeholder="Ex: Cancelado / A cancelar" />
                   <mat-icon matPrefix color="primary">verified_user</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Valores & Garantias -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasSaida, 'Valores & Garantias')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'saida')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -617,35 +1009,72 @@
                 <mat-card-title>Encerramento de Contas</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-energia">
                   <mat-label>Energia Elétrica (UC)</mat-label>
                   <input matInput formControlName="energia" placeholder="UC ou status da quitação" />
                   <mat-icon matPrefix color="primary">bolt</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-gas">
                   <mat-label>Gás</mat-label>
                   <input matInput formControlName="gas" placeholder="Status do acerto do gás" />
                   <mat-icon matPrefix color="primary">local_gas_station</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-agua">
                   <mat-label>Água / Saneamento</mat-label>
                   <input matInput formControlName="agua" placeholder="Status do nada consta" />
                   <mat-icon matPrefix color="primary">opacity</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-condominio">
                   <mat-label>Condomínio</mat-label>
                   <input matInput formControlName="condominio" placeholder="Status do condomínio final" />
                   <mat-icon matPrefix color="primary">domain</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-iptu">
                   <mat-label>IPTU Final</mat-label>
                   <input matInput formControlName="iptu" placeholder="Status da quitação do IPTU" />
                   <mat-icon matPrefix color="primary">receipt</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Encerramento de Contas -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasSaida, 'Encerramento de Contas')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'saida')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
 
@@ -656,25 +1085,109 @@
                 <mat-card-title>Entrega Física & Divulgação</mat-card-title>
               </mat-card-header>
               <mat-card-content class="card-form-grid">
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-vistoria">
                   <mat-label>Data da Vistoria de Saída</mat-label>
                   <input matInput [matDatepicker]="dpVistoriaSaida" formControlName="vistoriaSaidaEm" />
                   <mat-datepicker-toggle matSuffix [for]="dpVistoriaSaida"></mat-datepicker-toggle>
                   <mat-datepicker #dpVistoriaSaida></mat-datepicker>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-pintura">
                   <mat-label>Pintura / Manutenção de Saída</mat-label>
                   <textarea matInput formControlName="pinturaManutencao" rows="3" placeholder="Pintura ok / Valor descontado..."></textarea>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="w-100">
+                <mat-form-field appearance="outline" class="w-100" id="field-sai-reativar">
                   <mat-label>Reativar Imóvel no Site</mat-label>
                   <input matInput formControlName="reativarImovelNoSite" placeholder="Ex: Reativo / Proprietário pegou" />
                   <mat-icon matPrefix color="primary">language</mat-icon>
                 </mat-form-field>
+
+                <!-- Campos Customizados para Entrega Física & Divulgação -->
+                <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasSaida, 'Entrega Física & Divulgação')">
+                  <div class="custom-field-container w-100" [id]="'field-' + step.id">
+                    <div class="custom-field-row">
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                        <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                        <mat-datepicker #dpCustom></mat-datepicker>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <mat-select [formControlName]="step.id">
+                          <mat-option value="">Selecione...</mat-option>
+                          <mat-option value="Sim">Sim</mat-option>
+                          <mat-option value="Não">Não</mat-option>
+                        </mat-select>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                        <mat-label>{{ step.label }}</mat-label>
+                        <input matInput [formControlName]="step.id" />
+                        <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                      </mat-form-field>
+                      <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'saida')" matTooltip="Excluir esta etapa">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </ng-container>
               </mat-card-content>
             </mat-card>
+
+            <!-- Cards Customizados Criados pelo Usuário (Saída) -->
+            <ng-container *ngFor="let cardTitle of getCustomCards(etapasPersonalizadasSaida, staticCardsSaida)">
+              <mat-card class="modern-card span-2">
+                <mat-card-header>
+                  <mat-icon mat-card-avatar color="primary">dashboard_customize</mat-icon>
+                  <mat-card-title>{{ cardTitle }}</mat-card-title>
+                </mat-card-header>
+                <mat-card-content class="card-form-grid card-form-grid--2col">
+                  <ng-container *ngFor="let step of getCustomStepsForCard(etapasPersonalizadasSaida, cardTitle)">
+                    <div class="custom-field-container span-2" [id]="'field-' + step.id">
+                      <div class="custom-field-row">
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'date'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <input matInput [matDatepicker]="dpCustom" [formControlName]="step.id" />
+                          <mat-datepicker-toggle matSuffix [for]="dpCustom"></mat-datepicker-toggle>
+                          <mat-datepicker #dpCustom></mat-datepicker>
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'boolean'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <mat-select [formControlName]="step.id">
+                            <mat-option value="">Selecione...</mat-option>
+                            <mat-option value="Sim">Sim</mat-option>
+                            <mat-option value="Não">Não</mat-option>
+                          </mat-select>
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)" style="margin-right: 8px;">public</mat-icon>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'textarea'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <textarea matInput [formControlName]="step.id" rows="3"></textarea>
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field-input" *ngIf="step.tipo === 'text'">
+                          <mat-label>{{ step.label }}</mat-label>
+                          <input matInput [formControlName]="step.id" />
+                          <mat-icon matSuffix *ngIf="step.isGlobal" color="primary" matTooltip="Etapa Global (disponível em todos os contratos)">public</mat-icon>
+                        </mat-form-field>
+                        <button mat-icon-button color="warn" type="button" class="btn-delete-custom" (click)="removerEtapaPersonalizada(step.id, 'saida')" matTooltip="Excluir esta etapa">
+                          <mat-icon>delete</mat-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </ng-container>
+                </mat-card-content>
+              </mat-card>
+            </ng-container>
 
           </div>
 
@@ -689,3 +1202,60 @@
 
   </mat-tab-group>
 </div>
+
+<!-- Diálogo de Inclusão de Nova Etapa -->
+<ng-template #dialogEtapa>
+  <h2 mat-dialog-title class="dialog-title-premium">Adicionar Nova Etapa ao Checklist</h2>
+  <mat-dialog-content class="dialog-etapa-content">
+    <form [formGroup]="formNovaEtapa" class="dialog-form">
+      <!-- Nome da Etapa -->
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Nome da Etapa</mat-label>
+        <input matInput formControlName="label" placeholder="Ex: Internet instalada, Limpeza concluída" />
+        <mat-error *ngIf="formNovaEtapa.get('label')?.invalid">O nome é obrigatório.</mat-error>
+      </mat-form-field>
+
+      <!-- Tipo de Campo -->
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Tipo do Campo</mat-label>
+        <mat-select formControlName="tipo">
+          <mat-option value="text">Texto Curto</mat-option>
+          <mat-option value="textarea">Texto Longo / Observações</mat-option>
+          <mat-option value="date">Data</mat-option>
+          <mat-option value="boolean">Sim/Não (Seleção)</mat-option>
+        </mat-select>
+        <mat-error *ngIf="formNovaEtapa.get('tipo')?.invalid">O tipo de campo é obrigatório.</mat-error>
+      </mat-form-field>
+
+      <!-- Destino (Card) -->
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Destino (Card)</mat-label>
+        <mat-select formControlName="card" (selectionChange)="onCardSelectionChange($event.value)">
+          <mat-option *ngFor="let card of getCardsDisponiveis()" [value]="card">
+            {{ card }}
+          </mat-option>
+          <mat-option value="novo">[Criar Novo Card...]</mat-option>
+        </mat-select>
+        <mat-error *ngIf="formNovaEtapa.get('card')?.invalid">Selecione o destino.</mat-error>
+      </mat-form-field>
+
+      <!-- Nome do Novo Card (Exibido apenas se selecionado "novo") -->
+      <mat-form-field appearance="outline" class="w-100" *ngIf="formNovaEtapa.get('card')?.value === 'novo'">
+        <mat-label>Nome do Novo Card</mat-label>
+        <input matInput formControlName="novoCardNome" placeholder="Ex: Vistoria Elétrica, Serviços Adicionais" />
+        <mat-error *ngIf="formNovaEtapa.get('novoCardNome')?.invalid">Informe o nome do novo card.</mat-error>
+      </mat-form-field>
+
+      <!-- Tornar Global -->
+      <div style="margin-bottom: 16px; padding-left: 4px;">
+        <mat-checkbox formControlName="isGlobal" color="primary">
+          Disponibilizar esta etapa em todos os contratos (Global)
+        </mat-checkbox>
+      </div>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end" class="dialog-actions-premium">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="primary" (click)="confirmarAdicionarEtapa()">Adicionar</button>
+  </mat-dialog-actions>
+</ng-template>

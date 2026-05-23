@@ -249,10 +249,14 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
     }
 
     if (this.mode === 'public') {
+      // Carrega o papel do convite para exibir no título
       this.cadastroPublicoService.status(token).subscribe({
         next: (st) => {
           if (st.status === 6 && st.ultimoComentarioAnalise) {
             this.solicitacaoCorrecaoMsg.set(st.ultimoComentarioAnalise);
+          }
+          if (st.papel) {
+            this.convitePapel.set(st.papel);
           }
         }
       });

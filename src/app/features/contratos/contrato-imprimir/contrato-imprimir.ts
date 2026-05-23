@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { MaterialModule } from '../../../shared/material.module';
 import { ContratosService } from '../../../core/services/contratos.service';
-import { ContratoResponse, ContratoChecklistEntrada, TipoContrato, StatusContrato, PapelContrato } from '../../../models/contrato.models';
+import { ContratoResponse, ContratoChecklistEntrada, ContratoChecklistSaida, TipoContrato, StatusContrato, PapelContrato } from '../../../models/contrato.models';
 
 @Component({
   selector: 'app-contrato-imprimir',
@@ -22,6 +22,9 @@ export class ContratoImprimirComponent implements OnInit {
   id!: string;
   contrato: ContratoResponse | null = null;
   checklistEntrada: ContratoChecklistEntrada | null = null;
+  checklistSaida: ContratoChecklistSaida | null = null;
+  etapasPersonalizadasEntrada: any[] = [];
+  etapasPersonalizadasSaida: any[] = [];
   carregando = true;
 
   readonly TipoContrato = TipoContrato;
@@ -40,9 +43,25 @@ export class ContratoImprimirComponent implements OnInit {
       const c = await firstValueFrom(this.contratosService.obterPorId(this.id));
       this.contrato = c;
 
-      // Se for locação, também carrega o checklist de entrada
+      // Se for locação, também carrega os checklists de entrada e saída
       if (c.tipo === TipoContrato.Locacao) {
         this.checklistEntrada = await firstValueFrom(this.contratosService.obterChecklistEntrada(this.id));
+        if (this.checklistEntrada?.etapasPersonalizadasJson) {
+          try {
+            this.etapasPersonalizadasEntrada = JSON.parse(this.checklistEntrada.etapasPersonalizadasJson);
+          } catch (e) {
+            this.etapasPersonalizadasEntrada = [];
+          }
+        }
+
+        this.checklistSaida = await firstValueFrom(this.contratosService.obterChecklistSaida(this.id));
+        if (this.checklistSaida?.etapasPersonalizadasJson) {
+          try {
+            this.etapasPersonalizadasSaida = JSON.parse(this.checklistSaida.etapasPersonalizadasJson);
+          } catch (e) {
+            this.etapasPersonalizadasSaida = [];
+          }
+        }
       }
 
       this.carregando = false;

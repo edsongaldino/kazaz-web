@@ -26,7 +26,7 @@ export class ContratosService {
     if (filtro.vigenciaDe) params = params.set('vigenciaDe', filtro.vigenciaDe);
     if (filtro.vigenciaAte) params = params.set('vigenciaAte', filtro.vigenciaAte);
 
-    return this.http.get<PagedResult<ContratoResponse>>('/contratos', { params });
+    return this.http.get<PagedResult<ContratoResponse>>(this.baseUrl, { params });
   }
 
   obterPorId(id: string): Observable<ContratoResponse> {
@@ -67,5 +67,19 @@ export class ContratosService {
 
   atualizar(id: string, req: AtualizarContratoRequest): Observable<ContratoResponse> {
     return this.http.put<ContratoResponse>(`${this.baseUrl}/${id}`, req);
+  }
+
+  obterEtapasGlobais(tipoChecklist: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/checklist-etapas-globais`, {
+      params: { tipoChecklist }
+    });
+  }
+
+  criarEtapaGlobal(req: { tipoChecklist: string, label: string, tipoField: string, card: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/checklist-etapas-globais`, req);
+  }
+
+  excluirEtapaGlobal(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/checklist-etapas-globais/${id}`);
   }
 }

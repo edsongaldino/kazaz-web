@@ -31,9 +31,13 @@ export class CadastroDocumentosComponent implements OnInit {
 
   docs: any[] = [];
   requeridos: DocumentoRequeridoDto[] = [];
+  anexosVmList: AnexoVm[] = [];
 
   get anexosVm(): AnexoVm[] {
-    // Map por "chave" (tipoDocumentoId + multiplicidadeIndex)
+    return this.anexosVmList;
+  }
+
+  private atualizarAnexosVm(): void {
     const map = new Map<string, any>();
 
     for (const d of this.docs ?? []) {
@@ -44,7 +48,7 @@ export class CadastroDocumentosComponent implements OnInit {
       if (!map.has(key)) map.set(key, d);
     }
 
-    return (this.requeridos ?? [])
+    this.anexosVmList = (this.requeridos ?? [])
       .slice()
       .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
       .map(r => {
@@ -55,6 +59,12 @@ export class CadastroDocumentosComponent implements OnInit {
           arquivoNome: doc?.nome ?? doc?.arquivoNome ?? null
         };
       });
+
+    this.cdr.markForCheck();
+  }
+
+  trackByFn(index: number, item: any): string {
+    return `${item.tipoDocumentoId}::${item.multiplicidadeIndex ?? 0}`;
   }
 
   get todosObrigatoriosEnviados(): boolean {
@@ -76,28 +86,42 @@ export class CadastroDocumentosComponent implements OnInit {
 
   ngOnInit(): void {
     const token = this.getTokenFromRoute();
-    if (!token) { this.erro = 'Token não encontrado.'; this.cdr.markForCheck(); return; }
+    console.log('[Documentos] ngOnInit chamado com token:', token);
+    if (!token) {
+      this.erro = 'Token não encontrado.';
+      console.error('[Documentos] Token ausente na rota.');
+      this.cdr.markForCheck();
+      return;
+    }
 
     this.cadastroPublicoService.status(token).subscribe({
       next: (st) => {
+        console.log('[Documentos] Status retornado:', st);
         this.pessoaId = st.pessoaId ?? null;
         this.cdr.markForCheck(); // <-- AQUI
 
         this.cadastroPublicoService.documentosRequeridos(token).subscribe({
           next: (res: any) => {
+            console.log('[Documentos] Documentos requeridos retornados:', res);
             this.requeridos = res?.itens ?? [];
             this.pessoaId = res?.pessoaId ?? this.pessoaId;
             this.contratoId = res?.contratoId ?? this.contratoId;
+            console.log('[Documentos] IDs definidos após carregar requeridos:', {
+              pessoaId: this.pessoaId,
+              contratoId: this.contratoId
+            });
             this.cdr.markForCheck(); // <-- AQUI
             this.carregarDocs();
           },
           error: (err) => {
+            console.error('[Documentos] Erro ao carregar documentos requeridos:', err);
             this.erro = 'Erro ao carregar lista de documentos requeridos.';
             this.cdr.markForCheck(); // <-- AQUI
           }
         });
       },
-      error: () => {
+      error: (err) => {
+        console.error('[Documentos] Erro ao carregar status:', err);
         this.erro = 'Erro ao carregar status do cadastro.';
         this.cdr.markForCheck(); // <-- AQUI
       }
@@ -105,33 +129,55 @@ export class CadastroDocumentosComponent implements OnInit {
   }
 
   triggerFile(tipoDocumentoId: string, multiplicidadeIndex?: number | null): void {
+    console.log('[Documentos] triggerFile chamado para:', { tipoDocumentoId, multiplicidadeIndex });
     const id = this.inputId(tipoDocumentoId, multiplicidadeIndex ?? null);
+    console.log('[Documentos] Procurando input com ID:', id);
     const el = document.getElementById(id) as HTMLInputElement | null;
-    el?.click();
+    console.log('[Documentos] Elemento input encontrado:', el);
+    if (el) {
+      el.click();
+    } else {
+      console.error('[Documentos] Elemento input não encontrado no DOM!');
+    }
   }
 
   onFileRow(event: Event, tipoDocumentoId: string, multiplicidadeIndex?: number | null): void {
+    console.log('[Documentos] onFileRow chamado:', { tipoDocumentoId, multiplicidadeIndex });
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
     // permite escolher o mesmo arquivo depois
     input.value = '';
 
-    if (!file) return;
+    if (!file) {
+      console.warn('[Documentos] Nenhum arquivo selecionado.');
+      return;
+    }
 
+    console.log('[Documentos] Arquivo selecionado:', { nome: file.name, tamanho: file.size });
     this.enviarDocumento(tipoDocumentoId, multiplicidadeIndex ?? null, file);
   }
 
   private enviarDocumento(tipoDocumentoId: string, multiplicidadeIndex: number | null, file: File): void {
     this.erro = null;
+    console.log('[Documentos] enviarDocumento:', {
+      tipoDocumentoId,
+      multiplicidadeIndex,
+      pessoaId: this.pessoaId,
+      contratoId: this.contratoId
+    });
 
     if (!this.pessoaId) {
       this.erro = 'Pessoa não definida.';
+      console.error('[Documentos] Erro: pessoaId nulo ou indefinido.');
+      this.cdr.markForCheck();
       return;
     }
 
     if (!this.contratoId) {
       this.erro = 'Contrato não definido.';
+      console.error('[Documentos] Erro: contratoId nulo ou indefinido.');
+      this.cdr.markForCheck();
       return;
     }
 
@@ -141,15 +187,18 @@ export class CadastroDocumentosComponent implements OnInit {
     this.cdr.markForCheck();
 
     const folder = `pessoa/${this.pessoaId}/${this.slugDocumento(tipoDocumentoId)}`;
+    console.log('[Documentos] Iniciando upload com progress para pasta:', folder);
 
     this.uploadService.uploadWithProgress(file, folder).subscribe({
       next: (event: HttpEvent<any>) => {
         if (event.type === HttpEventType.UploadProgress) {
           const percentDone = event.total ? Math.round((100 * event.loaded) / event.total) : 0;
           this.uploadProgressMap[rowKey] = percentDone;
+          console.log(`[Documentos] Progresso do upload (${rowKey}): ${percentDone}%`);
           this.cdr.markForCheck();
         } else if (event.type === HttpEventType.Response) {
           const up = event.body;
+          console.log('[Documentos] Upload concluído com sucesso, salvando no banco:', up);
           if (up) {
             this.documentosService.criar({
               nome: up.nome,
@@ -163,12 +212,14 @@ export class CadastroDocumentosComponent implements OnInit {
               observacao: null,
               multiplicidadeIndex: multiplicidadeIndex
             }).subscribe({
-              next: () => {
+              next: (res) => {
+                console.log('[Documentos] Registro de documento criado no banco:', res);
                 this.uploadingRowKey = null;
                 delete this.uploadProgressMap[rowKey];
                 this.carregarDocs();
               },
-              error: () => {
+              error: (err) => {
+                console.error('[Documentos] Erro ao salvar registro de documento:', err);
                 this.uploadingRowKey = null;
                 delete this.uploadProgressMap[rowKey];
                 this.erro = 'Erro ao salvar documento.';
@@ -178,7 +229,8 @@ export class CadastroDocumentosComponent implements OnInit {
           }
         }
       },
-      error: () => {
+      error: (err) => {
+        console.error('[Documentos] Erro na requisição de upload:', err);
         this.uploadingRowKey = null;
         delete this.uploadProgressMap[rowKey];
         this.erro = 'Erro no upload.';
@@ -231,11 +283,20 @@ export class CadastroDocumentosComponent implements OnInit {
   }
 
   private carregarDocs(): void {
-    if (!this.pessoaId) return;
+    if (!this.pessoaId) {
+      this.atualizarAnexosVm();
+      return;
+    }
 
     this.documentosService.listarPorPessoa(this.pessoaId, this.contratoId).subscribe({
-      next: (d) => { this.docs = d ?? []; this.cdr.markForCheck(); },
-      error: () => { this.docs = []; this.cdr.markForCheck(); },
+      next: (d) => { 
+        this.docs = d ?? []; 
+        this.atualizarAnexosVm();
+      },
+      error: () => { 
+        this.docs = []; 
+        this.atualizarAnexosVm();
+      },
     });
   }
 

@@ -92,6 +92,7 @@ export interface ContratoChecklistEntrada {
   observacoesFinais?: string | null;
   bonusLocacao?: string | null;
   dataPagamentoBonus?: string | null;
+  etapasPersonalizadasJson?: string | null;
 }
 
 export interface ContratoChecklistSaida {
@@ -111,6 +112,7 @@ export interface ContratoChecklistSaida {
   pinturaManutencao?: string | null;
   reativarImovelNoSite?: string | null;
   cancelamentoSeguroFianca?: string | null;
+  etapasPersonalizadasJson?: string | null;
 }
 
 export interface AtualizarContratoRequest {
