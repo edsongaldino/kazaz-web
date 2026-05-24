@@ -36,6 +36,15 @@ export interface VinculoPessoaImovelDto {
   perfilNome: string;
 }
 
+export interface ImovelProprietarioDto {
+  id: string;
+  pessoaId: string;
+  pessoaNome: string;
+  pessoaDocumento?: string | null;
+  percentual?: number | null;
+  ativo: boolean;
+}
+
 export interface ImovelFotoDto {
   id: string;
   url: string;
@@ -74,6 +83,7 @@ export interface ImovelDto {
 
   caracteristicas: ImovelCaracteristicaDto[];
   vinculos: VinculoPessoaImovelDto[];
+  proprietarios: ImovelProprietarioDto[];
 
   fotos?: ImovelFotoDto[];
   documentos?: ImovelDocumentoDto[];

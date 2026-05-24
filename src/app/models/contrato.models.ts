@@ -9,6 +9,7 @@ export enum StatusContrato {
   Ativo = 2,
   Encerrado = 3,
   Cancelado = 4,
+  EmAnalise = 5,
 }
 
 export enum PapelContrato {

@@ -7,7 +7,8 @@ import {
   ImovelUpsertRequest,
   ImovelListDto,
   TipoImovelDto,
-  ImovelFiltro
+  ImovelFiltro,
+  ImovelProprietarioDto
 } from './../../models/imovel.model';
 
 import { CaracteristicaCatalogoDto } from '../../models/caracteristica.model';
@@ -60,6 +61,19 @@ export class ImoveisService {
 
   listarCaracteristicas(): Observable<CaracteristicaCatalogoDto[]> {
     return this.http.get<CaracteristicaCatalogoDto[]>(`${this.baseUrl}/caracteristicas`);
+  }
+
+  // ---------- Proprietários ----------
+  listarProprietarios(imovelId: string): Observable<ImovelProprietarioDto[]> {
+    return this.http.get<ImovelProprietarioDto[]>(`${this.apiUrl}/${imovelId}/proprietarios`);
+  }
+
+  adicionarProprietario(imovelId: string, pessoaId: string, percentual?: number | null): Observable<ImovelProprietarioDto> {
+    return this.http.post<ImovelProprietarioDto>(`${this.apiUrl}/${imovelId}/proprietarios`, { pessoaId, percentual });
+  }
+
+  removerProprietario(imovelId: string, proprietarioId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${imovelId}/proprietarios/${proprietarioId}`);
   }
 
 }

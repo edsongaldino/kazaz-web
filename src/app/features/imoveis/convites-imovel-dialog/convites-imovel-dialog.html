@@ -68,35 +68,80 @@
       </section>
     </ng-container>
 
+    <!-- MODO FORM -->
     <ng-container *ngIf="modo === 'form'">
       <section class="bloco">
         <div class="bloco-header">
           <h3>Gerar novo link</h3>
         </div>
 
-        <form [formGroup]="form" class="form-grid form-grid--3">
+        <form [formGroup]="form" class="form-grid form-grid--2">
+
           <mat-form-field appearance="outline">
             <mat-label>Tipo do contrato</mat-label>
             <mat-select formControlName="tipo">
-              <mat-option [value]="1">Aluguel</mat-option>
-              <mat-option [value]="2">Venda</mat-option>
+              <mat-option *ngFor="let t of tiposContrato" [value]="t.value">{{ t.label }}</mat-option>
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Perfil do link</mat-label>
-            <mat-select formControlName="papel">
-              <mat-option *ngFor="let papel of papeisFiltrados" [value]="papel.value">
-                {{ papel.label }}
-              </mat-option>
+          <!-- Forma de garantia — só para locação -->
+          <mat-form-field appearance="outline" *ngIf="ehLocacao">
+            <mat-label>Forma de validação de crédito</mat-label>
+            <mat-select formControlName="formaGarantia">
+              <mat-option *ngFor="let fg of formasGarantia" [value]="fg.value">{{ fg.label }}</mat-option>
             </mat-select>
+            <mat-hint>
+              <strong>Fiador</strong>: gera link do locatário + fiador. &nbsp;
+              <strong>Seguro Fiança</strong>: gera somente link do locatário.
+            </mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
             <mat-label>Expira em (dias)</mat-label>
             <input matInput type="number" min="1" formControlName="expiraEmDias" />
           </mat-form-field>
+
+          <div class="checkbox-row">
+            <mat-checkbox formControlName="administradoPeloProprietario">
+              Contrato administrado pelo proprietário
+            </mat-checkbox>
+            <span class="hint-checkbox">Marque apenas em casos específicos em que o proprietário administra diretamente.</span>
+          </div>
+
         </form>
+      </section>
+    </ng-container>
+
+    <!-- MODO RESULTADO -->
+    <ng-container *ngIf="modo === 'resultado'">
+      <section class="bloco">
+        <div class="bloco-header resultado-header">
+          <mat-icon class="icon-success">check_circle</mat-icon>
+          <h3>Links gerados com sucesso!</h3>
+        </div>
+
+        <p class="contrato-numero" *ngIf="contratoGeradoNumero">
+          Contrato nº <strong>{{ contratoGeradoNumero }}</strong>
+        </p>
+
+        <div class="links-resultado">
+          <div class="link-card" *ngFor="let link of linksGerados">
+            <div class="link-papel">
+              <app-chip category="papel" [value]="link.papel"></app-chip>
+            </div>
+            <div class="link-url">
+              <span class="link-texto">{{ link.url }}</span>
+            </div>
+            <button mat-stroked-button color="primary" (click)="copiarLink(link.url)">
+              <mat-icon>content_copy</mat-icon>
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <p class="hint-resultado">
+          Envie cada link para a pessoa correspondente para preenchimento do cadastro.
+        </p>
       </section>
     </ng-container>
 
@@ -127,6 +172,12 @@
       (click)="gerarNovo()"
       [disabled]="gerando || loading">
       {{ gerando ? 'Gerando...' : 'Salvar' }}
+    </button>
+  </ng-container>
+
+  <ng-container *ngIf="modo === 'resultado'">
+    <button mat-flat-button class="btn-primary" (click)="voltarLista()">
+      Ver todos os links
     </button>
   </ng-container>
 </mat-dialog-actions>

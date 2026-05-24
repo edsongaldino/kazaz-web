@@ -18,12 +18,17 @@ export type ConviteCadastroContratoDto = {
   pessoaId?: string | null;
   usadoEm?: string | null;
   url?: string | null;
+  link?: string | null;
 };
 
 export type GerarConviteCadastroRequest = {
-  contratoId: string;
-  papel: number;
-  expiraEm?: string | null;
+  tipo: number;
+  /** Se informado, adiciona convites a um contrato existente */
+  contratoId?: string | null;
+  /** Forma de garantia: 1 = Fiador, 2 = Seguro Fiança. Obrigatório para locação. */
+  formaGarantia?: number | null;
+  administradoPeloProprietario: boolean;
+  expiraEmDias: number;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -59,12 +64,11 @@ export class ConvitesCadastroService {
 
   gerarLinksConvite(
     imovelId: string,
-    body: { tipo: number; papel: number; expiraEmDias: number }
+    body: GerarConviteCadastroRequest
   ) {
-    return this.http.post(
-      `${environment.apiUrl}/contratos/rascunho/gerar-links`,
-      body,
-      { params: { imovelId } }
+    return this.http.post<{ contratoId: string; numero: string; links: any[] }>(
+      `${environment.apiUrl}/contratos/rascunho/${imovelId}/gerar-links`,
+      body
     );
   }
 

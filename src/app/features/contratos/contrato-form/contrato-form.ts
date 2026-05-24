@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, switchMap, takeUntil, of } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, firstValueFrom, of, switchMap, takeUntil } from 'rxjs';
 import { DateAdapter, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -23,6 +23,10 @@ import {
 import { PessoasLookupService, LookupItem } from '../../../core/services/pessoas-lookup.service';
 import { ImoveisLookupService } from '../../../core/services/imoveis-lookup.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConvitesCadastroService } from '../../../core/services/convites.service';
+import { ConviteCadastroListItemResponse } from '../../../models/cadastro-publico.models';
+import { AnaliseConviteDialog } from '../../convites/analise-convite-dialog/analise-convite-dialog';
+import { ChipComponent } from '../../../shared/components/chips/chip';
 
 type ParteFg = FormGroup<{
   pessoa: FormControl<LookupItem | null>;
@@ -53,7 +57,7 @@ export interface CustomStep {
 @Component({
   selector: 'app-contrato-form',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, MaterialModule, MatCheckboxModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, MaterialModule, MatCheckboxModule, ChipComponent],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }
   ],
@@ -128,6 +132,9 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
     { key: 'reativarImovelNoSite', label: 'Reativar Site', icon: 'language', domId: 'field-sai-reativar' }
   ];
 
+  convites: ConviteCadastroListItemResponse[] = [];
+  temPartesPendentes = false;
+
   get partes(): FormArray<ParteFg> {
     return this.form.controls.partes;
   }
@@ -141,7 +148,8 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
     private imoveisLookup: ImoveisLookupService,
     private dateAdapter: DateAdapter<Date>,
     private dialog: MatDialog,
-    private notification: NotificationService
+    private notification: NotificationService,
+    private convitesService: ConvitesCadastroService
   ) {
     this.dateAdapter.setLocale('pt-BR');
   }
@@ -274,6 +282,8 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
             this.carregarChecklistEntrada(id);
             this.carregarChecklistSaida(id);
           }
+
+          this.carregarConvites(id);
         },
         error: (err) => {
           this.carregando = false;
@@ -338,6 +348,10 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
             bonusLocacao: res.bonusLocacao ?? '',
             dataPagamentoBonus: res.dataPagamentoBonus ? this.parseDateOnly(res.dataPagamentoBonus) : null,
           });
+
+          if (this.temPartesPendentes) {
+            this.formChecklistEntrada.disable({ emitEvent: false });
+          }
         },
         error: () => {
           this.carregandoChecklistEntrada = false;
@@ -401,6 +415,10 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
             reativarImovelNoSite: res.reativarImovelNoSite ?? '',
             cancelamentoSeguroFianca: res.cancelamentoSeguroFianca ?? '',
           });
+
+          if (this.temPartesPendentes) {
+            this.formChecklistSaida.disable({ emitEvent: false });
+          }
         },
         error: () => {
           this.carregandoChecklistSaida = false;
@@ -1118,6 +1136,63 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
       this.formChecklistSaida.removeControl(id);
       this.formChecklistSaida.markAsDirty();
     }
+  }
+
+  private carregarConvites(contratoId: string): void {
+    this.convitesService.listarParaAnalise({ page: 1, pageSize: 50, contratoId })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.convites = res.items ?? [];
+          this.temPartesPendentes = this.convites.some(c => c.status !== 4);
+
+          if (this.temPartesPendentes) {
+            this.form.disable({ emitEvent: false });
+            this.formChecklistEntrada.disable({ emitEvent: false });
+            this.formChecklistSaida.disable({ emitEvent: false });
+          } else {
+            this.form.enable({ emitEvent: false });
+            this.formChecklistEntrada.enable({ emitEvent: false });
+            this.formChecklistSaida.enable({ emitEvent: false });
+            this.form.controls.tipo.disable({ emitEvent: false });
+          }
+        },
+        error: (err) => {
+          console.error('Erro ao carregar convites', err);
+        }
+      });
+  }
+
+  abrirAnalise(convite: ConviteCadastroListItemResponse): void {
+    const dialogRef = this.dialog.open(AnaliseConviteDialog, {
+      width: '1400px',
+      maxWidth: '95vw',
+      height: '90vh',
+      maxHeight: '95vh',
+      panelClass: 'analise-convite-panel',
+      data: convite
+    });
+
+    dialogRef.afterClosed().subscribe(async result => {
+      if (!result) return;
+
+      try {
+        this.carregando = true;
+        await firstValueFrom(
+          this.convitesService.analisar(convite.id, result)
+        );
+
+        this.notification.toastSuccess('Análise salva com sucesso!');
+        if (this.id) {
+          this.carregarContrato(this.id);
+        }
+      } catch (err) {
+        console.error(err);
+        this.notification.toastError('Erro ao processar a análise do convite.');
+      } finally {
+        this.carregando = false;
+      }
+    });
   }
 
   voltar(): void {

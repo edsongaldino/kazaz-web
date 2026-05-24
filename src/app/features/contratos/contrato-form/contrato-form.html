@@ -27,6 +27,7 @@
         mat-flat-button
         class="btn-success"
         *ngIf="id"
+        [disabled]="temPartesPendentes"
         (click)="salvarAlteracoes()"
         type="button">
         <mat-icon>save</mat-icon> Salvar Alterações
@@ -44,7 +45,8 @@
       <button
         mat-flat-button
         class="btn-primary"
-        *ngIf="id && contrato?.status === StatusContrato.Rascunho"
+        *ngIf="id && (contrato?.status === StatusContrato.Rascunho || contrato?.status === StatusContrato.EmAnalise)"
+        [disabled]="temPartesPendentes"
         (click)="ativar()"
         type="button">
         <mat-icon>check_circle</mat-icon> Ativar Contrato
@@ -71,6 +73,29 @@
   </div>
 
   <mat-progress-bar *ngIf="carregando" mode="indeterminate" class="global-progress"></mat-progress-bar>
+
+  <!-- Banner de Partes Pendentes -->
+  <div class="pending-warning-banner" *ngIf="id && temPartesPendentes">
+    <div class="pending-warning-banner__content">
+      <mat-icon class="pending-warning-banner__icon">warning</mat-icon>
+      <div class="pending-warning-banner__text">
+        <strong>Atenção:</strong> Existem partes envolvidas cujos cadastros ainda não foram validados. 
+        As alterações e a ativação do contrato estão bloqueadas até que todos os cadastros sejam aprovados.
+      </div>
+    </div>
+    <div class="pending-warning-banner__links">
+      <div class="pending-link-item" *ngFor="let convite of convites">
+        <div class="pending-link-item__info">
+          <app-chip category="papel" [value]="convite.papel"></app-chip>
+          <app-chip category="status" [value]="convite.status"></app-chip>
+          <span class="pending-link-item__name" *ngIf="convite.nomePessoa"> - {{ convite.nomePessoa }}</span>
+        </div>
+        <button mat-flat-button class="btn-analisar-inline" (click)="abrirAnalise(convite)" *ngIf="convite.status !== 4">
+          <mat-icon>rate_review</mat-icon> Analisar Cadastro
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Se for criação (sem id), exibe apenas os dados básicos fora de abas -->
   <ng-container *ngIf="!id">
@@ -244,6 +269,7 @@
                     <mat-option [value]="StatusContrato.Ativo">Ativo</mat-option>
                     <mat-option [value]="StatusContrato.Encerrado">Encerrado</mat-option>
                     <mat-option [value]="StatusContrato.Cancelado">Cancelado</mat-option>
+                    <mat-option [value]="StatusContrato.EmAnalise">Em Análise</mat-option>
                   </mat-select>
                   <mat-icon matPrefix color="primary">info</mat-icon>
                 </mat-form-field>
@@ -313,7 +339,7 @@
               <mat-icon mat-card-avatar color="primary">people</mat-icon>
               <mat-card-title>Partes Envolvidas</mat-card-title>
               <div class="card-header-actions">
-                <button mat-stroked-button type="button" (click)="addParte()">
+                <button mat-stroked-button type="button" [disabled]="temPartesPendentes" (click)="addParte()">
                   <mat-icon>add</mat-icon> Adicionar Parte
                 </button>
               </div>
@@ -355,6 +381,7 @@
                         color="warn"
                         aria-label="Remover Parte"
                         *ngIf="!isParteObrigatoria(p.controls.papel.value)"
+                        [disabled]="temPartesPendentes"
                         (click)="removerParte(i)">
                         <mat-icon>delete</mat-icon>
                       </button>
@@ -808,7 +835,7 @@
           </div>
 
           <div class="actions-bar">
-            <button mat-flat-button color="primary" type="submit" [disabled]="carregandoChecklistEntrada">
+            <button mat-flat-button color="primary" type="submit" [disabled]="carregandoChecklistEntrada || temPartesPendentes">
               <mat-icon>save</mat-icon> Salvar Checklist de Entrada
             </button>
           </div>
@@ -1192,7 +1219,7 @@
           </div>
 
           <div class="actions-bar">
-            <button mat-flat-button color="primary" type="submit" [disabled]="carregandoChecklistSaida">
+            <button mat-flat-button color="primary" type="submit" [disabled]="carregandoChecklistSaida || temPartesPendentes">
               <mat-icon>save</mat-icon> Salvar Checklist de Saída
             </button>
           </div>

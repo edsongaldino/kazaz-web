@@ -10,21 +10,30 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { ChipComponent } from '../../../shared/components/chips/chip';
 
 import {
   ConviteCadastroContratoDto,
-  ConvitesCadastroService
+  ConvitesCadastroService,
+  GerarConviteCadastroRequest
 } from '../../../core/services/convites.service';
 
 import {
-  convitePapelOptions,
   getConvitePapelLabel,
   getConviteStatusLabel
 } from '../../../shared/helpers/convite.helper';
 
 import { ConviteUiService } from '../../../shared/services/convite-ui.service';
+
+/** Forma de Garantia — espelha o enum do backend */
+export enum FormaGarantia {
+  Fiador = 1,
+  SeguroFianca = 2
+}
 
 @Component({
   selector: 'app-convites-imovel-dialog',
@@ -41,6 +50,9 @@ import { ConviteUiService } from '../../../shared/services/convite-ui.service';
     MatSelectModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatDividerModule,
     MatPaginator,
     ChipComponent
   ]
@@ -59,19 +71,36 @@ export class ConvitesImovelDialogComponent implements OnInit {
   pageSize = 5;
   total = 0;
 
-  modo: 'lista' | 'form' = 'lista';
+  modo: 'lista' | 'form' | 'resultado' = 'lista';
 
   convites: ConviteCadastroContratoDto[] = [];
 
+  /** Links gerados na última ação — exibidos na tela de resultado */
+  linksGerados: { papel: number; token: string; url: string }[] = [];
+  contratoGeradoNumero: string | null = null;
+
+  formasGarantia = [
+    { value: FormaGarantia.Fiador, label: 'Fiador' },
+    { value: FormaGarantia.SeguroFianca, label: 'Seguro Fiança' }
+  ];
+
+  tiposContrato = [
+    { value: 1, label: 'Locação' },
+    { value: 2, label: 'Venda' }
+  ];
+
   form = this.fb.group({
-    tipo: [null as number | null, Validators.required],
-    papel: [null as number | null, Validators.required],
+    tipo: [1 as number | null, Validators.required],
+    formaGarantia: [null as number | null],
+    administradoPeloProprietario: [false],
     expiraEmDias: [7 as number | null, [Validators.required, Validators.min(1)]]
   });
 
-  papeis = convitePapelOptions;
-
   labelPapel = getConvitePapelLabel;
+
+  get ehLocacao(): boolean {
+    return this.form.value.tipo === 1;
+  }
 
   constructor(
     @Inject(MAT_DIALOG_DATA)
@@ -79,6 +108,18 @@ export class ConvitesImovelDialogComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Torna formaGarantia obrigatória quando for locação
+    this.form.get('tipo')!.valueChanges.subscribe(tipo => {
+      const ctrl = this.form.get('formaGarantia')!;
+      if (tipo === 1) {
+        ctrl.setValidators([Validators.required]);
+      } else {
+        ctrl.clearValidators();
+        ctrl.setValue(null);
+      }
+      ctrl.updateValueAndValidity();
+    });
+
     this.carregarConvites();
   }
 
@@ -96,12 +137,10 @@ export class ConvitesImovelDialogComponent implements OnInit {
         },
         error: (err) => {
           console.error(err);
-
           this.convites = [];
           this.total = 0;
           this.loading = false;
           this.cdr.detectChanges();
-
           this.snackBar.open('Erro ao carregar convites.', 'Fechar', { duration: 3000 });
         }
       });
@@ -113,37 +152,31 @@ export class ConvitesImovelDialogComponent implements OnInit {
       return;
     }
 
-    const payload = {
-      tipo: this.form.value.tipo!,
-      papel: this.form.value.papel!,
-      expiraEmDias: this.form.value.expiraEmDias!
+    const v = this.form.value;
+
+    const payload: GerarConviteCadastroRequest = {
+      tipo: v.tipo!,
+      formaGarantia: v.tipo === 1 ? v.formaGarantia : null,
+      administradoPeloProprietario: v.administradoPeloProprietario ?? false,
+      expiraEmDias: v.expiraEmDias!
     };
 
     this.gerando = true;
 
     this.conviteService.gerarLinksConvite(this.data.imovelId, payload).subscribe({
-      next: () => {
-        this.snackBar.open('Convite gerado com sucesso.', 'Fechar', { duration: 3000 });
-
-        this.form.reset({
-          tipo: null,
-          papel: null,
-          expiraEmDias: 7
-        });
-
+      next: (res) => {
+        this.linksGerados = res.links ?? [];
+        this.contratoGeradoNumero = res.numero;
         this.gerando = false;
-        this.modo = 'lista';
-        this.page = 1;
-
-        this.carregarConvites();
+        this.modo = 'resultado';
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
-
         this.gerando = false;
         this.cdr.detectChanges();
-
-        this.snackBar.open('Erro ao gerar convite.', 'Fechar', { duration: 3000 });
+        const msg = err?.error?.error ?? 'Erro ao gerar convite.';
+        this.snackBar.open(msg, 'Fechar', { duration: 4000 });
       }
     });
   }
@@ -155,25 +188,21 @@ export class ConvitesImovelDialogComponent implements OnInit {
   }
 
   abrirForm(): void {
+    this.form.reset({
+      tipo: 1,
+      formaGarantia: null,
+      administradoPeloProprietario: false,
+      expiraEmDias: 7
+    });
     this.modo = 'form';
   }
 
   voltarLista(): void {
+    this.linksGerados = [];
+    this.contratoGeradoNumero = null;
+    this.page = 1;
     this.modo = 'lista';
-  }
-
-  get papeisFiltrados() {
-    const tipo = this.form.value.tipo;
-
-    if (tipo === 1) {
-      return this.papeis.filter(p => [1, 2, 3].includes(p.value));
-    }
-
-    if (tipo === 2) {
-      return this.papeis.filter(p => [10, 11].includes(p.value));
-    }
-
-    return this.papeis;
+    this.carregarConvites();
   }
 
   getStatusLabel(item: ConviteCadastroContratoDto): string {
@@ -197,7 +226,16 @@ export class ConvitesImovelDialogComponent implements OnInit {
       this.verDados(item);
       return;
     }
+    this.copiar(item.url || item.link);
+  }
 
-    this.copiar(item.url);
+  getLabelPapelLink(papel: number): string {
+    return this.labelPapel(papel);
+  }
+
+  copiarLink(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      this.snackBar.open('Link copiado!', 'Fechar', { duration: 2000 });
+    });
   }
 }

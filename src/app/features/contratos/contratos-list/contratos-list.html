@@ -42,6 +42,7 @@
         <mat-option [value]="2">Ativo</mat-option>
         <mat-option [value]="3">Encerrado</mat-option>
         <mat-option [value]="4">Cancelado</mat-option>
+        <mat-option [value]="5">Em Análise</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -140,7 +141,7 @@
           <button
             mat-icon-button
             class="btn-ativar"
-            *ngIf="c.status === StatusContrato.Rascunho"
+            *ngIf="c.status === StatusContrato.Rascunho || c.status === StatusContrato.EmAnalise"
             (click)="ativar(c)">
             <mat-icon matTooltip="Ativar contrato">check_circle</mat-icon>
           </button>

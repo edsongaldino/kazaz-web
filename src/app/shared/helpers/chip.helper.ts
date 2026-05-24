@@ -41,7 +41,8 @@ const CHIP_MAP: Record<ChipCategory, Record<string, ChipConfig>> = {
     '1': { label: 'Rascunho', variant: 'neutral', icon: 'edit_document' },
     '2': { label: 'Ativo', variant: 'success', icon: 'check_circle' },
     '3': { label: 'Encerrado', variant: 'info', icon: 'task_alt' },
-    '4': { label: 'Cancelado', variant: 'danger', icon: 'block' }
+    '4': { label: 'Cancelado', variant: 'danger', icon: 'block' },
+    '5': { label: 'Em análise', variant: 'warning', icon: 'manage_search' }
   },
 
   statusUsuario: {
