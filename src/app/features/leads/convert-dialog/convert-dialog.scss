@@ -1,0 +1,16 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.intro-text {
+  font-size: 14px;
+  color: var(--text-secondary, #666);
+  margin-bottom: 16px;
+}

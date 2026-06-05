@@ -1,0 +1,216 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .header-title {
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary, #2d3748);
+    }
+    p {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--text-secondary, #718096);
+    }
+  }
+
+  .btn-create {
+    padding: 8px 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.filters-card {
+  background: var(--bg-card, #ffffff);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  .filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: center;
+  }
+
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}
+
+.table-container {
+  background: var(--bg-card, #ffffff);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  .full-width-table {
+    width: 100%;
+  }
+
+  .lead-row {
+    transition: background-color 0.2s ease-in-out;
+    &:hover {
+      background-color: var(--bg-hover, #f7fafc);
+    }
+    
+    &.converted {
+      opacity: 0.85;
+      background-color: #f0fdf4;
+    }
+  }
+
+  .contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary, #4a5568);
+      
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .property-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--color-primary, #3182ce);
+    font-weight: 500;
+    
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .actions-cell {
+    white-space: nowrap;
+    
+    button {
+      margin-left: 4px;
+    }
+  }
+}
+
+.no-records {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-secondary, #718096);
+  
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.fw-bold {
+  font-weight: 600;
+  color: var(--text-primary, #2d3748);
+}
+
+.totalizers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .totalizer-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: var(--bg-card, #ffffff);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+
+    .card-info {
+      display: flex;
+      flex-direction: column;
+
+      .card-title {
+        font-size: 13px;
+        color: var(--text-secondary, #718096);
+        font-weight: 500;
+      }
+
+      .card-count {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary, #2d3748);
+        margin-top: 2px;
+      }
+    }
+
+    // Custom coloring variations
+    &.card-novo {
+      border-left: 4px solid #3182ce;
+      .card-icon { color: #3182ce; }
+    }
+
+    &.card-atendimento {
+      border-left: 4px solid #dd6b20;
+      .card-icon { color: #dd6b20; }
+    }
+
+    &.card-convertido {
+      border-left: 4px solid #38a169;
+      .card-icon { color: #38a169; }
+    }
+
+    &.card-descartado {
+      border-left: 4px solid #718096;
+      .card-icon { color: #718096; }
+    }
+  }
+}

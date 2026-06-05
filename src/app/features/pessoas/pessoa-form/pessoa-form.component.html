@@ -1,4 +1,4 @@
-<div *ngIf="imprimir(); else normalForm" class="word-print-layout">
+<div *ngIf="imprimir() && !loading(); else normalForm" class="word-print-layout">
   <div class="word-document">
     <header class="word-header">
       <h2>FICHA DE CADASTRO DE CLIENTE</h2>

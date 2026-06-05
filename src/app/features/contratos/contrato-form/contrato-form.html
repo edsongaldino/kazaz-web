@@ -37,10 +37,24 @@
         mat-flat-button
         class="btn-print"
         *ngIf="id"
-        (click)="imprimirContratoChecklist()"
+        [matMenuTriggerFor]="printMenu"
         type="button">
-        <mat-icon>print</mat-icon> Imprimir Contrato + Checklist
+        <mat-icon>print</mat-icon> Imprimir
       </button>
+      <mat-menu #printMenu="matMenu">
+        <button mat-menu-item (click)="imprimir('contrato')">
+          <mat-icon>assignment</mat-icon>
+          <span>Contrato</span>
+        </button>
+        <button mat-menu-item *ngIf="contrato?.tipo === TipoContrato.Locacao" (click)="imprimir('entrada')">
+          <mat-icon>login</mat-icon>
+          <span>Checklist de Entrada</span>
+        </button>
+        <button mat-menu-item *ngIf="contrato?.tipo === TipoContrato.Locacao" (click)="imprimir('saida')">
+          <mat-icon>logout</mat-icon>
+          <span>Checklist de Saída</span>
+        </button>
+      </mat-menu>
 
       <button
         mat-flat-button

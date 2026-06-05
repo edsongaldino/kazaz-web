@@ -19,7 +19,8 @@ export class Auth {
           nome: response.nome,
           email: response.email,
           perfilId: response.perfilId,
-          perfilNome: response.perfilNome
+          perfilNome: response.perfilNome,
+          imobiliariaId: response.imobiliariaId
         }));
       })
     );

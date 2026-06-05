@@ -429,3 +429,63 @@ thead .mat-mdc-header-row {
 .swal2-x-mark-line-left {
   font-size: 16px !important;
 }
+
+.lead-dialog-panel {
+  .mat-mdc-dialog-container,
+  .mat-mdc-dialog-surface {
+    overflow: hidden !important;
+  }
+}
+
+.custom-dialog-panel {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-shape: 16px;
+    padding: 0 !important;
+  }
+
+  .mat-mdc-dialog-surface {
+    overflow: hidden !important;
+    border-radius: 16px !important;
+  }
+
+  .mat-mdc-dialog-content {
+    padding: 24px 32px !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    max-height: 70vh !important;
+    box-sizing: border-box !important;
+
+    /* Customized modern low-profile scrollbar */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  }
+
+  .dialog-title-premium {
+    padding: 24px 32px 12px 32px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .dialog-actions-premium {
+    padding: 16px 32px 24px 32px !important;
+    margin: 0 !important;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+/* Multiline tooltip for extra property owners */
+.owner-tooltip {
+  white-space: pre-line !important;
+}

@@ -7,11 +7,13 @@ import { PageEvent } from '@angular/material/paginator';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { UsuariosService } from '../../../core/services/usuarios.service';
-import { UsuarioListDto, UsuariosQuery } from '../../../models/usuario.models';
+import { PerfilDto, UsuarioListDto, UsuariosQuery } from '../../../models/usuario.models';
 import { UsuarioDialogComponent } from '../dialog/usuario-dialog';
 import { MaterialModule } from '../../../shared/material.module';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ChipComponent } from '../../../shared/components/chips/chip';
+import { Auth } from '../../../core/services/auth';
+import { PerfisService } from '../../../core/services/perfis.service';
 
 @Component({
   selector: 'app-usuarios-lista',
@@ -33,6 +35,7 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
 
   items: UsuarioListDto[] = [];
   total = 0;
+  perfis: PerfilDto[] = [];
 
   pageIndex = 0;
   pageSize = 10;
@@ -45,9 +48,27 @@ export class UsuariosListaComponent implements OnInit, OnDestroy {
     private snack: MatSnackBar,
     private notify: NotificationService,
     private cdr: ChangeDetectorRef,
+    private auth: Auth,
+    private perfisSvc: PerfisService
   ) {}
 
   ngOnInit(): void {
+    if (this.auth.getUsuario()?.perfilNome === 'Administrador do Sistema') {
+      this.displayedColumns = ['nome', 'email', 'perfil', 'imobiliaria', 'ativo', 'acoes'];
+    }
+
+    this.perfisSvc.listar().subscribe({
+      next: (res: any) => {
+        const lista =
+          Array.isArray(res) ? res :
+          Array.isArray(res?.data) ? res.data :
+          Array.isArray(res?.items) ? res.items :
+          [];
+        this.perfis = lista;
+      },
+      error: () => console.error('Erro ao carregar perfis')
+    });
+
     this.form.valueChanges
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(() => {

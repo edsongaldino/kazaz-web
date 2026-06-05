@@ -14,6 +14,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ConvitesImovelDialogComponent } from '../convites-imovel-dialog/convites-imovel-dialog';
+import { VincularProprietarioDialogComponent } from '../vincular-proprietario-dialog/vincular-proprietario-dialog';
 import { ChipComponent } from '../../../shared/components/chips/chip';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -40,7 +41,7 @@ export class ImoveisListComponent implements OnInit {
 
   getStatusUi = getStatusImovelUi;
 
-  displayedColumns = ['status', 'codigo', 'titulo', 'finalidade', 'nomeTipo', 'acoes'];
+  displayedColumns = ['status', 'codigo', 'titulo', 'proprietario', 'finalidade', 'nomeTipo', 'acoes'];
 
   dataSource = new MatTableDataSource<ImovelListDto>([]);
   carregando = true;
@@ -164,5 +165,32 @@ export class ImoveisListComponent implements OnInit {
         titulo: imovel.titulo
       }
     });
+  }
+
+  abrirModalVincularProprietario(imovel: ImovelListDto): void {
+    const ref = this.dialog.open(VincularProprietarioDialogComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      panelClass: 'custom-dialog-panel',
+      data: {
+        imovelId: imovel.id,
+        codigo: imovel.codigo,
+        titulo: imovel.titulo
+      }
+    });
+
+    ref.afterClosed().subscribe(vinculou => {
+      if (vinculou) {
+        this.carregar();
+      }
+    });
+  }
+
+  /** Builds tooltip text listing extra owners beyond the first */
+  extraProprietariosTooltip(imovel: ImovelListDto): string {
+    return imovel.proprietarios
+      .slice(1)
+      .map(p => p.nome)
+      .join('\n');
   }
 }

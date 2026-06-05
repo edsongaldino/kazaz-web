@@ -15,6 +15,8 @@ import { UsuariosService } from '../../../core/services/usuarios.service';
 import { PerfisService } from '../../../core/services/perfis.service';
 import { PerfilDto, UsuarioListDto } from '../../../models/usuario.models';
 import { MaterialModule } from '../../../shared/material.module';
+import { Auth } from '../../../core/services/auth';
+import { ImobiliariasService } from '../../../core/services/imobiliarias.service';
 
 type DialogData =
   | { mode: 'create'; usuario?: never }
@@ -26,6 +28,7 @@ type UsuarioForm = {
   senha: FormControl<string>;
   ativo: FormControl<boolean>;
   perfilId: FormControl<string | null>;
+  imobiliariaId: FormControl<string | null>;
 };
 
 type UsuarioCreatePayload = {
@@ -55,12 +58,15 @@ export class UsuarioDialogComponent implements OnInit {
   saving = false;
 
   form: FormGroup<UsuarioForm>;
+  imobiliarias: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private usuarios: UsuariosService,
     private perfisSvc: PerfisService,
     private ref: MatDialogRef<UsuarioDialogComponent>,
+    private auth: Auth,
+    private imobiliariasSvc: ImobiliariasService,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     this.form = this.fb.group<UsuarioForm>({
@@ -79,7 +85,8 @@ export class UsuarioDialogComponent implements OnInit {
       ativo: this.fb.control(true, { nonNullable: true }),
       perfilId: this.fb.control<string | null>(null, {
         validators: [Validators.required]
-      })
+      }),
+      imobiliariaId: this.fb.control<string | null>(null)
     });
 
     // ✅ Modo edição: não usa senha (não remove para não quebrar tipagem)
@@ -88,7 +95,8 @@ export class UsuarioDialogComponent implements OnInit {
         nome: this.data.usuario.nome,
         email: this.data.usuario.email,
         ativo: this.data.usuario.ativo,
-        perfilId: this.data.usuario.perfilId ?? null
+        perfilId: this.data.usuario.perfilId ?? null,
+        imobiliariaId: this.data.usuario.imobiliariaId ?? null
       });
 
       const senhaCtrl = this.form.controls.senha;
@@ -97,6 +105,17 @@ export class UsuarioDialogComponent implements OnInit {
       senhaCtrl.setValue('');
       senhaCtrl.updateValueAndValidity({ emitEvent: false });
     }
+  }
+
+  isLoggedUserSystemAdmin(): boolean {
+    return this.auth.getUsuario()?.perfilNome === 'Administrador do Sistema';
+  }
+
+  isSystemAdminSelected(): boolean {
+    const perfilId = this.form.get('perfilId')?.value;
+    if (!perfilId) return false;
+    const perfil = this.perfis.find(p => p.id === perfilId);
+    return perfil?.nome === 'Administrador do Sistema';
   }
 
   private isEditMode(): this is { data: { mode: 'edit'; usuario: UsuarioListDto } } {
@@ -114,8 +133,46 @@ export class UsuarioDialogComponent implements OnInit {
           [];
 
         this.perfis = lista;
+
+        if (this.data.mode === 'edit') {
+          const perfilId = this.form.get('perfilId')?.value;
+          const perfil = this.perfis.find(p => p.id === perfilId);
+          const imobCtrl = this.form.get('imobiliariaId');
+          if (imobCtrl) {
+            if (this.isLoggedUserSystemAdmin() && perfil?.nome !== 'Administrador do Sistema') {
+              imobCtrl.setValidators([Validators.required]);
+            } else {
+              imobCtrl.clearValidators();
+              imobCtrl.setValue(null);
+            }
+            imobCtrl.updateValueAndValidity();
+          }
+        }
       },
       error: () => console.error('Erro ao carregar perfis')
+    });
+
+    if (this.isLoggedUserSystemAdmin()) {
+      this.imobiliariasSvc.listar(1, 1000).subscribe({
+        next: (res: any) => {
+          this.imobiliarias = res.items || [];
+        },
+        error: () => console.error('Erro ao carregar imobiliárias')
+      });
+    }
+
+    this.form.get('perfilId')?.valueChanges.subscribe(perfilId => {
+      const imobCtrl = this.form.get('imobiliariaId');
+      if (imobCtrl) {
+        const perfil = this.perfis.find(p => p.id === perfilId);
+        if (this.isLoggedUserSystemAdmin() && perfil?.nome !== 'Administrador do Sistema') {
+          imobCtrl.setValidators([Validators.required]);
+        } else {
+          imobCtrl.clearValidators();
+          imobCtrl.setValue(null);
+        }
+        imobCtrl.updateValueAndValidity();
+      }
     });
   }
 
@@ -152,6 +209,7 @@ export class UsuarioDialogComponent implements OnInit {
       email: this.form.controls.email.value,
       ativo: this.form.controls.ativo.value,
       perfilId: this.form.controls.perfilId.value!,
+      imobiliariaId: this.form.controls.imobiliariaId.value
     };
 
     if (senha) {

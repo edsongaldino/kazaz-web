@@ -33,8 +33,28 @@ export class AdminLayout implements OnInit {
   isHandset = signal(false);      // < 600px
   sidenavOpened = signal(true);   // aberto por padrão em desktop
   collapsed = signal(false);      // colapsado (ícones-only) em desktop
+  minhaImobiliariaOpen = signal(false); // submenu do módulo Minha Imobiliária
+  configuracoesOpen = signal(false); // submenu do módulo Configurações
 
   mode = computed(() => (this.isHandset() ? 'over' : 'side'));
+
+  toggleMinhaImobiliaria() {
+    if (this.collapsed()) {
+      this.collapsed.set(false);
+      this.minhaImobiliariaOpen.set(true);
+    } else {
+      this.minhaImobiliariaOpen.update(v => !v);
+    }
+  }
+
+  toggleConfiguracoes() {
+    if (this.collapsed()) {
+      this.collapsed.set(false);
+      this.configuracoesOpen.set(true);
+    } else {
+      this.configuracoesOpen.update(v => !v);
+    }
+  }
 
   constructor(private auth: Auth) {
     // observa breakpoint
@@ -86,7 +106,7 @@ export class AdminLayout implements OnInit {
   if (usuario) {
     this.usuarioLogado = {
       nome: usuario.nome || 'Usuário',
-      perfilNome: usuario.perfilNome || usuario.perfil || 'Administrador'
+      perfilNome: usuario.perfilNome || usuario.perfil || 'Administrador da Imobiliária'
     };
 
     return;
@@ -109,12 +129,12 @@ export class AdminLayout implements OnInit {
           payload.role ||
           payload.perfilNome ||
           payload.perfil ||
-          'Administrador'
+          'Administrador da Imobiliária'
       };
     } catch {
       this.usuarioLogado = {
         nome: 'Usuário',
-        perfilNome: 'Administrador'
+        perfilNome: 'Administrador da Imobiliária'
       };
     }
   }

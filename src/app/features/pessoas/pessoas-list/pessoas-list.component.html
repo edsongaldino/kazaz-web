@@ -33,11 +33,10 @@
       <mat-label>Papel</mat-label>
       <mat-select formControlName="papel">
         <mat-option [value]="null">Todos</mat-option>
-        <mat-option [value]="1">Locador</mat-option>
+        <mat-option [value]="4">Proprietário</mat-option>
         <mat-option [value]="2">Locatário</mat-option>
         <mat-option [value]="3">Fiador</mat-option>
-        <mat-option [value]="4">Vendedor</mat-option>
-        <mat-option [value]="5">Comprador</mat-option>
+        <mat-option [value]="11">Comprador</mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -91,11 +90,10 @@
       <th mat-header-cell *matHeaderCellDef>Papéis</th>
       <td mat-cell *matCellDef="let row">
         <div class="d-flex flex-wrap gap-1">
-          <app-chip *ngIf="row.ehLocador" category="papel" [value]="1"></app-chip>
+          <app-chip *ngIf="row.ehProprietario" category="papel" [value]="4"></app-chip>
           <app-chip *ngIf="row.ehLocatario" category="papel" [value]="2"></app-chip>
           <app-chip *ngIf="row.ehFiador" category="papel" [value]="3"></app-chip>
-          <app-chip *ngIf="row.ehVendedor" category="papel" [value]="4"></app-chip>
-          <app-chip *ngIf="row.ehComprador" category="papel" [value]="5"></app-chip>
+          <app-chip *ngIf="row.ehComprador" category="papel" [value]="11"></app-chip>
         </div>
       </td>
     </ng-container>

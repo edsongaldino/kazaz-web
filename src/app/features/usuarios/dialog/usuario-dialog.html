@@ -39,6 +39,16 @@
       <mat-error *ngIf="form.controls.perfilId.invalid">Selecione um perfil</mat-error>
     </mat-form-field>
 
+    <mat-form-field appearance="outline" *ngIf="isLoggedUserSystemAdmin() && !isSystemAdminSelected()">
+      <mat-label>Imobiliária</mat-label>
+      <mat-select formControlName="imobiliariaId">
+        <mat-option *ngFor="let imob of imobiliarias" [value]="imob.id">
+          {{ imob.nomeFantasia }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls.imobiliariaId.invalid">Selecione uma imobiliária</mat-error>
+    </mat-form-field>
+
     <mat-slide-toggle formControlName="ativo">Ativo</mat-slide-toggle>
   </form>
 </div>

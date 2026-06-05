@@ -20,35 +20,92 @@
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Dashboard</span>
       </a>
 
-      <a mat-list-item routerLink="configuracoes" routerLinkActive="active" *ngIf="usuarioLogado?.perfilNome === 'Administrador'">
-        <mat-icon matListItemIcon>settings</mat-icon>
-        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Configurações</span>
+      <!-- Links do Administrador do Sistema -->
+      <a mat-list-item routerLink="imobiliarias" routerLinkActive="active" *ngIf="usuarioLogado?.perfilNome === 'Administrador do Sistema'">
+        <mat-icon matListItemIcon>business_center</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Imobiliárias</span>
       </a>
 
-      <a mat-list-item routerLink="usuarios" routerLinkActive="active" *ngIf="usuarioLogado?.perfilNome === 'Administrador'">
+      <!-- Módulo Configurações (Apenas Administrador da Imobiliária) -->
+      <a mat-list-item (click)="toggleConfiguracoes()" *ngIf="usuarioLogado?.perfilNome === 'Administrador da Imobiliária'" style="cursor: pointer;">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Configurações</span>
+        <mat-icon matListItemMeta *ngIf="!collapsed() || isHandset()" style="font-size: 18px; width: 18px; height: 18px; min-width: 18px; font-family: 'Material Icons' !important; color: #fff !important; margin-right: 10px;">
+          {{ configuracoesOpen() ? 'expand_less' : 'expand_more' }}
+        </mat-icon>
+      </a>
+
+      <div class="submenu" *ngIf="configuracoesOpen() && (!collapsed() || isHandset()) && usuarioLogado?.perfilNome === 'Administrador da Imobiliária'">
+        <a mat-list-item routerLink="configuracoes/documentos" routerLinkActive="active">
+          <mat-icon matListItemIcon>verified_user</mat-icon>
+          <span matListItemTitle>Regras de Documentos</span>
+        </a>
+        <a mat-list-item routerLink="configuracoes/checklist" routerLinkActive="active">
+          <mat-icon matListItemIcon>checklist</mat-icon>
+          <span matListItemTitle>Regras do Checklist</span>
+        </a>
+      </div>
+
+      <a mat-list-item routerLink="usuarios" routerLinkActive="active" *ngIf="usuarioLogado?.perfilNome === 'Administrador do Sistema'">
         <mat-icon matListItemIcon>group_add</mat-icon>
         <span matListItemTitle *ngIf="!collapsed() || isHandset()">Usuários</span>
       </a>
 
-      <a mat-list-item routerLink="pessoas" routerLinkActive="active">
-        <mat-icon matListItemIcon>person</mat-icon>
-        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Clientes</span>
+      <!-- Módulo Minha Imobiliária (Apenas Administrador da Imobiliária) -->
+      <a mat-list-item (click)="toggleMinhaImobiliaria()" *ngIf="usuarioLogado?.perfilNome === 'Administrador da Imobiliária'" style="cursor: pointer;">
+        <mat-icon matListItemIcon>business</mat-icon>
+        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Minha Imobiliária</span>
+        <mat-icon matListItemMeta *ngIf="!collapsed() || isHandset()" style="font-size: 18px; width: 18px; height: 18px; min-width: 18px; font-family: 'Material Icons' !important; color: #fff !important; margin-right: 10px;">
+          {{ minhaImobiliariaOpen() ? 'expand_less' : 'expand_more' }}
+        </mat-icon>
       </a>
 
-      <a mat-list-item routerLink="imoveis" routerLinkActive="active">
-        <mat-icon matListItemIcon>home</mat-icon>
-        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Imóveis</span>
-      </a>
+      <div class="submenu" *ngIf="minhaImobiliariaOpen() && (!collapsed() || isHandset()) && usuarioLogado?.perfilNome === 'Administrador da Imobiliária'">
+        <a mat-list-item routerLink="imobiliaria/dados" routerLinkActive="active">
+          <mat-icon matListItemIcon>info</mat-icon>
+          <span matListItemTitle>Dados Imobiliária</span>
+        </a>
+        <a mat-list-item routerLink="imobiliaria/colaboradores" routerLinkActive="active">
+          <mat-icon matListItemIcon>badge</mat-icon>
+          <span matListItemTitle>Colaboradores</span>
+        </a>
+        <a mat-list-item routerLink="imobiliaria/financeiro" routerLinkActive="active">
+          <mat-icon matListItemIcon>account_balance_wallet</mat-icon>
+          <span matListItemTitle>Financeiro</span>
+        </a>
+        <a mat-list-item routerLink="imobiliaria/prestadores" routerLinkActive="active">
+          <mat-icon matListItemIcon>handyman</mat-icon>
+          <span matListItemTitle>Prestadores</span>
+        </a>
+      </div>
 
-      <a mat-list-item routerLink="convites" routerLinkActive="active">
-        <mat-icon matListItemIcon>send</mat-icon>
-        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Convites</span>
-      </a>
+      <!-- Módulos de Operação da Imobiliária (Visível para Administrador da Imobiliária e Colaborador) -->
+      <ng-container *ngIf="usuarioLogado?.perfilNome !== 'Administrador do Sistema'">
+        <a mat-list-item routerLink="leads" routerLinkActive="active">
+          <mat-icon matListItemIcon>contact_page</mat-icon>
+          <span matListItemTitle *ngIf="!collapsed() || isHandset()">Leads</span>
+        </a>
 
-      <a mat-list-item routerLink="contratos" routerLinkActive="active">
-        <mat-icon matListItemIcon>assignment</mat-icon>
-        <span matListItemTitle *ngIf="!collapsed() || isHandset()">Contratos</span>
-      </a>
+        <a mat-list-item routerLink="pessoas" routerLinkActive="active">
+          <mat-icon matListItemIcon>person</mat-icon>
+          <span matListItemTitle *ngIf="!collapsed() || isHandset()">Clientes</span>
+        </a>
+
+        <a mat-list-item routerLink="imoveis" routerLinkActive="active">
+          <mat-icon matListItemIcon>home</mat-icon>
+          <span matListItemTitle *ngIf="!collapsed() || isHandset()">Imóveis</span>
+        </a>
+
+        <a mat-list-item routerLink="convites" routerLinkActive="active">
+          <mat-icon matListItemIcon>send</mat-icon>
+          <span matListItemTitle *ngIf="!collapsed() || isHandset()">Convites</span>
+        </a>
+
+        <a mat-list-item routerLink="contratos" routerLinkActive="active">
+          <mat-icon matListItemIcon>assignment</mat-icon>
+          <span matListItemTitle *ngIf="!collapsed() || isHandset()">Contratos</span>
+        </a>
+      </ng-container>
 
     </mat-nav-list>
 

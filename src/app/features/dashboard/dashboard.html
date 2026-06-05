@@ -2,13 +2,56 @@
 
   <div class="dashboard__header">
     <div>
-      <h2>Dashboard</h2>
-      <p>Visão geral do painel administrativo Kazaz</p>
+      <h2>Dashboard {{ perfilNome === 'Administrador do Sistema' ? 'Geral' : '' }}</h2>
+      <p>{{ perfilNome === 'Administrador do Sistema' ? 'Visão global e gerencial da plataforma multi-tenant' : 'Visão geral do painel administrativo Kazaz' }}</p>
     </div>
   </div>
 
-  <div class="cards-grid">
+  <!-- 👇 ADMIN DO SISTEMA CARDS -->
+  <div class="cards-grid" *ngIf="perfilNome === 'Administrador do Sistema'">
+    <mat-card class="summary-card primary">
+      <div class="card-icon">
+        <mat-icon>business</mat-icon>
+      </div>
+      <div>
+        <span>Imobiliárias</span>
+        <strong>{{ resumo.totalImobiliarias }}</strong>
+      </div>
+    </mat-card>
 
+    <mat-card class="summary-card success">
+      <div class="card-icon">
+        <mat-icon>group</mat-icon>
+      </div>
+      <div>
+        <span>Usuários do Sistema</span>
+        <strong>{{ resumo.totalUsuarios }}</strong>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card warning">
+      <div class="card-icon">
+        <mat-icon>home</mat-icon>
+      </div>
+      <div>
+        <span>Imóveis (Global)</span>
+        <strong>{{ resumo.totalImoveis }}</strong>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card info">
+      <div class="card-icon">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div>
+        <span>Clientes (Global)</span>
+        <strong>{{ resumo.totalClientes }}</strong>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- 👇 IMOBILIARIA CARDS -->
+  <div class="cards-grid" *ngIf="perfilNome !== 'Administrador do Sistema'">
     <mat-card class="summary-card primary">
       <div class="card-icon">
         <mat-icon>home</mat-icon>
@@ -48,7 +91,6 @@
         <strong>{{ resumo.totalConvites }}</strong>
       </div>
     </mat-card>
-
   </div>
 
   <div class="dashboard-grid">
@@ -79,7 +121,25 @@
       </div>
     </mat-card>
 
-    <mat-card class="panel">
+    <!-- 👇 ACTIONS FOR ADMIN -->
+    <mat-card class="panel" *ngIf="perfilNome === 'Administrador do Sistema'">
+      <h3>Ações rápidas</h3>
+
+      <div class="quick-actions">
+        <button mat-flat-button color="primary" routerLink="/imobiliarias">
+          <mat-icon>add_business</mat-icon>
+          Nova Imobiliária
+        </button>
+
+        <button mat-flat-button color="primary" routerLink="/usuarios">
+          <mat-icon>group_add</mat-icon>
+          Gerenciar Usuários
+        </button>
+      </div>
+    </mat-card>
+
+    <!-- 👇 ACTIONS FOR AGENCY -->
+    <mat-card class="panel" *ngIf="perfilNome !== 'Administrador do Sistema'">
       <h3>Ações rápidas</h3>
 
       <div class="quick-actions">

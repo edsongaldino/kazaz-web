@@ -1,7 +1,6 @@
 import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,18 +12,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
-import { ConfiguracoesService } from '../../core/services/configuracoes.service';
-import { ContratosService } from '../../core/services/contratos.service';
-import { NotificationService } from '../../core/services/notification.service';
-import { TipoDocumento, RegraDocumentoCadastro } from '../../models/configuracoes.models';
+import { ConfiguracoesService } from '../../../core/services/configuracoes.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { TipoDocumento, RegraDocumentoCadastro } from '../../../models/configuracoes.models';
 
 @Component({
-  selector: 'app-configuracoes',
+  selector: 'app-regras-documentos',
   standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatTabsModule,
     MatTableModule,
     MatIconModule,
     MatButtonModule,
@@ -36,12 +33,11 @@ import { TipoDocumento, RegraDocumentoCadastro } from '../../models/configuracoe
     MatCheckboxModule,
     MatProgressBarModule
   ],
-  templateUrl: './configuracoes.html',
-  styleUrls: ['./configuracoes.scss']
+  templateUrl: './documentos.html',
+  styleUrls: ['./documentos.scss']
 })
-export class ConfiguracoesComponent implements OnInit {
+export class RegrasDocumentosComponent implements OnInit {
   private configService = inject(ConfiguracoesService);
-  private contratosService = inject(ContratosService);
   private fb = inject(FormBuilder);
   private dialog = inject(MatDialog);
   private notification = inject(NotificationService);
@@ -51,13 +47,10 @@ export class ConfiguracoesComponent implements OnInit {
   // Listas de dados
   tiposDocumento: TipoDocumento[] = [];
   regras: RegraDocumentoCadastro[] = [];
-  globalStepsEntrada: any[] = [];
-  globalStepsSaida: any[] = [];
 
   // FormGroups
   formTipoDoc!: FormGroup;
   formRegra!: FormGroup;
-  formGlobalStep!: FormGroup;
 
   // Estados de Edição
   editingTipoDocId: string | null = null;
@@ -69,12 +62,10 @@ export class ConfiguracoesComponent implements OnInit {
   // Templates de Diálogo
   @ViewChild('dialogTipoDoc') tempTipoDoc!: TemplateRef<any>;
   @ViewChild('dialogRegra') tempRegra!: TemplateRef<any>;
-  @ViewChild('dialogGlobalStep') tempGlobalStep!: TemplateRef<any>;
 
   // Columns exibidas nas tabelas
   colsTipoDoc: string[] = ['nome', 'alvo', 'obrigatorio', 'ordem', 'ativo', 'acoes'];
   colsRegra: string[] = ['tipoPessoa', 'tipoContrato', 'papelContrato', 'tipoDocumento', 'obrigatorio', 'ordem', 'multiplicidade', 'rotulo', 'ativo', 'acoes'];
-  colsGlobalStep: string[] = ['label', 'tipoField', 'card', 'acoes'];
 
   ngOnInit(): void {
     this.carregarDados();
@@ -83,13 +74,14 @@ export class ConfiguracoesComponent implements OnInit {
 
   carregarDados(): void {
     this.carregando = true;
-    
-    // Carrega tudo em paralelo
+
     this.configService.obterTiposDocumento().subscribe({
       next: (res) => {
         this.tiposDocumento = res;
+        this.carregando = false;
       },
-      error: (err) => {
+      error: () => {
+        this.carregando = false;
         this.notification.toastError('Erro ao carregar tipos de documento');
       }
     });
@@ -98,29 +90,8 @@ export class ConfiguracoesComponent implements OnInit {
       next: (res) => {
         this.regras = res;
       },
-      error: (err) => {
+      error: () => {
         this.notification.toastError('Erro ao carregar regras de documentos');
-      }
-    });
-
-    this.contratosService.obterEtapasGlobais('entrada').subscribe({
-      next: (res) => {
-        this.globalStepsEntrada = res;
-      },
-      error: (err) => {
-        this.notification.toastError('Erro ao carregar etapas globais de entrada');
-      }
-    });
-
-    this.contratosService.obterEtapasGlobais('saida').subscribe({
-      next: (res) => {
-        this.globalStepsSaida = res;
-        this.carregando = false;
-      },
-      error: (err) => {
-        this.globalStepsSaida = [];
-        this.carregando = false;
-        this.notification.toastError('Erro ao carregar etapas globais de saída');
       }
     });
   }
@@ -145,14 +116,6 @@ export class ConfiguracoesComponent implements OnInit {
       multiplicidade: [1, [Validators.required, Validators.min(1)]],
       rotulo: ['', [Validators.maxLength(200)]],
       ativo: [true]
-    });
-
-    this.formGlobalStep = this.fb.group({
-      tipoChecklist: ['entrada', [Validators.required]],
-      label: ['', [Validators.required, Validators.maxLength(150)]],
-      tipoField: ['text', [Validators.required]],
-      card: ['', [Validators.required, Validators.maxLength(150)]],
-      novoCardNome: ['']
     });
   }
 
@@ -329,93 +292,9 @@ export class ConfiguracoesComponent implements OnInit {
         this.notification.toastSuccess('Regra excluída!');
         this.carregarDados();
       },
-      error: (err) => {
+      error: () => {
         this.carregando = false;
         this.notification.toastError('Erro ao excluir regra.');
-      }
-    });
-  }
-
-  // ---------- Etapas Globais CRUD ----------
-  abrirNovaEtapaGlobal(tipo: 'entrada' | 'saida'): void {
-    this.formGlobalStep.reset({
-      tipoChecklist: tipo,
-      label: '',
-      tipoField: 'text',
-      card: '',
-      novoCardNome: ''
-    });
-    this.dialogRef = this.dialog.open(this.tempGlobalStep, { width: '500px' });
-  }
-
-  onCardSelectionChange(val: string): void {
-    const control = this.formGlobalStep.get('novoCardNome');
-    if (val === 'novo') {
-      control?.setValidators([Validators.required, Validators.maxLength(150)]);
-    } else {
-      control?.clearValidators();
-    }
-    control?.updateValueAndValidity();
-  }
-
-  getCardsDisponiveis(): string[] {
-    const tipo = this.formGlobalStep.get('tipoChecklist')?.value;
-    if (tipo === 'entrada') {
-      return ['Assinatura & Entrega', 'Contas & Utilidades', 'IPTU', 'Vistoria & Manutenção', 'Bônus de Locação'];
-    } else {
-      return ['Rescisão & Saída', 'Valores & Garantias', 'Encerramento de Contas', 'Entrega Física & Divulgação'];
-    }
-  }
-
-  salvarEtapaGlobal(): void {
-    if (this.formGlobalStep.invalid) {
-      this.formGlobalStep.markAllAsTouched();
-      this.notification.toastError('Preencha os campos obrigatórios corretamente.');
-      return;
-    }
-
-    const raw = this.formGlobalStep.value;
-    const cardName = raw.card === 'novo' ? raw.novoCardNome : raw.card;
-
-    this.carregando = true;
-
-    this.contratosService.criarEtapaGlobal({
-      tipoChecklist: raw.tipoChecklist,
-      label: raw.label,
-      tipoField: raw.tipoField,
-      card: cardName
-    }).subscribe({
-      next: () => {
-        this.notification.toastSuccess('Etapa global adicionada!');
-        this.dialogRef?.close();
-        this.carregarDados();
-      },
-      error: (err) => {
-        this.carregando = false;
-        this.notification.toastError(err?.error?.error ?? 'Erro ao adicionar etapa global.');
-      }
-    });
-  }
-
-  async excluirEtapaGlobal(step: any): Promise<void> {
-    const confirm = await this.notification.confirm(
-      'Excluir etapa global?',
-      `Esta etapa "${step.label}" será excluída permanentemente de TODOS os contratos. Esta ação não pode ser desfeita.`,
-      'Sim, excluir',
-      'Cancelar'
-    );
-
-    if (!confirm) return;
-
-    this.carregando = true;
-    this.contratosService.excluirEtapaGlobal(step.id).subscribe({
-      next: () => {
-        this.notification.toastSuccess('Etapa global removida com sucesso!');
-        this.carregarDados();
-      },
-      error: (err) => {
-        this.carregando = false;
-        this.notification.toastError('Erro ao remover etapa global.');
       }
     });
   }
@@ -443,6 +322,7 @@ export class ConfiguracoesComponent implements OnInit {
       case 1: return 'Locador';
       case 2: return 'Locatário';
       case 3: return 'Fiador';
+      case 4: return 'Proprietário';
       case 10: return 'Vendedor';
       case 11: return 'Comprador';
       default: return 'Qualquer papel';
@@ -451,14 +331,5 @@ export class ConfiguracoesComponent implements OnInit {
 
   getLabelAlvo(val: number): string {
     return val === 1 ? 'Cliente (Pessoa)' : 'Imóvel';
-  }
-
-  getLabelTipoField(val: string): string {
-    switch (val) {
-      case 'date': return 'Data';
-      case 'boolean': return 'Sim/Não';
-      case 'textarea': return 'Texto Longo';
-      default: return 'Texto Curto';
-    }
   }
 }

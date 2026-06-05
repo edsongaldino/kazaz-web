@@ -19,7 +19,9 @@
       <mat-label>Perfil</mat-label>
       <mat-select formControlName="perfilId">
         <mat-option [value]="null">Todos</mat-option>
-        <mat-option value="b22cbc7e-c7ae-4f7b-acbc-67f09cc35a3d">Administrador</mat-option>
+        <mat-option *ngFor="let p of perfis" [value]="p.id">
+          {{ p.nome }}
+        </mat-option>
       </mat-select>
     </mat-form-field>
 
@@ -61,6 +63,11 @@
     <ng-container matColumnDef="perfil">
       <th mat-header-cell *matHeaderCellDef>Perfil</th>
       <td mat-cell *matCellDef="let row">{{ row.perfilNome }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="imobiliaria">
+      <th mat-header-cell *matHeaderCellDef>Imobiliária</th>
+      <td mat-cell *matCellDef="let row">{{ row.imobiliariaNome || '-' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="ativo">

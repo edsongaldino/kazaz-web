@@ -17,4 +17,7 @@ export interface DashboardResumo {
   imoveisPorTipo: DashboardGraficoItem[];
   imoveisPorFinalidade: DashboardGraficoItem[];
   convitesPorStatus: DashboardGraficoItem[];
+
+  totalImobiliarias?: number;
+  totalUsuarios?: number;
 }

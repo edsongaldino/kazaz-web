@@ -159,8 +159,8 @@ export class ContratosListaComponent implements OnInit, OnDestroy {
     this.router.navigate(['/contratos/editar', c.id]);
   }
 
-  imprimir(c: ContratoResponse): void {
-    window.open(`/contratos/imprimir/${c.id}`, '_blank');
+  imprimir(c: ContratoResponse, opcao: 'contrato' | 'entrada' | 'saida'): void {
+    window.open(`/contratos/imprimir/${c.id}?opcao=${opcao}`, '_blank');
   }
 
   novo(): void {

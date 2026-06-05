@@ -1,0 +1,91 @@
+<div class="dialog-header">
+  <div class="dialog-header__info">
+    <mat-icon class="dialog-header__icon">person_add</mat-icon>
+    <div>
+      <h2 class="dialog-header__title">Vincular Proprietário</h2>
+      <p class="dialog-header__sub">
+        Imóvel: <strong>{{ data.codigo }}</strong>
+        <span *ngIf="data.titulo"> — {{ data.titulo }}</span>
+      </p>
+    </div>
+  </div>
+  <button mat-icon-button (click)="fechar()" matTooltip="Fechar">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="dialog-body" mat-dialog-content>
+
+  <!-- Search field -->
+  <mat-form-field appearance="outline" class="busca-field">
+    <mat-label>Pesquisar cliente pelo nome</mat-label>
+    <mat-icon matPrefix>search</mat-icon>
+    <input matInput [formControl]="$any(form.get('busca'))" placeholder="Digite pelo menos 2 letras..." autocomplete="off" />
+    <mat-hint>Pesquise por nome. Selecione o cliente para vincular como proprietário.</mat-hint>
+  </mat-form-field>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-wrap">
+    <mat-spinner diameter="36"></mat-spinner>
+    <span>Pesquisando...</span>
+  </div>
+
+  <!-- Empty state: before search -->
+  <div *ngIf="!loading && pessoas.length === 0 && (form.get('busca')?.value?.length ?? 0) < 2"
+       class="empty-state">
+    <mat-icon class="empty-state__icon">manage_search</mat-icon>
+    <p>Digite o nome do cliente para pesquisar.</p>
+  </div>
+
+  <!-- Empty state: no results -->
+  <div *ngIf="!loading && pessoas.length === 0 && (form.get('busca')?.value?.length ?? 0) >= 2"
+       class="empty-state">
+    <mat-icon class="empty-state__icon">person_search</mat-icon>
+    <p>Nenhum cliente encontrado para "<strong>{{ form.get('busca')?.value }}</strong>".</p>
+  </div>
+
+  <!-- Results list -->
+  <div *ngIf="!loading && pessoas.length > 0" class="pessoas-list">
+    <div
+      *ngFor="let p of pessoas"
+      class="pessoa-item"
+      [class.pessoa-item--loading]="vinculando === p.id">
+
+      <div class="pessoa-item__avatar">
+        <mat-icon>{{ p.tipo === 'PF' ? 'person' : 'business' }}</mat-icon>
+      </div>
+
+      <div class="pessoa-item__info">
+        <span class="pessoa-item__nome">{{ p.nome }}</span>
+        <span class="pessoa-item__doc" *ngIf="p.documento">
+          {{ p.tipo === 'PF' ? 'CPF' : 'CNPJ' }}: {{ p.documento }}
+        </span>
+        <div class="pessoa-item__tags">
+          <span class="tag tag--proprietario" *ngIf="p.ehProprietario">Proprietário</span>
+          <span class="tag tag--locador" *ngIf="p.ehLocador">Locador</span>
+          <span class="tag tag--locatario" *ngIf="p.ehLocatario">Locatário</span>
+        </div>
+      </div>
+
+      <button
+        mat-flat-button
+        color="primary"
+        class="btn-vincular"
+        [disabled]="!!vinculando"
+        (click)="vincular(p)">
+        <mat-spinner *ngIf="vinculando === p.id" diameter="16"></mat-spinner>
+        <mat-icon *ngIf="vinculando !== p.id">link</mat-icon>
+        {{ vinculando === p.id ? 'Vinculando...' : 'Vincular' }}
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<mat-divider></mat-divider>
+
+<div mat-dialog-actions class="dialog-actions">
+  <button mat-stroked-button (click)="fechar()">Cancelar</button>
+</div>

@@ -1,0 +1,176 @@
+<div class="page-container">
+  <div class="page-header-premium">
+    <div class="title-area">
+      <mat-icon class="header-icon" color="primary">checklist</mat-icon>
+      <div>
+        <h1>Regras do Checklist</h1>
+        <p class="subtitle">Gerencie as etapas globais obrigatórias dos checklists de entrada e saída dos contratos.</p>
+      </div>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="carregando" mode="indeterminate" class="page-progress"></mat-progress-bar>
+
+  <div class="tab-content">
+    <div class="config-grid">
+      <!-- Entrada -->
+      <div class="config-card span-12">
+        <div class="card-header-premium">
+          <div class="card-title-premium">
+            <mat-icon color="primary">login</mat-icon>
+            <span>Checklist Global de Entrada</span>
+          </div>
+          <button mat-flat-button color="primary" class="btn-add-premium" (click)="abrirNovaEtapaGlobal('entrada')">
+            <mat-icon>add</mat-icon> Adicionar Etapa de Entrada
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table mat-table [dataSource]="globalStepsEntrada" class="modern-table">
+            <!-- Label -->
+            <ng-container matColumnDef="label">
+              <th mat-header-cell *matHeaderCellDef>Nome da Etapa</th>
+              <td mat-cell *matCellDef="let s"><strong>{{ s.label }}</strong></td>
+            </ng-container>
+
+            <!-- Tipo -->
+            <ng-container matColumnDef="tipoField">
+              <th mat-header-cell *matHeaderCellDef>Tipo do Campo</th>
+              <td mat-cell *matCellDef="let s">{{ getLabelTipoField(s.tipoField) }}</td>
+            </ng-container>
+
+            <!-- Card -->
+            <ng-container matColumnDef="card">
+              <th mat-header-cell *matHeaderCellDef>Card de Destino</th>
+              <td mat-cell *matCellDef="let s">{{ s.card }}</td>
+            </ng-container>
+
+            <!-- Acoes -->
+            <ng-container matColumnDef="acoes">
+              <th mat-header-cell *matHeaderCellDef style="text-align: right; width: 100px;">Ações</th>
+              <td mat-cell *matCellDef="let s" style="text-align: right;">
+                <button mat-icon-button color="warn" matTooltip="Remover Etapa Global" (click)="excluirEtapaGlobal(s)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="colsGlobalStep"></tr>
+            <tr mat-row *matRowDef="let row; columns: colsGlobalStep;"></tr>
+
+            <!-- Caso não tenha etapas -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-table-message" [attr.colspan]="colsGlobalStep.length">
+                Nenhuma etapa global definida para o checklist de entrada.
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Saída -->
+      <div class="config-card span-12" style="margin-top: 32px;">
+        <div class="card-header-premium">
+          <div class="card-title-premium">
+            <mat-icon color="primary">logout</mat-icon>
+            <span>Checklist Global de Saída</span>
+          </div>
+          <button mat-flat-button color="primary" class="btn-add-premium" (click)="abrirNovaEtapaGlobal('saida')">
+            <mat-icon>add</mat-icon> Adicionar Etapa de Saída
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table mat-table [dataSource]="globalStepsSaida" class="modern-table">
+            <!-- Label -->
+            <ng-container matColumnDef="label">
+              <th mat-header-cell *matHeaderCellDef>Nome da Etapa</th>
+              <td mat-cell *matCellDef="let s"><strong>{{ s.label }}</strong></td>
+            </ng-container>
+
+            <!-- Tipo -->
+            <ng-container matColumnDef="tipoField">
+              <th mat-header-cell *matHeaderCellDef>Tipo do Campo</th>
+              <td mat-cell *matCellDef="let s">{{ getLabelTipoField(s.tipoField) }}</td>
+            </ng-container>
+
+            <!-- Card -->
+            <ng-container matColumnDef="card">
+              <th mat-header-cell *matHeaderCellDef>Card de Destino</th>
+              <td mat-cell *matCellDef="let s">{{ s.card }}</td>
+            </ng-container>
+
+            <!-- Acoes -->
+            <ng-container matColumnDef="acoes">
+              <th mat-header-cell *matHeaderCellDef style="text-align: right; width: 100px;">Ações</th>
+              <td mat-cell *matCellDef="let s" style="text-align: right;">
+                <button mat-icon-button color="warn" matTooltip="Remover Etapa Global" (click)="excluirEtapaGlobal(s)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="colsGlobalStep"></tr>
+            <tr mat-row *matRowDef="let row; columns: colsGlobalStep;"></tr>
+
+            <!-- Caso não tenha etapas -->
+            <tr class="mat-row" *matNoDataRow>
+              <td class="mat-cell empty-table-message" [attr.colspan]="colsGlobalStep.length">
+                Nenhuma etapa global definida para o checklist de saída.
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- DIALOGS TEMPLATES                          -->
+<!-- ========================================== -->
+
+<!-- DIALOG ETAPA GLOBAL -->
+<ng-template #dialogGlobalStep>
+  <h2 mat-dialog-title class="dialog-title-premium">Adicionar Etapa Global</h2>
+  <mat-dialog-content>
+    <form [formGroup]="formGlobalStep" class="dialog-form">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Nome da Etapa</mat-label>
+        <input matInput formControlName="label" placeholder="Ex: Pintura vistoriada, IPTU quitado..." />
+        <mat-error *ngIf="formGlobalStep.get('label')?.invalid">O nome é obrigatório.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Tipo do Campo</mat-label>
+        <mat-select formControlName="tipoField">
+          <mat-option value="text">Texto Curto</mat-option>
+          <mat-option value="textarea">Texto Longo / Observações</mat-option>
+          <mat-option value="date">Data</mat-option>
+          <mat-option value="boolean">Sim/Não (Seleção)</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Destino (Card)</mat-label>
+        <mat-select formControlName="card" (selectionChange)="onCardSelectionChange($event.value)">
+          <mat-option *ngFor="let card of getCardsDisponiveis()" [value]="card">
+            {{ card }}
+          </mat-option>
+          <mat-option value="novo">[Criar Novo Card...]</mat-option>
+        </mat-select>
+        <mat-error *ngIf="formGlobalStep.get('card')?.invalid">Selecione o destino.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-100" *ngIf="formGlobalStep.get('card')?.value === 'novo'">
+        <mat-label>Nome do Novo Card</mat-label>
+        <input matInput formControlName="novoCardNome" placeholder="Ex: Outros Assuntos, Serviços" />
+        <mat-error *ngIf="formGlobalStep.get('novoCardNome')?.invalid">Informe o nome do novo card.</mat-error>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end" class="dialog-actions-premium">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="primary" (click)="salvarEtapaGlobal()">Salvar</button>
+  </mat-dialog-actions>
+</ng-template>

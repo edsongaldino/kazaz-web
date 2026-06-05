@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -6,6 +6,7 @@ import { finalize } from 'rxjs';
 import { MaterialModule } from '../../shared/material.module';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardResumo } from '../../models/dashboard.model';
+import { Auth } from '../../core/services/auth';
 
 type GraficoItem = {
   label: string;
@@ -20,13 +21,18 @@ type GraficoItem = {
   styleUrls: ['./dashboard.scss']
 })
 export class Dashboard implements OnInit {
+  private auth = inject(Auth);
+
   loading = false;
+  perfilNome = '';
 
   resumo: DashboardResumo = {
     totalImoveis: 0,
     totalClientes: 0,
     totalContratos: 0,
     totalConvites: 0,
+    totalImobiliarias: 0,
+    totalUsuarios: 0,
 
     imoveisAtivos: 0,
     imoveisEmNegociacao: 0,
@@ -48,7 +54,24 @@ export class Dashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.obterPerfil();
     this.carregarResumo();
+  }
+
+  private obterPerfil(): void {
+    const usuario = this.auth.getUsuario();
+    if (usuario) {
+      this.perfilNome = usuario.perfilNome || usuario.perfil || '';
+      return;
+    }
+
+    const token = this.auth.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        this.perfilNome = payload.role || payload.perfilNome || payload.perfil || '';
+      } catch {}
+    }
   }
 
   carregarResumo(): void {

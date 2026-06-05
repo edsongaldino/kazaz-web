@@ -12,7 +12,7 @@ export interface RegraDocumentoCadastro {
   id: string;
   tipoPessoa: number; // 0 = Any, 1 = PF, 2 = PJ
   tipoContrato: number; // 0 = Any, 1 = Locacao, 2 = Venda, 3 = Compra
-  papelContrato: number; // 0 = Any, 1 = Locador, 2 = Locatario, 3 = Fiador, 10 = Vendedor, 11 = Comprador
+  papelContrato: number; // 0 = Any, 1 = Locador, 2 = Locatario, 3 = Fiador, 4 = Proprietario, 10 = Vendedor, 11 = Comprador
   tipoDocumentoId: string;
   tipoDocumentoNome: string;
   obrigatorio: boolean;

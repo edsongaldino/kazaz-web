@@ -10,6 +10,8 @@ export interface UsuarioListDto {
   ativo: boolean;
   perfilId: string;
   perfilNome?: string; // recomendado vir da API
+  imobiliariaId?: string | null;
+  imobiliariaNome?: string | null;
 }
 
 export interface UsuarioCreateDto {
@@ -18,6 +20,7 @@ export interface UsuarioCreateDto {
   senha: string;
   ativo: boolean;
   perfilId: string;
+  imobiliariaId?: string | null;
 }
 
 export interface UsuarioUpdateDto {
@@ -26,6 +29,7 @@ export interface UsuarioUpdateDto {
   senha?: string;
   ativo: boolean;
   perfilId: string;
+  imobiliariaId?: string | null;
 }
 
 export interface PerfilDto {
@@ -56,4 +60,5 @@ export interface LoginResponse {
   email: string;
   perfilId?: number;
   perfilNome?: string;
+  imobiliariaId?: string;
 }

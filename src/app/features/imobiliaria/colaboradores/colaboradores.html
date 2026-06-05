@@ -1,0 +1,311 @@
+<div class="page-container">
+  <div class="page-header-premium">
+    <div class="title-area">
+      <mat-icon class="header-icon" color="primary">badge</mat-icon>
+      <div>
+        <h1>Colaboradores</h1>
+        <p class="subtitle">Cadastre e gerencie os colaboradores da imobiliária e suas credenciais de acesso.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="config-card filters-card">
+    <form [formGroup]="formFilter" (ngSubmit)="filtrar()" class="filters-form">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-grow">
+          <mat-label>Pesquisar colaborador...</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput formControlName="termo" placeholder="Buscar por nome, CPF ou cargo..." />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="width: 200px;">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="ativo">
+            <mat-option [value]="null">Todos</mat-option>
+            <mat-option [value]="true">Ativos</mat-option>
+            <mat-option [value]="false">Inativos</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-flat-button color="primary" type="submit" class="btn-filter-premium">
+            Filtrar
+          </button>
+          <button mat-stroked-button type="button" (click)="limparFiltros()" class="btn-clear-premium">
+            Limpar
+          </button>
+          <button mat-flat-button color="accent" type="button" (click)="abrirNovo()" class="btn-add-colab-premium">
+            <mat-icon>add</mat-icon> Novo Colaborador
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate" class="page-progress"></mat-progress-bar>
+
+  <!-- Tabela de Resultados -->
+  <div class="config-card table-card" style="margin-top: 24px;">
+    <div class="table-container">
+      <table mat-table [dataSource]="colaboradores()" class="modern-table">
+        
+        <!-- Nome -->
+        <ng-container matColumnDef="nome">
+          <th mat-header-cell *matHeaderCellDef>Nome</th>
+          <td mat-cell *matCellDef="let c"><strong>{{ c.nome }}</strong></td>
+        </ng-container>
+
+        <!-- CPF -->
+        <ng-container matColumnDef="cpf">
+          <th mat-header-cell *matHeaderCellDef>CPF</th>
+          <td mat-cell *matCellDef="let c">{{ c.cpf | documento }}</td>
+        </ng-container>
+
+        <!-- Cargo -->
+        <ng-container matColumnDef="cargo">
+          <th mat-header-cell *matHeaderCellDef>Cargo</th>
+          <td mat-cell *matCellDef="let c">{{ obterCargoLabel(c.cargo) }}</td>
+        </ng-container>
+
+        <!-- E-mail -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>E-mail</th>
+          <td mat-cell *matCellDef="let c">{{ c.email }}</td>
+        </ng-container>
+
+        <!-- Telefone -->
+        <ng-container matColumnDef="telefone">
+          <th mat-header-cell *matHeaderCellDef>Telefone</th>
+          <td mat-cell *matCellDef="let c">{{ formatTelefone(c.telefone) }}</td>
+        </ng-container>
+
+        <!-- Usuario -->
+        <ng-container matColumnDef="usuario">
+          <th mat-header-cell *matHeaderCellDef>Acesso</th>
+          <td mat-cell *matCellDef="let c">
+            <span *ngIf="c.usuarioId" class="access-badge active" [matTooltip]="c.usuarioEmail">
+              <mat-icon>vpn_key</mat-icon> Com Acesso
+            </span>
+            <span *ngIf="!c.usuarioId" class="access-badge inactive">
+              <mat-icon>lock</mat-icon> Sem Acesso
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="ativo">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let c">
+            <span class="status-badge" [class.status-badge--active]="c.ativo" [class.status-badge--inactive]="!c.ativo">
+              {{ c.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Ações -->
+        <ng-container matColumnDef="acoes">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 120px;">Ações</th>
+          <td mat-cell *matCellDef="let c" style="text-align: center;">
+            <button mat-icon-button color="primary" matTooltip="Editar" (click)="abrirEditar(c)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Excluir" (click)="excluir(c)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell empty-table-message" [attr.colspan]="displayedColumns.length">
+            Nenhum colaborador encontrado.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageIndex]="page()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPage($event)"
+      style="margin-top: 12px;">
+    </mat-paginator>
+  </div>
+</div>
+
+<!-- Template Modal Colaborador -->
+<ng-template #dialogColaborador>
+  <div class="custom-dialog-container">
+    <h2 mat-dialog-title class="dialog-title-premium">
+      <mat-icon color="primary">{{ editingColaborador ? 'edit' : 'person_add' }}</mat-icon>
+      <span>{{ editingColaborador ? 'Editar Colaborador' : 'Novo Colaborador' }}</span>
+    </h2>
+
+    <mat-dialog-content>
+      <form [formGroup]="form" class="dialog-form premium-form-padding">
+        
+        <!-- Nome -->
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Nome Completo</mat-label>
+          <input matInput formControlName="nome" placeholder="Digite o nome completo" />
+          <mat-error *ngIf="form.get('nome')?.hasError('required')">Nome é obrigatório</mat-error>
+          <mat-error *ngIf="form.get('nome')?.hasError('maxlength')">No máximo 150 caracteres</mat-error>
+        </mat-form-field>
+
+        <!-- CPF e Cargo -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>CPF</mat-label>
+            <input matInput formControlName="cpf" mask="000.000.000-00" placeholder="000.000.000-00" />
+            <mat-error *ngIf="form.get('cpf')?.hasError('required')">CPF é obrigatório</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Cargo/Função</mat-label>
+            <mat-select formControlName="cargo">
+              <mat-option *ngFor="let c of cargosList" [value]="c">
+                {{ cargoLabels[c] }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('cargo')?.hasError('required')">Cargo é obrigatório</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- E-mail e Telefone -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>E-mail</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="nome@imobiliaria.com" />
+            <mat-error *ngIf="form.get('email')?.hasError('required')">E-mail é obrigatório</mat-error>
+            <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail inválido</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Telefone</mat-label>
+            <input matInput formControlName="telefone" mask="(00) 00000-0000 || (00) 0000-0000" placeholder="(00) 00000-0000" />
+          </mat-form-field>
+        </div>
+
+        <!-- Data de Admissão e Ativo -->
+        <div class="form-row-2col" style="align-items: center;">
+          <mat-form-field appearance="outline">
+            <mat-label>Data de Admissão</mat-label>
+            <input matInput type="date" formControlName="dataAdmissao" />
+          </mat-form-field>
+
+          <div style="padding-left: 8px;">
+            <mat-slide-toggle formControlName="ativo" color="primary">Colaborador Ativo</mat-slide-toggle>
+          </div>
+        </div>
+
+        <!-- Seção de Login do Sistema (apenas na criação) -->
+        <div *ngIf="!editingColaborador" class="user-creation-section">
+          <div style="margin: 8px 0 12px 0;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 13px;">
+              Criar usuário do sistema para login deste colaborador?
+            </label>
+            <mat-radio-group formControlName="criarUsuario" color="primary">
+              <mat-radio-button [value]="true" style="margin-right: 24px;">Sim</mat-radio-button>
+              <mat-radio-button [value]="false">Não</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <div *ngIf="form.get('criarUsuario')?.value" class="form-row-2col user-fields-container animate-fade-in">
+            <mat-form-field appearance="outline">
+              <mat-label>Senha de Acesso</mat-label>
+              <input matInput type="password" formControlName="senha" placeholder="Mínimo 6 caracteres" />
+              <mat-error *ngIf="form.get('senha')?.hasError('required')">Senha é obrigatória</mat-error>
+              <mat-error *ngIf="form.get('senha')?.hasError('minlength')">Senha deve ter no mínimo 6 caracteres</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Perfil de Acesso</mat-label>
+              <mat-select formControlName="perfilId">
+                <mat-option *ngFor="let p of perfis()" [value]="p.id">
+                  {{ p.nome }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="form.get('perfilId')?.hasError('required')">Perfil é obrigatório</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Seção de Documentos Pessoais -->
+        <div class="colaborador-documentos-section">
+          <h3 class="section-subtitle">
+            <mat-icon color="primary" style="vertical-align: middle; margin-right: 8px;">folder_shared</mat-icon>
+            <span>Documentos Pessoais</span>
+          </h3>
+
+          <!-- Form de Upload -->
+          <div class="document-upload-form">
+            <mat-form-field appearance="outline" style="flex: 1; margin-bottom: 0;">
+              <mat-label>Nome do Documento (Ex: RG, CPF, CNH)</mat-label>
+              <input matInput [value]="novoDocNome()" (input)="novoDocNome.set($any($event.target).value)" placeholder="Ex: RG, CPF, CNH, Comprovante de Residência" />
+            </mat-form-field>
+            
+            <div>
+              <input type="file" #fileInput style="display: none;" (change)="uploadDocumento($event)" />
+              <button mat-flat-button color="accent" type="button" (click)="fileInput.click()" [disabled]="uploadingDoc()">
+                <mat-icon>cloud_upload</mat-icon> Anexar Arquivo
+              </button>
+            </div>
+          </div>
+
+          <!-- Progresso de Upload -->
+          <div *ngIf="uploadingDoc()" class="upload-progress-container">
+            <p style="margin: 0 0 4px 0; font-size: 13px;">Enviando documento... {{ uploadProgress() }}%</p>
+            <mat-progress-bar mode="determinate" [value]="uploadProgress()"></mat-progress-bar>
+          </div>
+
+          <!-- Lista de Documentos Anexados -->
+          <div class="documents-list-container" *ngIf="documentosLocal().length > 0; else noDocs">
+            <table class="documents-table">
+              <thead>
+                <tr>
+                  <th>Tipo/Descrição</th>
+                  <th>Nome do Arquivo</th>
+                  <th style="width: 120px; text-align: center;">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let doc of documentosLocal(); let i = index">
+                  <td><strong>{{ doc.nome }}</strong></td>
+                  <td>{{ doc.documentoNome || '-' }}</td>
+                  <td style="text-align: center;">
+                    <!-- Se já tem caminho, permite baixar -->
+                    <a *ngIf="doc.caminho" [href]="obterDownloadUrl(doc.caminho)" target="_blank" mat-icon-button color="primary" matTooltip="Baixar Arquivo">
+                      <mat-icon>download</mat-icon>
+                    </a>
+                    <button mat-icon-button color="warn" type="button" matTooltip="Remover" (click)="removerDocumentoLocal(i)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noDocs>
+            <p class="no-docs-text" style="color: #64748b; font-style: italic; font-size: 13px; margin: 8px 0 0 0;">
+              Nenhum documento pessoal anexado.
+            </p>
+          </ng-template>
+        </div>
+
+      </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-premium" align="end">
+      <button mat-button mat-dialog-close [disabled]="salvando()">Cancelar</button>
+      <button mat-flat-button color="primary" [disabled]="salvando() || form.invalid" (click)="salvar()">
+        <mat-spinner *ngIf="salvando()" diameter="20" style="margin-right: 8px; display: inline-block;"></mat-spinner>
+        {{ editingColaborador ? 'Atualizar' : 'Cadastrar' }}
+      </button>
+    </mat-dialog-actions>
+  </div>
+</ng-template>

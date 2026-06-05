@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>Converter Lead em Cliente</h2>
+
+<mat-dialog-content>
+  <p class="intro-text">Selecione o tipo de cliente e opcionalmente informe o documento (CPF ou CNPJ) para criar o cadastro.</p>
+
+  <form [formGroup]="form" (ngSubmit)="confirmar()" class="form-container">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Tipo de Pessoa</mat-label>
+      <mat-select formControlName="tipoPessoa">
+        <mat-option value="PF">Pessoa Física (PF)</mat-option>
+        <mat-option value="PJ">Pessoa Jurídica (PJ)</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>{{ docLabel }}</mat-label>
+      <input matInput [formControlName]="'documento'" [mask]="mask" placeholder="Opcional" />
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancelar()">Cancelar</button>
+  <button mat-raised-button color="primary" [disabled]="form.invalid" (click)="confirmar()">Converter</button>
+</mat-dialog-actions>

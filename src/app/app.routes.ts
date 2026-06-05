@@ -58,6 +58,10 @@ export const appRoutes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard) },
 
+      { path: 'leads', loadComponent: () => import('./features/leads/leads-list/leads-list').then(m => m.LeadsListComponent) },
+      { path: 'leads/novo', loadComponent: () => import('./features/leads/lead-form/lead-form').then(m => m.LeadFormComponent) },
+      { path: 'leads/editar/:id', loadComponent: () => import('./features/leads/lead-form/lead-form').then(m => m.LeadFormComponent) },
+
       { path: 'pessoas', loadComponent: () => import('./features/pessoas/pessoas-list/pessoas-list.component').then(m => m.PessoasListComponent) },
       { path: 'pessoas/novo', loadComponent: () => import('./features/pessoas/pessoa-form/pessoa-form.component').then(m => m.PessoaFormComponent) },
       { path: 'pessoas/editar/:id', loadComponent: () => import('./features/pessoas/pessoa-form/pessoa-form.component').then(m => m.PessoaFormComponent) },
@@ -80,10 +84,47 @@ export const appRoutes: Routes = [
             .then(m => m.ConvitesList),
       },
       {
-        path: 'configuracoes',
+        path: 'configuracoes/documentos',
         loadComponent: () =>
-          import('./features/configuracoes/configuracoes')
-            .then(m => m.ConfiguracoesComponent),
+          import('./features/configuracoes/documentos/documentos')
+            .then(m => m.RegrasDocumentosComponent),
+      },
+      {
+        path: 'configuracoes/checklist',
+        loadComponent: () =>
+          import('./features/configuracoes/checklist/checklist')
+            .then(m => m.RegrasChecklistComponent),
+      },
+      { path: 'configuracoes', redirectTo: 'configuracoes/documentos', pathMatch: 'full' },
+      {
+        path: 'imobiliaria/dados',
+        loadComponent: () =>
+          import('./features/imobiliaria/dados-imobiliaria/dados-imobiliaria')
+            .then(m => m.DadosImobiliariaComponent),
+      },
+      {
+        path: 'imobiliaria/colaboradores',
+        loadComponent: () =>
+          import('./features/imobiliaria/colaboradores/colaboradores')
+            .then(m => m.ColaboradoresListComponent),
+      },
+      {
+        path: 'imobiliaria/financeiro',
+        loadComponent: () =>
+          import('./features/imobiliaria/financeiro/financeiro')
+            .then(m => m.FinanceiroComponent),
+      },
+      {
+        path: 'imobiliaria/prestadores',
+        loadComponent: () =>
+          import('./features/imobiliaria/prestadores/prestadores')
+            .then(m => m.PrestadoresListComponent),
+      },
+      {
+        path: 'imobiliarias',
+        loadComponent: () =>
+          import('./features/imobiliarias/imobiliarias')
+            .then(m => m.ImobiliariasComponent),
       },
     ]
   },

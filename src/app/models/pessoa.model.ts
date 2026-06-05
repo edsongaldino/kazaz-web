@@ -38,6 +38,8 @@ export interface PessoaDto extends PessoaBaseDto {
   dadosPessoaFisica?: DadosPessoaFisicaDto | null;
   dadosPessoaJuridica?: DadosPessoaJuridicaDto | null;
   contatos?: ContatoDto[] | null;          // 👈 vale para PF e PJ
+  dadosComplementares?: DadosComplementaresDto | null;
+  conjuge?: ConjugeDto | null;
 }
 
 // 👇 Requests
@@ -73,6 +75,7 @@ export interface PessoaListItem {
   ehFiador: boolean;
   ehVendedor: boolean;
   ehComprador: boolean;
+  ehProprietario: boolean;
 }
 
 export interface PessoasPageResponse {

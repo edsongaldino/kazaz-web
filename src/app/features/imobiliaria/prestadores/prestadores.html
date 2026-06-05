@@ -1,0 +1,236 @@
+<div class="page-container">
+  <div class="page-header-premium">
+    <div class="title-area">
+      <mat-icon class="header-icon" color="primary">handyman</mat-icon>
+      <div>
+        <h1>Prestadores de Serviço</h1>
+        <p class="subtitle">Cadastre e gerencie profissionais credenciados para manutenção e vistorias de imóveis.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="config-card filters-card">
+    <form [formGroup]="formFilter" (ngSubmit)="filtrar()" class="filters-form">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="flex-grow">
+          <mat-label>Pesquisar prestador...</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput formControlName="termo" placeholder="Buscar por nome, CPF/CNPJ..." />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="width: 220px;">
+          <mat-label>Especialidade</mat-label>
+          <mat-select formControlName="especialidade">
+            <mat-option [value]="null">Todas</mat-option>
+            <mat-option *ngFor="let esp of especialidadesList" [value]="esp">
+              {{ especialidadeLabels[esp] }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" style="width: 180px;">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="ativo">
+            <mat-option [value]="null">Todos</mat-option>
+            <mat-option [value]="true">Ativos</mat-option>
+            <mat-option [value]="false">Inativos</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-flat-button color="primary" type="submit" class="btn-filter-premium">
+            Filtrar
+          </button>
+          <button mat-stroked-button type="button" (click)="limparFiltros()" class="btn-clear-premium">
+            Limpar
+          </button>
+          <button mat-flat-button color="accent" type="button" (click)="abrirNovo()" class="btn-add-premium">
+            <mat-icon>add</mat-icon> Novo Prestador
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate" class="page-progress"></mat-progress-bar>
+
+  <!-- Tabela de Resultados -->
+  <div class="config-card table-card" style="margin-top: 24px;">
+    <div class="table-container">
+      <table mat-table [dataSource]="prestadores()" class="modern-table">
+        
+        <!-- Nome -->
+        <ng-container matColumnDef="nome">
+          <th mat-header-cell *matHeaderCellDef>Nome / Razão Social</th>
+          <td mat-cell *matCellDef="let p"><strong>{{ p.nome }}</strong></td>
+        </ng-container>
+
+        <!-- Especialidade -->
+        <ng-container matColumnDef="especialidade">
+          <th mat-header-cell *matHeaderCellDef>Especialidade</th>
+          <td mat-cell *matCellDef="let p">
+            <span class="specialty-badge">{{ obterEspecialidadeLabel(p.especialidade) }}</span>
+          </td>
+        </ng-container>
+
+        <!-- CPF/CNPJ -->
+        <ng-container matColumnDef="cpfCnpj">
+          <th mat-header-cell *matHeaderCellDef>CPF / CNPJ</th>
+          <td mat-cell *matCellDef="let p">
+            {{ p.cpfCnpj | documento }}
+          </td>
+        </ng-container>
+
+        <!-- Telefone -->
+        <ng-container matColumnDef="telefone">
+          <th mat-header-cell *matHeaderCellDef>Telefone</th>
+          <td mat-cell *matCellDef="let p">{{ formatTelefone(p.telefone) }}</td>
+        </ng-container>
+
+        <!-- E-mail -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>E-mail</th>
+          <td mat-cell *matCellDef="let p">{{ p.email || '-' }}</td>
+        </ng-container>
+
+        <!-- Cidade -->
+        <ng-container matColumnDef="cidade">
+          <th mat-header-cell *matHeaderCellDef>Cidade</th>
+          <td mat-cell *matCellDef="let p">{{ p.endereco ? (p.endereco.cidade + '/' + p.endereco.estado) : '-' }}</td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="ativo">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let p">
+            <span class="status-badge" [class.status-badge--active]="p.ativo" [class.status-badge--inactive]="!p.ativo">
+              {{ p.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Ações -->
+        <ng-container matColumnDef="acoes">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 120px;">Ações</th>
+          <td mat-cell *matCellDef="let p" style="text-align: center;">
+            <button mat-icon-button color="primary" matTooltip="Editar" (click)="abrirEditar(p)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Excluir" (click)="excluir(p)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell empty-table-message" [attr.colspan]="displayedColumns.length">
+            Nenhum prestador de serviço cadastrado.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageIndex]="page()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPage($event)"
+      style="margin-top: 12px;">
+    </mat-paginator>
+  </div>
+</div>
+
+<!-- Template Modal Prestador -->
+<ng-template #dialogPrestador>
+  <div class="custom-dialog-container">
+    <h2 mat-dialog-title class="dialog-title-premium">
+      <mat-icon color="primary">{{ editingPrestador ? 'edit' : 'handyman' }}</mat-icon>
+      <span>{{ editingPrestador ? 'Editar Prestador de Serviço' : 'Novo Prestador de Serviço' }}</span>
+    </h2>
+
+    <mat-dialog-content>
+      <form [formGroup]="form" class="dialog-form premium-form-padding">
+        
+        <!-- Nome -->
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Nome / Razão Social</mat-label>
+          <input matInput formControlName="nome" placeholder="Nome do profissional ou empresa" />
+          <mat-error *ngIf="form.get('nome')?.hasError('required')">Nome é obrigatório</mat-error>
+          <mat-error *ngIf="form.get('nome')?.hasError('maxlength')">No máximo 150 caracteres</mat-error>
+        </mat-form-field>
+
+        <!-- Especialidade e CPF/CNPJ -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>Especialidade</mat-label>
+            <mat-select formControlName="especialidade">
+              <mat-option *ngFor="let esp of especialidadesList" [value]="esp">
+                {{ especialidadeLabels[esp] }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('especialidade')?.hasError('required')">Especialidade é obrigatória</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>CPF ou CNPJ</mat-label>
+            <input matInput formControlName="cpfCnpj" placeholder="Digite apenas números" />
+            <mat-error *ngIf="form.get('cpfCnpj')?.hasError('required')">CPF/CNPJ é obrigatório</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Telefone e E-mail -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>Telefone</mat-label>
+            <input matInput formControlName="telefone" mask="(00) 00000-0000 || (00) 0000-0000" placeholder="(00) 00000-0000" />
+            <mat-error *ngIf="form.get('telefone')?.hasError('required')">Telefone é obrigatório</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>E-mail</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="contato@prestador.com" />
+            <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail inválido</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Observações e Ativo -->
+        <div class="form-row-2col" style="align-items: center;">
+          <mat-form-field appearance="outline" style="grid-column: span 1;">
+            <mat-label>Observações</mat-label>
+            <textarea matInput formControlName="observacoes" placeholder="Outros detalhes importantes..." rows="2"></textarea>
+          </mat-form-field>
+
+          <div style="padding-left: 8px;">
+            <mat-slide-toggle formControlName="ativo" color="primary">Prestador Ativo</mat-slide-toggle>
+          </div>
+        </div>
+
+        <!-- Sub-formulário de Endereço -->
+        <div class="endereco-secao">
+          <div class="card-header-premium" style="margin-top: 16px; padding-bottom: 8px;">
+            <div class="card-title-premium" style="font-size: 15px;">
+              <mat-icon color="primary">place</mat-icon>
+              <span>Endereço (Opcional)</span>
+            </div>
+          </div>
+          
+          <app-endereco [formGroup]="enderecoForm"></app-endereco>
+        </div>
+
+      </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-premium" align="end">
+      <button mat-button mat-dialog-close [disabled]="salvando()">Cancelar</button>
+      <button mat-flat-button color="primary" [disabled]="salvando() || form.invalid" (click)="salvar()">
+        <mat-spinner *ngIf="salvando()" diameter="20" style="margin-right: 8px; display: inline-block;"></mat-spinner>
+        {{ editingPrestador ? 'Atualizar' : 'Cadastrar' }}
+      </button>
+    </mat-dialog-actions>
+  </div>
+</ng-template>

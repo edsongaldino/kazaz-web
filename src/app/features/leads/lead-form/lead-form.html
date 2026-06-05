@@ -1,0 +1,114 @@
+<div class="page-header" *ngIf="!isDialog">
+  <div class="header-title flex-align">
+    <button mat-icon-button routerLink="/leads" class="btn-back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1>{{ leadId() ? 'Editar Atendimento' : 'Novo Atendimento' }}</h1>
+      <p>Cadastre ou atualize as informações de contato e interesse do lead.</p>
+    </div>
+  </div>
+</div>
+
+<h2 *ngIf="isDialog" mat-dialog-title style="margin-bottom: 20px; font-weight: 700;">
+  {{ leadId() ? 'Editar Atendimento' : 'Novo Atendimento' }}
+</h2>
+
+<mat-progress-bar mode="indeterminate" *ngIf="loading()"></mat-progress-bar>
+
+<div [class.form-card]="!isDialog" [class.mat-elevation-z1]="!isDialog" *ngIf="!loading()">
+  <form [formGroup]="form" (ngSubmit)="salvar()" class="lead-form">
+    
+    <!-- Dialog Layout -->
+    <ng-container *ngIf="isDialog; else pageLayout">
+      <div mat-dialog-content class="dialog-padding">
+        <ng-container *ngTemplateOutlet="formFields"></ng-container>
+      </div>
+      <div mat-dialog-actions align="end" class="dialog-actions">
+        <ng-container *ngTemplateOutlet="formActions"></ng-container>
+      </div>
+    </ng-container>
+
+    <!-- Normal Page Layout -->
+    <ng-template #pageLayout>
+      <div class="page-layout-content">
+        <ng-container *ngTemplateOutlet="formFields"></ng-container>
+      </div>
+      <div class="form-actions">
+        <ng-container *ngTemplateOutlet="formActions"></ng-container>
+      </div>
+    </ng-template>
+
+    <!-- Shared Form Fields Template -->
+    <ng-template #formFields>
+      <div class="form-grid">
+        <!-- Nome -->
+        <mat-form-field appearance="outline" class="col-span-2">
+          <mat-label>Nome Completo</mat-label>
+          <input matInput formControlName="nome" placeholder="Digite o nome completo do lead" />
+          <mat-error *ngIf="form.controls.nome.hasError('required')">Nome é obrigatório.</mat-error>
+          <mat-error *ngIf="form.controls.nome.hasError('maxlength')">Máximo de 150 caracteres.</mat-error>
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="nome@exemplo.com" />
+          <mat-error *ngIf="form.controls.email.hasError('email')">Informe um e-mail válido.</mat-error>
+          <mat-error *ngIf="form.controls.email.hasError('maxlength')">Máximo de 150 caracteres.</mat-error>
+        </mat-form-field>
+
+        <!-- Telefone -->
+        <mat-form-field appearance="outline">
+          <mat-label>Telefone</mat-label>
+          <input matInput formControlName="telefone" placeholder="(00) 00000-0000" mask="(00) 00000-0000 || (00) 0000-0000" />
+          <mat-error *ngIf="form.controls.telefone.hasError('maxlength')">Máximo de 50 caracteres.</mat-error>
+        </mat-form-field>
+
+        <!-- Origem -->
+        <mat-form-field appearance="outline">
+          <mat-label>Origem / Canal</mat-label>
+          <mat-select formControlName="origemId">
+            <mat-option [value]="null">Não informada</mat-option>
+            <mat-option *ngFor="let orig of origens()" [value]="orig.id">{{ orig.nome }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Imóvel de Interesse -->
+        <mat-form-field appearance="outline">
+          <mat-label>Imóvel de Interesse</mat-label>
+          <mat-select formControlName="imovelId">
+            <mat-option [value]="null">Nenhum</mat-option>
+            <mat-option *ngFor="let imov of imoveis()" [value]="imov.id">{{ imov.codigo }} - {{ imov.titulo }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Status -->
+        <mat-form-field appearance="outline" class="col-span-2">
+          <mat-label>Status do Atendimento</mat-label>
+          <mat-select formControlName="status">
+            <mat-option *ngFor="let st of statusOptions" [value]="st.value">{{ st.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Observações / Mensagem -->
+        <mat-form-field appearance="outline" class="col-span-2">
+          <mat-label>Mensagem / Observações</mat-label>
+          <textarea matInput formControlName="mensagem" rows="6" placeholder="Observações do atendimento, e-mail recebido ou detalhes da conversa no WhatsApp..."></textarea>
+          <mat-error *ngIf="form.controls.mensagem.hasError('maxlength')">Máximo de 2000 caracteres.</mat-error>
+        </mat-form-field>
+      </div>
+    </ng-template>
+
+    <!-- Shared Form Actions Template -->
+    <ng-template #formActions>
+      <button mat-button type="button" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+        <mat-icon *ngIf="!saving()">save</mat-icon>
+        <span *ngIf="saving()">Salvando...</span>
+        <span *ngIf="!saving()">Salvar</span>
+      </button>
+    </ng-template>
+
+  </form>
+</div>

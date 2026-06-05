@@ -16,6 +16,7 @@ export enum PapelContrato {
   Locador = 1,
   Locatario = 2,
   Fiador = 3,
+  Proprietario = 4,
   Vendedor = 10,
   Comprador = 11,
 }

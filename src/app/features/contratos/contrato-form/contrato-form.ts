@@ -701,10 +701,10 @@ export class ContratoFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  imprimirContratoChecklist(): void {
+  imprimir(opcao: 'contrato' | 'entrada' | 'saida'): void {
     if (!this.id) return;
     const url = this.router.serializeUrl(
-      this.router.createUrlTree(['/contratos/imprimir', this.id])
+      this.router.createUrlTree(['/contratos/imprimir', this.id], { queryParams: { opcao } })
     );
     window.open(url, '_blank');
   }

@@ -1,0 +1,104 @@
+<div class="page-container">
+  <div class="page-header-premium">
+    <div class="title-area">
+      <mat-icon class="header-icon" color="primary">business</mat-icon>
+      <div>
+        <h1>Minha Imobiliária</h1>
+        <p class="subtitle">Gerencie as informações cadastrais e de localização da sua imobiliária.</p>
+      </div>
+    </div>
+  </div>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate" class="page-progress"></mat-progress-bar>
+
+  <div class="config-card" *ngIf="!loading()">
+    <div class="card-header-premium">
+      <div class="card-title-premium">
+        <mat-icon color="primary">info</mat-icon>
+        <span>Dados Cadastrais</span>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="salvar()" class="dialog-form">
+      <!-- Nome/Razão Social e Nome Fantasia -->
+      <div class="form-row-2col">
+        <mat-form-field appearance="outline">
+          <mat-label>Razão Social</mat-label>
+          <input matInput formControlName="razaoSocial" placeholder="Ex.: Kazaz Negócios Imobiliários Ltda" />
+          <mat-error *ngIf="form.get('razaoSocial')?.hasError('required')">Razão social é obrigatória</mat-error>
+          <mat-error *ngIf="form.get('razaoSocial')?.hasError('maxlength')">No máximo 150 caracteres</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nome Fantasia</mat-label>
+          <input matInput formControlName="nomeFantasia" placeholder="Ex.: Kazaz Imóveis" />
+          <mat-error *ngIf="form.get('nomeFantasia')?.hasError('required')">Nome fantasia é obrigatório</mat-error>
+          <mat-error *ngIf="form.get('nomeFantasia')?.hasError('maxlength')">No máximo 150 caracteres</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- CNPJ e CRECI -->
+      <div class="form-row-2col">
+        <mat-form-field appearance="outline">
+          <mat-label>CNPJ</mat-label>
+          <input matInput formControlName="cnpj" mask="00.000.000/0000-00" placeholder="00.000.000/0000-00" />
+          <mat-error *ngIf="form.get('cnpj')?.hasError('required')">CNPJ é obrigatório</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>CRECI</mat-label>
+          <input matInput formControlName="creci" placeholder="Ex.: CRECI J-12345" />
+          <mat-error *ngIf="form.get('creci')?.hasError('required')">CRECI é obrigatório</mat-error>
+          <mat-error *ngIf="form.get('creci')?.hasError('maxlength')">No máximo 50 caracteres</mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Data de Fundação e Logo URL -->
+      <div class="form-row-2col">
+        <mat-form-field appearance="outline">
+          <mat-label>Data de Fundação</mat-label>
+          <input matInput type="date" formControlName="dataFundacao" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>URL da Logomarca (Imagem)</mat-label>
+          <input matInput formControlName="logoUrl" placeholder="https://exemplo.com/logo.png" />
+        </mat-form-field>
+      </div>
+
+      <!-- Email e Telefone -->
+      <div class="form-row-2col">
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail de Contato</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="contato@imobiliaria.com" />
+          <mat-error *ngIf="form.get('email')?.hasError('email')">E-mail inválido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Telefone de Contato</mat-label>
+          <input matInput formControlName="telefone" mask="(00) 00000-0000 || (00) 0000-0000" placeholder="(00) 00000-0000" />
+        </mat-form-field>
+      </div>
+
+      <!-- Sub-formulário de Endereço -->
+      <div class="endereco-secao">
+        <div class="card-header-premium" style="margin-top: 24px; padding-bottom: 8px;">
+          <div class="card-title-premium" style="font-size: 15px;">
+            <mat-icon color="primary">place</mat-icon>
+            <span>Endereço e Localização</span>
+          </div>
+        </div>
+        
+        <app-endereco [formGroup]="enderecoForm"></app-endereco>
+      </div>
+
+      <div class="form-actions">
+        <button mat-flat-button color="primary" type="submit" [disabled]="salvando()" class="btn-save-premium">
+          <mat-icon *ngIf="!salvando()">save</mat-icon>
+          <mat-spinner *ngIf="salvando()" diameter="20" style="margin-right: 8px; display: inline-block;"></mat-spinner>
+          Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

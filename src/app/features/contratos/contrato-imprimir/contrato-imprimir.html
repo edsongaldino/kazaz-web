@@ -17,20 +17,29 @@
         <h2>KAZAZ IMÓVEIS</h2>
       </div>
       <div class="doc-meta">
-        <h1>FICHA DO CONTRATO</h1>
+        <h1 *ngIf="opcao === 'contrato'">FICHA DO CONTRATO</h1>
+        <h1 *ngIf="opcao === 'entrada'">CHECKLIST DE ENTRADA</h1>
+        <h1 *ngIf="opcao === 'saida'">CHECKLIST DE SAÍDA</h1>
+        <h1 *ngIf="!opcao">FICHA COMPLETA DO CONTRATO</h1>
         <div class="contrato-num">Contrato Nº {{ contrato.numero || 'Rascunho' }}</div>
       </div>
     </header>
 
     <!-- Dados Gerais -->
-    <section class="doc-section">
-      <h3 class="section-title">Dados Gerais</h3>
+    <section class="doc-section" *ngIf="!opcao || opcao === 'contrato'">
+      <h3 class="section-title">Dados Gerais do Contrato</h3>
       <table class="data-table">
+        <tr>
+          <th>Número do Contrato</th>
+          <td>{{ contrato.numero || 'Rascunho' }}</td>
+          <th>Status</th>
+          <td><strong>{{ statusLabel(contrato.status) }}</strong></td>
+        </tr>
         <tr>
           <th>Tipo de Contrato</th>
           <td>{{ tipoLabel(contrato.tipo) }}</td>
-          <th>Status</th>
-          <td><strong>{{ statusLabel(contrato.status) }}</strong></td>
+          <th>Data de Criação</th>
+          <td>{{ contrato.criadoEm | date:'dd/MM/yyyy' }}</td>
         </tr>
         <tr>
           <th>Início da Vigência</th>
@@ -42,48 +51,158 @@
     </section>
 
     <!-- Imóvel Vinculado -->
-    <section class="doc-section">
-      <h3 class="section-title">Imóvel Vinculado</h3>
+    <section class="doc-section" *ngIf="!opcao || opcao === 'contrato'">
+      <h3 class="section-title">Dados do Imóvel</h3>
       <table class="data-table">
         <tr>
           <th>Código</th>
-          <td>{{ contrato.codigoImovel || '-' }}</td>
+          <td>{{ imovelDetalhado?.codigo || contrato.codigoImovel || '-' }}</td>
           <th>Título</th>
-          <td>{{ contrato.tituloImovel || '-' }}</td>
+          <td>{{ imovelDetalhado?.titulo || contrato.tituloImovel || '-' }}</td>
         </tr>
         <tr>
-          <th>Tipo</th>
-          <td colspan="3">{{ contrato.tipoImovelNome || 'Não informado' }}</td>
+          <th>Tipo do Imóvel</th>
+          <td>{{ imovelDetalhado?.tipoImovelNome || contrato.tipoImovelNome || '-' }}</td>
+          <th>Finalidade</th>
+          <td>{{ imovelDetalhado?.finalidade === 1 ? 'Locação' : imovelDetalhado?.finalidade === 2 ? 'Venda' : 'Locação/Venda' }}</td>
+        </tr>
+        <tr>
+          <th>Endereço</th>
+          <td colspan="3">
+            <ng-container *ngIf="imovelDetalhado?.endereco; else oldEndereco">
+              {{ imovelDetalhado?.endereco?.logradouro }}, nº {{ imovelDetalhado?.endereco?.numero }}
+              <span *ngIf="imovelDetalhado?.endereco?.complemento"> - {{ imovelDetalhado?.endereco?.complemento }}</span>,
+              Bairro {{ imovelDetalhado?.endereco?.bairro }} - CEP {{ imovelDetalhado?.endereco?.cep }}
+              <span *ngIf="imovelDetalhado?.endereco?.cidade?.nome">, {{ imovelDetalhado?.endereco?.cidade?.nome }}</span>
+              <span *ngIf="imovelDetalhado?.endereco?.cidade?.estado?.sigla">/{{ imovelDetalhado?.endereco?.cidade?.estado?.sigla }}</span>
+            </ng-container>
+            <ng-template #oldEndereco>-</ng-template>
+          </td>
+        </tr>
+        <tr *ngIf="imovelDetalhado?.observacoes">
+          <th>Observações</th>
+          <td colspan="3">{{ imovelDetalhado?.observacoes }}</td>
         </tr>
       </table>
     </section>
 
     <!-- Partes Envolvidas -->
-    <section class="doc-section">
-      <h3 class="section-title">Partes Envolvidas</h3>
-      <table class="data-table">
-        <thead>
+    <section class="doc-section" *ngIf="!opcao || opcao === 'contrato'">
+      <h3 class="section-title">Partes do Contrato</h3>
+      <div *ngFor="let p of contrato.partes; let index = index" class="parte-detalhe-card" style="margin-bottom: 20px; border: 1px solid #ccc; padding: 12px; border-radius: 4px; page-break-inside: avoid;">
+        <h4 style="margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 4px; color: #2b579a;">
+          {{ index + 1 }}. {{ papelLabel(p.papel) }} <span *ngIf="p.percentual">({{ p.percentual }}% de Participação)</span>
+        </h4>
+        <table class="data-table">
           <tr>
-            <th>Nome</th>
-            <th>Papel</th>
-            <th>Participação (%)</th>
+            <th>Nome / Razão Social</th>
+            <td colspan="3"><strong>{{ partesDetalhadas[p.pessoaId]?.nome || p.pessoaNome }}</strong></td>
           </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of contrato.partes">
-            <td>{{ p.pessoaNome }}</td>
-            <td>{{ papelLabel(p.papel) }}</td>
-            <td>{{ p.percentual ? p.percentual + '%' : '-' }}</td>
+          <tr>
+            <th>Tipo de Pessoa</th>
+            <td>{{ partesDetalhadas[p.pessoaId]?.tipoPessoa === 'PF' ? 'Física' : 'Jurídica' }}</td>
+            <th>Documento (CPF/CNPJ)</th>
+            <td>{{ partesDetalhadas[p.pessoaId]?.documento || '-' }}</td>
           </tr>
-          <tr *ngIf="!contrato.partes || contrato.partes.length === 0">
-            <td colspan="3" class="text-center">Nenhuma parte informada</td>
+          <!-- Se for Pessoa Física -->
+          <ng-container *ngIf="partesDetalhadas[p.pessoaId]?.tipoPessoa === 'PF' && partesDetalhadas[p.pessoaId]?.dadosPessoaFisica">
+            <tr>
+              <th>RG</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.rg || '-' }} <span *ngIf="partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.orgaoExpedidor">({{ partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.orgaoExpedidor }})</span></td>
+              <th>Estado Civil</th>
+              <td>{{ obterEstadoCivil(partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.estadoCivil) }}</td>
+            </tr>
+            <tr>
+              <th>Nacionalidade</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.nacionalidade || '-' }}</td>
+              <th>Data Nascimento</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.dataNascimento | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </ng-container>
+          <!-- Se for Pessoa Jurídica -->
+          <ng-container *ngIf="partesDetalhadas[p.pessoaId]?.tipoPessoa === 'PJ' && partesDetalhadas[p.pessoaId]?.dadosPessoaJuridica">
+            <tr>
+              <th>Razão Social</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaJuridica?.razaoSocial }}</td>
+              <th>Nome Fantasia</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaJuridica?.nomeFantasia || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Inscrição Estadual</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaJuridica?.inscricaoEstadual || '-' }}</td>
+              <th>Data Abertura</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosPessoaJuridica?.dataAbertura | date:'dd/MM/yyyy' }}</td>
+            </tr>
+          </ng-container>
+          <!-- Endereço da Parte -->
+          <tr *ngIf="partesDetalhadas[p.pessoaId]?.endereco">
+            <th>Endereço</th>
+            <td colspan="3">
+              {{ partesDetalhadas[p.pessoaId]?.endereco?.logradouro }}, nº {{ partesDetalhadas[p.pessoaId]?.endereco?.numero }}
+              <span *ngIf="partesDetalhadas[p.pessoaId]?.endereco?.complemento"> - {{ partesDetalhadas[p.pessoaId]?.endereco?.complemento }}</span>,
+              Bairro {{ partesDetalhadas[p.pessoaId]?.endereco?.bairro }} - CEP {{ partesDetalhadas[p.pessoaId]?.endereco?.cep }}
+            </td>
           </tr>
-        </tbody>
-      </table>
+          <!-- Contatos da Parte -->
+          <tr *ngIf="partesDetalhadas[p.pessoaId]?.contatos && partesDetalhadas[p.pessoaId]?.contatos!.length > 0">
+            <th>Contatos</th>
+            <td colspan="3">
+              <span *ngFor="let c of partesDetalhadas[p.pessoaId]?.contatos; let last = last">
+                {{ c.tipo === 'TELEFONE' ? 'Telefone: ' : c.tipo === 'EMAIL' ? 'E-mail: ' : 'Outro: ' }}{{ c.valor }}<span *ngIf="!last"> | </span>
+              </span>
+            </td>
+          </tr>
+          <!-- Informações Complementares -->
+          <ng-container *ngIf="partesDetalhadas[p.pessoaId]?.dadosComplementares">
+            <tr class="table-section-header">
+              <th colspan="4" style="background-color: #f9f9f9; text-align: left; padding: 6px 10px; color: #2b579a; font-weight: bold; border-top: 1px solid #ddd;">Informações Adicionais</th>
+            </tr>
+            <tr>
+              <th>Profissão</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosComplementares?.profissao || '-' }}</td>
+              <th>Renda Mensal</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.dadosComplementares?.rendaMensal ? (partesDetalhadas[p.pessoaId]?.dadosComplementares?.rendaMensal | currency:'BRL') : '-' }}</td>
+            </tr>
+            <tr>
+              <th>Escolaridade</th>
+              <td colspan="3">{{ partesDetalhadas[p.pessoaId]?.dadosComplementares?.escolaridade || '-' }}</td>
+            </tr>
+            <tr *ngIf="partesDetalhadas[p.pessoaId]?.dadosComplementares?.observacoes">
+              <th>Obs. Adicionais</th>
+              <td colspan="3">{{ partesDetalhadas[p.pessoaId]?.dadosComplementares?.observacoes }}</td>
+            </tr>
+          </ng-container>
+          <!-- Dados do Cônjuge -->
+          <ng-container *ngIf="partesDetalhadas[p.pessoaId]?.dadosPessoaFisica?.estadoCivil === 2 && partesDetalhadas[p.pessoaId]?.conjuge">
+            <tr class="table-section-header">
+              <th colspan="4" style="background-color: #f9f9f9; text-align: left; padding: 6px 10px; color: #2b579a; font-weight: bold; border-top: 1px solid #ddd;">Dados do Cônjuge</th>
+            </tr>
+            <tr>
+              <th>Nome do Cônjuge</th>
+              <td colspan="3">{{ partesDetalhadas[p.pessoaId]?.conjuge?.nome || '-' }}</td>
+            </tr>
+            <tr>
+              <th>CPF do Cônjuge</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.conjuge?.cpf || '-' }}</td>
+              <th>Data Nascimento</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.conjuge?.dataNascimento | date:'dd/MM/yyyy' }}</td>
+            </tr>
+            <tr *ngIf="partesDetalhadas[p.pessoaId]?.conjuge?.email || partesDetalhadas[p.pessoaId]?.conjuge?.telefone">
+              <th>E-mail</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.conjuge?.email || '-' }}</td>
+              <th>Telefone</th>
+              <td>{{ partesDetalhadas[p.pessoaId]?.conjuge?.telefone || '-' }}</td>
+            </tr>
+          </ng-container>
+        </table>
+      </div>
+      <div *ngIf="!contrato.partes || contrato.partes.length === 0" style="text-align: center; padding: 12px; border: 1px solid #ccc;">
+        Nenhuma parte informada
+      </div>
     </section>
 
     <!-- Checklist de Entrada (Se Locação) -->
-    <section class="doc-section" *ngIf="contrato.tipo === TipoContrato.Locacao && checklistEntrada">
+    <section class="doc-section" *ngIf="contrato.tipo === TipoContrato.Locacao && checklistEntrada && (!opcao || opcao === 'entrada')">
       <h3 class="section-title">Checklist de Entrada</h3>
       <table class="data-table vertical">
         <tr>
@@ -158,7 +277,7 @@
     </section>
 
     <!-- Checklist de Saída (Se Locação) -->
-    <section class="doc-section" *ngIf="contrato.tipo === TipoContrato.Locacao && checklistSaida">
+    <section class="doc-section" *ngIf="contrato.tipo === TipoContrato.Locacao && checklistSaida && (!opcao || opcao === 'saida')">
       <h3 class="section-title">Checklist de Saída</h3>
       <table class="data-table vertical">
         <tr>

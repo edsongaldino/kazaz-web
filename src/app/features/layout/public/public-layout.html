@@ -1,5 +1,5 @@
-<div class="public-shell">
-  <header class="public-header">
+<div class="public-shell" [class.imprimir-mode]="isImprimir">
+  <header class="public-header" *ngIf="!isImprimir">
     <div class="header-container">
       <img class="logo" src="assets/img/logo/logo_kazaz.png" alt="Kazaz Logo" />
       
@@ -22,7 +22,7 @@
     </div>
   </header>
 
-  <main class="public-content">
+  <main class="public-content" [class.no-margin]="isImprimir">
     <router-outlet></router-outlet>
   </main>
 </div>

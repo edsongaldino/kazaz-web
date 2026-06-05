@@ -77,6 +77,15 @@ export interface ImovelDto {
     bairro?: string | null;
     estadoId?: string | null; // se seu front usa estadoId no componente
     cidadeId?: string | null;
+    cidade?: {
+      id: string;
+      nome: string;
+      estado?: {
+        id: string;
+        nome: string;
+        sigla: string;
+      }
+    }
   } | null;
 
   observacoes?: string | null;
@@ -90,14 +99,20 @@ export interface ImovelDto {
 }
 
 // listagem simples (se você usa)
+export interface ImovelListProprietarioDto {
+  pessoaId: string;
+  nome: string;
+}
+
 export interface ImovelListDto {
   id: string;
   codigo: string;
   titulo: string;
   finalidade: FinalidadeImovel;
   status: StatusImovel;
-  tipoImovel: string;
+  tipoImovelNome: string;
   endereco: EnderecoDto;
+  proprietarios: ImovelListProprietarioDto[];
 }
 
 export interface ImovelFiltro {

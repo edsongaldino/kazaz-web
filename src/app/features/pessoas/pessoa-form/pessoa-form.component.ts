@@ -312,11 +312,12 @@ export class PessoaFormComponent implements OnInit, OnDestroy {
       await this.carregarVisualizacao(token);
       this.form.disable({ emitEvent: false });
       this.readonly.set(true);
+      this.cdr.detectChanges();
 
       if (imprimir === 'true') {
         setTimeout(() => {
           window.print();
-        }, 1000);
+        }, 800);
       }
     }
   }

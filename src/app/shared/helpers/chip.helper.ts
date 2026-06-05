@@ -9,6 +9,7 @@ export type ChipCategory =
   | 'tipo'
   | 'tipoCadastro'
   | 'statusUsuario'
+  | 'statusLead'
   | 'papel';
 
 const CHIP_MAP: Record<ChipCategory, Record<string, ChipConfig>> = {
@@ -66,8 +67,15 @@ const CHIP_MAP: Record<ChipCategory, Record<string, ChipConfig>> = {
     '1': { label: 'Locador', variant: 'info', icon: 'home' },
     '2': { label: 'Locatário', variant: 'primary', icon: 'person' },
     '3': { label: 'Fiador', variant: 'warning', icon: 'security' },
+    '4': { label: 'Proprietário', variant: 'success', icon: 'real_estate_agent' },
     '10': { label: 'Vendedor', variant: 'success', icon: 'sell' },
     '11': { label: 'Comprador', variant: 'purple', icon: 'shopping_cart' }
+  },
+  statusLead: {
+    '1': { label: 'Novo', variant: 'info', icon: 'fiber_new' },
+    '2': { label: 'Em Atendimento', variant: 'warning', icon: 'support_agent' },
+    '3': { label: 'Convertido', variant: 'success', icon: 'verified' },
+    '4': { label: 'Descartado', variant: 'neutral', icon: 'cancel' }
   }
 };
 

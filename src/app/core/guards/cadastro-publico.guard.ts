@@ -27,7 +27,12 @@ export const cadastroPublicoGuard: CanActivateFn = (
     map(st => {
       // 2 = Preenchido, 3 = EmAnalise, 4 = Aprovado, 5 = Reprovado
       const statusFinalizado = [2, 3, 4, 5].includes(st.status);
-      const isAcompanhamento = state.url.endsWith('/acompanhamento');
+      const isAcompanhamento = state.url.includes('/acompanhamento');
+      const isVisualizar = route.queryParamMap.get('modo') === 'visualizar' || route.queryParams?.['modo'] === 'visualizar';
+
+      if (isVisualizar) {
+        return true;
+      }
 
       if (statusFinalizado && !isAcompanhamento) {
         return router.createUrlTree(['/cadastro-publico', token, 'acompanhamento']);

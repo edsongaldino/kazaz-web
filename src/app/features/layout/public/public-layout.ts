@@ -22,5 +22,9 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrls: ['./public-layout.scss'],
 })
 export class PublicLayout {
+  private router = inject(Router);
 
+  get isImprimir(): boolean {
+    return this.router.url.includes('imprimir=true');
+  }
 }

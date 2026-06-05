@@ -196,3 +196,27 @@
 .sair{
   margin-right: 15px !important;
 }
+
+.submenu {
+  background-color: #004c99;
+  border-left: 4px solid #051436;
+
+  .mat-mdc-list-item {
+    background-color: transparent !important;
+    height: 40px !important;
+
+    &.active {
+      background-color: #051436 !important;
+    }
+
+    &:hover {
+      background-color: #04102e !important;
+    }
+  }
+
+  ::ng-deep {
+    .mdc-list-item.mdc-list-item--with-one-line .mdc-list-item__start {
+      margin-left: 36px !important;
+    }
+  }
+}

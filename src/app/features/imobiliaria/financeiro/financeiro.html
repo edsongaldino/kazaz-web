@@ -1,0 +1,338 @@
+<div class="page-container">
+  <div class="page-header-premium">
+    <div class="title-area">
+      <mat-icon class="header-icon" color="primary">account_balance_wallet</mat-icon>
+      <div>
+        <h1>Financeiro (Fluxo de Caixa)</h1>
+        <p class="subtitle">Acompanhe as receitas, despesas, saldo consolidado e controle os lançamentos da imobiliária.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Resumo Cards -->
+  <mat-progress-bar *ngIf="loadingSummary()" mode="indeterminate" class="page-progress"></mat-progress-bar>
+  
+  <div class="summary-dashboard" *ngIf="!loadingSummary()">
+    <!-- Card A Receber -->
+    <div class="dashboard-card pending-receivable">
+      <div class="card-icon-wrapper">
+        <mat-icon>call_received</mat-icon>
+      </div>
+      <div class="card-info">
+        <span class="card-label">A Receber (Pendente)</span>
+        <h2 class="card-value">{{ resumo().totalReceberPendente | currency: 'BRL' }}</h2>
+      </div>
+    </div>
+
+    <!-- Card A Pagar -->
+    <div class="dashboard-card pending-payable">
+      <div class="card-icon-wrapper">
+        <mat-icon>call_made</mat-icon>
+      </div>
+      <div class="card-info">
+        <span class="card-label">A Pagar (Pendente)</span>
+        <h2 class="card-value">{{ resumo().totalPagarPendente | currency: 'BRL' }}</h2>
+      </div>
+    </div>
+
+    <!-- Card Total Recebido -->
+    <div class="dashboard-card total-received">
+      <div class="card-icon-wrapper">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <div class="card-info">
+        <span class="card-label">Total Recebido</span>
+        <h2 class="card-value text-success">{{ resumo().totalRecebido | currency: 'BRL' }}</h2>
+      </div>
+    </div>
+
+    <!-- Card Total Pago -->
+    <div class="dashboard-card total-paid">
+      <div class="card-icon-wrapper">
+        <mat-icon>cancel</mat-icon>
+      </div>
+      <div class="card-info">
+        <span class="card-label">Total Pago</span>
+        <h2 class="card-value text-danger">{{ resumo().totalPago | currency: 'BRL' }}</h2>
+      </div>
+    </div>
+
+    <!-- Card Saldo Líquido -->
+    <div class="dashboard-card net-balance" [ngClass]="{'positive': resumo().saldoLiquido >= 0, 'negative': resumo().saldoLiquido < 0}">
+      <div class="card-icon-wrapper">
+        <mat-icon>account_balance</mat-icon>
+      </div>
+      <div class="card-info">
+        <span class="card-label">Saldo Líquido</span>
+        <h2 class="card-value">{{ resumo().saldoLiquido | currency: 'BRL' }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="config-card filters-card" style="margin-top: 24px;">
+    <form [formGroup]="formFilter" (ngSubmit)="filtrar()" class="filters-form">
+      <div class="filters-grid">
+        <!-- Tipo -->
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tipo">
+            <mat-option [value]="null">Todos</mat-option>
+            <mat-option [value]="TipoLancamento.Receita">Receitas</mat-option>
+            <mat-option [value]="TipoLancamento.Despesa">Despesas</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Status -->
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option [value]="null">Todos</mat-option>
+            <mat-option [value]="StatusLancamento.Pendente">Pendentes</mat-option>
+            <mat-option [value]="StatusLancamento.Pago">Pagos/Liquidados</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Categoria -->
+        <mat-form-field appearance="outline">
+          <mat-label>Categoria</mat-label>
+          <input matInput formControlName="categoria" placeholder="Ex.: Aluguel, IPTU, Salários" />
+        </mat-form-field>
+
+        <!-- Data Inicial -->
+        <mat-form-field appearance="outline">
+          <mat-label>Vencimento De</mat-label>
+          <input matInput type="date" formControlName="dataInicio" />
+        </mat-form-field>
+
+        <!-- Data Final -->
+        <mat-form-field appearance="outline">
+          <mat-label>Vencimento Até</mat-label>
+          <input matInput type="date" formControlName="dataFim" />
+        </mat-form-field>
+
+        <!-- Ações do Filtro -->
+        <div class="filter-actions-col">
+          <button mat-flat-button color="primary" type="submit" class="btn-filter-premium">
+            Filtrar
+          </button>
+          <button mat-stroked-button type="button" (click)="limparFiltros()" class="btn-clear-premium">
+            Limpar
+          </button>
+          <button mat-flat-button color="accent" type="button" (click)="abrirNovo()" class="btn-add-premium">
+            <mat-icon>add</mat-icon> Lançamento
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <mat-progress-bar *ngIf="loading()" mode="indeterminate" class="page-progress" style="margin-top: 16px;"></mat-progress-bar>
+
+  <!-- Tabela de Resultados -->
+  <div class="config-card table-card" style="margin-top: 24px;">
+    <div class="table-container">
+      <table mat-table [dataSource]="lancamentos()" class="modern-table">
+        
+        <!-- Tipo -->
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef style="width: 60px;">Tipo</th>
+          <td mat-cell *matCellDef="let l">
+            <span class="type-indicator" [class.receita]="l.tipo === TipoLancamento.Receita" [class.despesa]="l.tipo === TipoLancamento.Despesa" [matTooltip]="l.tipo === TipoLancamento.Receita ? 'Receita' : 'Despesa'">
+              <mat-icon>{{ l.tipo === TipoLancamento.Receita ? 'arrow_downward' : 'arrow_upward' }}</mat-icon>
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Descrição -->
+        <ng-container matColumnDef="descricao">
+          <th mat-header-cell *matHeaderCellDef>Descrição</th>
+          <td mat-cell *matCellDef="let l"><strong>{{ l.descricao }}</strong></td>
+        </ng-container>
+
+        <!-- Categoria -->
+        <ng-container matColumnDef="categoria">
+          <th mat-header-cell *matHeaderCellDef>Categoria</th>
+          <td mat-cell *matCellDef="let l">{{ l.categoria }}</td>
+        </ng-container>
+
+        <!-- Valor -->
+        <ng-container matColumnDef="valor">
+          <th mat-header-cell *matHeaderCellDef>Valor</th>
+          <td mat-cell *matCellDef="let l">
+            <span class="value-text" [class.receita]="l.tipo === TipoLancamento.Receita" [class.despesa]="l.tipo === TipoLancamento.Despesa">
+              {{ l.tipo === TipoLancamento.Receita ? '+' : '-' }} {{ l.valor | currency: 'BRL' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Vencimento -->
+        <ng-container matColumnDef="dataVencimento">
+          <th mat-header-cell *matHeaderCellDef>Vencimento</th>
+          <td mat-cell *matCellDef="let l">{{ l.dataVencimento | date: 'dd/MM/yyyy' }}</td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let l">
+            <span class="status-badge" [class.status-badge--active]="l.status === StatusLancamento.Pago" [class.status-badge--pending]="l.status === StatusLancamento.Pendente">
+              {{ l.status === StatusLancamento.Pago ? 'Pago' : 'Pendente' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Cliente -->
+        <ng-container matColumnDef="cliente">
+          <th mat-header-cell *matHeaderCellDef>Cliente</th>
+          <td mat-cell *matCellDef="let l">{{ l.clienteNome || '-' }}</td>
+        </ng-container>
+
+        <!-- Contrato -->
+        <ng-container matColumnDef="contrato">
+          <th mat-header-cell *matHeaderCellDef>Contrato</th>
+          <td mat-cell *matCellDef="let l">{{ l.contratoNumero ? 'Contrato #' + l.contratoNumero : '-' }}</td>
+        </ng-container>
+
+        <!-- Ações -->
+        <ng-container matColumnDef="acoes">
+          <th mat-header-cell *matHeaderCellDef style="text-align: center; width: 120px;">Ações</th>
+          <td mat-cell *matCellDef="let l" style="text-align: center;">
+            <button mat-icon-button color="primary" matTooltip="Editar" (click)="abrirEditar(l)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Excluir" (click)="excluir(l)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell empty-table-message" [attr.colspan]="displayedColumns.length">
+            Nenhum lançamento financeiro encontrado.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageIndex]="page()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      (page)="onPage($event)"
+      style="margin-top: 12px;">
+    </mat-paginator>
+  </div>
+</div>
+
+<!-- Template Modal Lançamento -->
+<ng-template #dialogLancamento>
+  <div class="custom-dialog-container">
+    <h2 mat-dialog-title class="dialog-title-premium">
+      <mat-icon color="primary">{{ editingLancamento ? 'edit' : 'add_circle' }}</mat-icon>
+      <span>{{ editingLancamento ? 'Editar Lançamento' : 'Novo Lançamento Financeiro' }}</span>
+    </h2>
+
+    <mat-dialog-content>
+      <form [formGroup]="form" class="dialog-form premium-form-padding">
+        
+        <!-- Descrição -->
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Descrição do Lançamento</mat-label>
+          <input matInput formControlName="descricao" placeholder="Ex.: Recebimento de Aluguel Apto 202" />
+          <mat-error *ngIf="form.get('descricao')?.hasError('required')">Descrição é obrigatória</mat-error>
+          <mat-error *ngIf="form.get('descricao')?.hasError('maxlength')">No máximo 200 caracteres</mat-error>
+        </mat-form-field>
+
+        <!-- Valor e Categoria -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>Valor (R$)</mat-label>
+            <input matInput type="number" step="0.01" formControlName="valor" placeholder="0.00" />
+            <mat-error *ngIf="form.get('valor')?.hasError('required')">Valor é obrigatório</mat-error>
+            <mat-error *ngIf="form.get('valor')?.hasError('min')">O valor deve ser maior que zero</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Categoria</mat-label>
+            <input matInput formControlName="categoria" placeholder="Ex.: Aluguel, Taxas, Impostos" />
+            <mat-error *ngIf="form.get('categoria')?.hasError('required')">Categoria é obrigatória</mat-error>
+            <mat-error *ngIf="form.get('categoria')?.hasError('maxlength')">No máximo 100 caracteres</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Tipo e Status -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de Fluxo</mat-label>
+            <mat-select formControlName="tipo">
+              <mat-option [value]="TipoLancamento.Receita">Receita (Entrada)</mat-option>
+              <mat-option [value]="TipoLancamento.Despesa">Despesa (Saída)</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('tipo')?.hasError('required')">Tipo é obrigatório</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Status do Lançamento</mat-label>
+            <mat-select formControlName="status">
+              <mat-option [value]="StatusLancamento.Pendente">Pendente</mat-option>
+              <mat-option [value]="StatusLancamento.Pago">Pago / Liquidado</mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('status')?.hasError('required')">Status é obrigatório</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Datas (Vencimento e Pagamento) -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>Data de Vencimento</mat-label>
+            <input matInput type="date" formControlName="dataVencimento" />
+            <mat-error *ngIf="form.get('dataVencimento')?.hasError('required')">Data de vencimento é obrigatória</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" *ngIf="form.get('status')?.value === StatusLancamento.Pago">
+            <mat-label>Data de Pagamento</mat-label>
+            <input matInput type="date" formControlName="dataPagamento" />
+            <mat-error *ngIf="form.get('dataPagamento')?.hasError('required')">Data de pagamento é obrigatória para lançamentos pagos</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- Vinculos opcionais (Cliente e Contrato) -->
+        <div class="form-row-2col">
+          <mat-form-field appearance="outline">
+            <mat-label>Vincular a Cliente (Opcional)</mat-label>
+            <mat-select formControlName="clienteId">
+              <mat-option [value]="null">Nenhum</mat-option>
+              <mat-option *ngFor="let cl of clientes()" [value]="cl.id">
+                {{ cl.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Vincular a Contrato (Opcional)</mat-label>
+            <mat-select formControlName="contratoId">
+              <mat-option [value]="null">Nenhum</mat-option>
+              <mat-option *ngFor="let ct of contratos()" [value]="ct.id">
+                Contrato #{{ ct.numero }} ({{ ct.tituloImovel || 'Imóvel' }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+      </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions-premium" align="end">
+      <button mat-button mat-dialog-close [disabled]="salvando()">Cancelar</button>
+      <button mat-flat-button color="primary" [disabled]="salvando() || form.invalid" (click)="salvar()">
+        <mat-spinner *ngIf="salvando()" diameter="20" style="margin-right: 8px; display: inline-block;"></mat-spinner>
+        {{ editingLancamento ? 'Atualizar' : 'Salvar Lançamento' }}
+      </button>
+    </mat-dialog-actions>
+  </div>
+</ng-template>

@@ -114,11 +114,8 @@
     <ng-container matColumnDef="acoes">
       <th mat-header-cell *matHeaderCellDef>Ações</th>
       <td mat-cell *matCellDef="let r">
-        <button mat-icon-button class="btn-action-view" (click)="abrirConvite(r)">
-          <mat-icon
-            [matTooltip]="r.pessoaId ? 'Ver cadastro preenchido' : 'Abrir convite'">
-            open_in_new
-          </mat-icon>
+        <button mat-icon-button class="btn-action-view" *ngIf="!r.pessoaId" (click)="abrirConvite(r)">
+          <mat-icon matTooltip="Abrir convite">open_in_new</mat-icon>
         </button>
 
         <button mat-icon-button class="btn-action-copy" (click)="copiarLink(r.link)">
